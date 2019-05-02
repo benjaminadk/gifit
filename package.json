@@ -1,0 +1,24 @@
+{
+  "name": "gifit",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": {
+    "name": "benjaminadk"
+  },
+  "license": "ISC",
+  "scripts": {
+    "dev": "electron-webpack dev"
+  },
+  "dependencies": {
+    "react": "16.8.6",
+    "react-dom": "16.8.6",
+    "styled-components": "4.2.0"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "7.0.0",
+    "electron": "5.0.0",
+    "electron-webpack": "2.6.2",
+    "webpack": "4.30.0"
+  }
+}
