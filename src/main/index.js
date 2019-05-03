@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import installDevTools from './installDevTools'
+import getMainWindowDimensions from 'common/getMainWindowDimensions'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
@@ -8,7 +9,14 @@ const { inDev } = config
 let mainWindow
 
 function createMainWindow() {
+  const { width, height, x, y } = getMainWindowDimensions()
+
   mainWindow = new BrowserWindow({
+    title: 'Gifit',
+    width,
+    height,
+    x,
+    y,
     webPreferences: {
       nodeIntegration: true,
       webSecurity: !inDev

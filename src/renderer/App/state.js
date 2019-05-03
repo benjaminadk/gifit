@@ -2,7 +2,13 @@ import { Map } from 'immutable'
 import config from 'common/config'
 
 const {
-  appActions: { INITIALIZE, LOADING_START, LOADING_END }
+  appActions: {
+    INITIALIZE,
+    LOADING_START,
+    LOADING_END,
+    SET_APP_MODE,
+    SET_GIF_DIMENSIONS
+  }
 } = config
 
 function reducer(state, action) {
@@ -18,6 +24,12 @@ function reducer(state, action) {
       return { ...state, loading: true }
     case LOADING_END:
       return { ...state, loading: false }
+    case SET_APP_MODE:
+      return { ...state, mode: action.payload }
+    case SET_GIF_DIMENSIONS:
+      return { ...state, gifDimensions: action.payload }
+    default:
+      throw new Error()
   }
 }
 
@@ -26,7 +38,8 @@ const initialState = {
   windowID: null,
   options: Map(),
   sources: null,
-  mode: 0
+  mode: 0,
+  gifDimensions: null
 }
 
 export { reducer, initialState }
