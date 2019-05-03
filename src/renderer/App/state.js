@@ -38,8 +38,8 @@ const initialState = {
   windowID: null,
   options: Map(),
   sources: null,
-  mode: 0,
-  gifDimensions: null
+  mode: 1,
+  gifDimensions: { width: 1360, height: 768 }
 }
 
 export { reducer, initialState }

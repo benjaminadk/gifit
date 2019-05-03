@@ -78,6 +78,7 @@ export default function Gifit() {
   useEffect(() => {
     async function initialize() {
       const files = await readdirAsync(TEMP_DIRECTORY)
+
       for (const file of files) {
         await unlinkAsync(path.join(TEMP_DIRECTORY, file))
       }

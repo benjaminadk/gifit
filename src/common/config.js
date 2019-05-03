@@ -26,10 +26,11 @@ const grey = [
 ]
 
 const theme = {
-  primary: '',
+  primary: 'hsla(162, 89%, 53%, 1)',
   secondary: '',
   black: '#333333',
-  grey
+  grey,
+  border: '1px solid #E0E0E0'
 }
 
 const appActions = {
@@ -49,7 +50,7 @@ const constants = {
   VIDEO_CSS: 'position: absolute; top: -10000px; left: -10000px;',
   IMAGE_TYPE: 'image/png',
   IMAGE_REGEX: /^data:image\/(png|gif|jpeg);base64,/,
-  FRAME_RATE: 1000 / 10,
+  FRAME_RATE: 1000 / 15,
   MAX_LENGTH: 10 * 1000
 }
 

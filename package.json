@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "immutable": "4.0.0-rc.12",
+    "polished": "3.2.0",
     "react": "16.8.6",
     "react-dom": "16.8.6",
     "styled-components": "4.2.0",
