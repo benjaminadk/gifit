@@ -116,14 +116,20 @@ export default function Gifit() {
     video.onloadedmetadata = e => video.play()
 
     const frames = []
+    const times = []
+    var t1 = performance.now()
     const captureFrame = setInterval(() => {
       ctx.clearRect(0, 0, width, height)
       ctx.drawImage(video, 0, 0, width, height)
+      const t2 = performance.now()
+      const diff = Math.round(t2 - t1)
+      t1 = t2
+      times.push(diff)
       const frame = canvas.toDataURL(IMAGE_TYPE)
       frames.push(frame)
     }, FRAME_RATE)
 
-    const stopCapture = setTimeout(() => onStopGifit, MAX_LENGTH)
+    const stopCapture = setTimeout(onStopGifit, MAX_LENGTH)
 
     const tray = new remote.Tray(RECORDING_ICON)
     tray.on('click', () => {
@@ -141,7 +147,7 @@ export default function Gifit() {
         await writeFileAsync(filepath, base64Data, { encoding: 'base64' })
       }
 
-      const data = { width, height }
+      const data = { width, height, times, frameRate: FRAME_RATE }
       remote.BrowserWindow.fromId(1).webContents.send(GIFIT_STOP, data)
       remote.getCurrentWindow().close()
       tray.destroy()

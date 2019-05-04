@@ -50,7 +50,7 @@ const constants = {
   VIDEO_CSS: 'position: absolute; top: -10000px; left: -10000px;',
   IMAGE_TYPE: 'image/png',
   IMAGE_REGEX: /^data:image\/(png|gif|jpeg);base64,/,
-  FRAME_RATE: 1000 / 15,
+  FRAME_RATE: Math.round(1000 / 10),
   MAX_LENGTH: 10 * 1000
 }
 

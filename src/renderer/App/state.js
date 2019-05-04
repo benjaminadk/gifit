@@ -27,10 +27,17 @@ function reducer(state, action) {
     case SET_APP_MODE:
       return { ...state, mode: action.payload }
     case SET_GIF_DIMENSIONS:
-      return { ...state, gifDimensions: action.payload }
+      return { ...state, gifData: action.payload }
     default:
       throw new Error()
   }
+}
+
+const gifData = {
+  width: 1360,
+  height: 768,
+  times: Array(124).fill(65),
+  frameRate: 1000 / 15
 }
 
 const initialState = {
@@ -38,8 +45,8 @@ const initialState = {
   windowID: null,
   options: Map(),
   sources: null,
-  mode: 1,
-  gifDimensions: { width: 1360, height: 768 }
+  mode: 0,
+  gifData: null
 }
 
 export { reducer, initialState }

@@ -21,6 +21,7 @@ export default createGlobalStyle`
 	}
   html {
     font-size: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     box-sizing: border-box;
   }
   body {
