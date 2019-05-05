@@ -7,7 +7,7 @@ const {
     LOADING_START,
     LOADING_END,
     SET_APP_MODE,
-    SET_GIF_DIMENSIONS
+    SET_GIF_FOLDER
   }
 } = config
 
@@ -18,7 +18,7 @@ function reducer(state, action) {
         ...state,
         windowID: action.payload[0],
         sources: action.payload[1],
-        options: action.payload[3]
+        options: action.payload[4]
       }
     case LOADING_START:
       return { ...state, loading: true }
@@ -26,18 +26,11 @@ function reducer(state, action) {
       return { ...state, loading: false }
     case SET_APP_MODE:
       return { ...state, mode: action.payload }
-    case SET_GIF_DIMENSIONS:
-      return { ...state, gifData: action.payload }
+    case SET_GIF_FOLDER:
+      return { ...state, gifFolder: action.payload }
     default:
       throw new Error()
   }
-}
-
-const gifData = {
-  width: 1360,
-  height: 768,
-  times: Array(124).fill(65),
-  frameRate: 1000 / 15
 }
 
 const initialState = {
@@ -45,8 +38,8 @@ const initialState = {
   windowID: null,
   options: Map(),
   sources: null,
-  mode: 0,
-  gifData: null
+  mode: 1,
+  gifFolder: '2019-05-04 23-52-05'
 }
 
 export { reducer, initialState }

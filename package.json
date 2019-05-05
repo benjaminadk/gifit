@@ -11,6 +11,7 @@
     "dev": "electron-webpack dev"
   },
   "dependencies": {
+    "date-fns": "2.0.0-alpha.27",
     "immutable": "4.0.0-rc.12",
     "polished": "3.2.0",
     "react": "16.8.6",

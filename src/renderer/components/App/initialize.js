@@ -2,7 +2,11 @@ import { remote, desktopCapturer, screen } from 'electron'
 import { Map } from 'immutable'
 import { existsSync, readFile, writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
-import { OPTIONS_PATH, TEMP_DIRECTORY } from 'common/filepaths'
+import {
+  APP_DIRECTORY,
+  RECORDINGS_DIRECTORY,
+  OPTIONS_PATH
+} from 'common/filepaths'
 import config from 'common/config'
 
 const { defaultOptions } = config
@@ -26,14 +30,22 @@ export default async () => {
   })
 
   const p3 = new Promise(async resolve => {
-    if (!existsSync(TEMP_DIRECTORY)) {
-      await mkdirAsync(TEMP_DIRECTORY)
+    if (!existsSync(APP_DIRECTORY)) {
+      await mkdirAsync(APP_DIRECTORY)
       resolve()
     }
     resolve()
   })
 
   const p4 = new Promise(async resolve => {
+    if (!existsSync(RECORDINGS_DIRECTORY)) {
+      await mkdirAsync(RECORDINGS_DIRECTORY)
+      resolve()
+    }
+    resolve()
+  })
+
+  const p5 = new Promise(async resolve => {
     if (existsSync(OPTIONS_PATH)) {
       const data = await readFileAsync(OPTIONS_PATH)
       const options = JSON.parse(data)
@@ -45,5 +57,5 @@ export default async () => {
     }
   })
 
-  return Promise.all([p1, p2, p3, p4])
+  return Promise.all([p1, p2, p3, p4, p5])
 }

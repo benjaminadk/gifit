@@ -6,7 +6,7 @@ import config from 'common/config'
 const {
   inDev,
   ipcActions: { GIFIT_STOP, GIFIT_CLOSE },
-  appActions: { SET_APP_MODE, SET_GIF_DIMENSIONS }
+  appActions: { SET_APP_MODE, SET_GIF_FOLDER }
 } = config
 
 export default (state, dispatch) => {
@@ -15,7 +15,7 @@ export default (state, dispatch) => {
   const source = sources[sourceIndex]
 
   function onGifitStop(e, data) {
-    dispatch({ type: SET_GIF_DIMENSIONS, payload: data })
+    dispatch({ type: SET_GIF_FOLDER, payload: data })
     dispatch({ type: SET_APP_MODE, payload: 1 })
     remote.BrowserWindow.fromId(1).maximize()
     remote.BrowserWindow.fromId(1).focus()

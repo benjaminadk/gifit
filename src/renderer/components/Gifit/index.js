@@ -1,14 +1,15 @@
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useState, useContext } from 'react'
 import { remote } from 'electron'
 import styled, { keyframes } from 'styled-components'
 import { CropFree } from 'styled-icons/material/CropFree'
 import { Crop } from 'styled-icons/material/Crop'
 import { Close } from 'styled-icons/material/Close'
 import path from 'path'
-import { writeFile, readdir, unlink } from 'fs'
+import { writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
+import createFolderName from '../../lib/createFolderName'
 import { AppContext } from '../App'
-import { TEMP_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
+import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
 import config from 'common/config'
 
 const {
@@ -16,9 +17,8 @@ const {
   constants: { VIDEO_CSS, IMAGE_TYPE, IMAGE_REGEX, FRAME_RATE, MAX_LENGTH }
 } = config
 
+const mkdirAsync = promisify(mkdir)
 const writeFileAsync = promisify(writeFile)
-const readdirAsync = promisify(readdir)
-const unlinkAsync = promisify(unlink)
 
 const slideDown = keyframes`
   from {
@@ -75,17 +75,6 @@ export default function Gifit() {
 
   const [mode, setMode] = useState(0)
 
-  useEffect(() => {
-    async function initialize() {
-      const files = await readdirAsync(TEMP_DIRECTORY)
-
-      for (const file of files) {
-        await unlinkAsync(path.join(TEMP_DIRECTORY, file))
-      }
-    }
-    initialize()
-  }, [])
-
   async function onFullscreenClick() {
     setMode(1)
 
@@ -141,14 +130,31 @@ export default function Gifit() {
       clearInterval(captureFrame)
       stream.getTracks().forEach(track => track.stop())
 
+      const folder = createFolderName()
+      const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
+      await mkdirAsync(folderPath)
+      const data = []
+
       for (const [i, frame] of frames.entries()) {
-        const filepath = path.join(TEMP_DIRECTORY, `image-${i}.png`)
+        const filepath = path.join(folderPath, `${i}.png`)
+        data.push({ path: filepath, time: times[i] })
         const base64Data = frame.replace(IMAGE_REGEX, '')
         await writeFileAsync(filepath, base64Data, { encoding: 'base64' })
       }
 
-      const data = { width, height, times, frameRate: FRAME_RATE }
-      remote.BrowserWindow.fromId(1).webContents.send(GIFIT_STOP, data)
+      const project = {
+        relative: folder,
+        width,
+        height,
+        frameRate: FRAME_RATE,
+        frames: data
+      }
+      await writeFileAsync(
+        path.join(folderPath, 'project.json'),
+        JSON.stringify(project)
+      )
+
+      remote.BrowserWindow.fromId(1).webContents.send(GIFIT_STOP, folder)
       remote.getCurrentWindow().close()
       tray.destroy()
     }

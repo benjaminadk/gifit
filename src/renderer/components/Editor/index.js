@@ -8,10 +8,10 @@ import { Play } from 'styled-icons/fa-solid/Play'
 import { lighten } from 'polished'
 import { List } from 'immutable'
 import path from 'path'
-import { readdir } from 'fs'
+import { readFile } from 'fs'
 import { promisify } from 'util'
 import { AppContext } from '../App'
-import { TEMP_DIRECTORY } from 'common/filepaths'
+import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 
 export const Container = styled.div`
   width: 100vw;
@@ -106,20 +106,19 @@ export const Thumbnail = styled.div.attrs(p => ({
   }
 `
 
-const readdirAsync = promisify(readdir)
+const readFileAsync = promisify(readFile)
 
 const tabs = ['File', 'Home', 'Playback', 'Edit', 'Image']
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
-  const { gifData } = state
+  const { gifFolder } = state
 
-  const [menuIndex, setMenuIndex] = useState(0)
-
-  const [scale, setScale] = useState(null)
   const [images, setImages] = useState([])
+  const [gifData, setGifData] = useState(null)
+  const [menuIndex, setMenuIndex] = useState(0)
+  const [scale, setScale] = useState(null)
   const [imageIndex, setImageIndex] = useState(0)
-  const [selected, setSelected] = useState(List())
   const [playing, setPlaying] = useState(false)
 
   const main = useRef(null)
@@ -129,27 +128,24 @@ export default function Editor() {
 
   useEffect(() => {
     async function initialize() {
-      const arr1 = []
-      const arr2 = []
-      const files = await readdirAsync(TEMP_DIRECTORY).catch(console.error)
+      const data = await readFileAsync(
+        path.join(RECORDINGS_DIRECTORY, gifFolder, 'project.json')
+      )
+      const project = JSON.parse(data)
 
-      for (const file of files) {
-        const filepath = path.join(TEMP_DIRECTORY, file)
-        arr1.push(filepath)
-        arr2.push(false)
-      }
-
-      setImages(arr1)
-      setSelected(List(arr2).set(0, true))
+      setImages(project.frames)
+      setGifData({
+        width: project.width,
+        height: project.height,
+        frameRate: project.frameRate
+      })
+      const { clientHeight } = main.current
+      const heightRatio =
+        Math.round((clientHeight / project.height) * 100) / 100
+      setScale(heightRatio < 1 ? heightRatio : 1)
     }
 
     initialize()
-  }, [])
-
-  useEffect(() => {
-    const { clientHeight } = main.current
-    const heightRatio = Math.round((clientHeight / gifData.height) * 100) / 100
-    setScale(heightRatio < 1 ? heightRatio : 1)
   }, [])
 
   useEffect(() => {
@@ -165,7 +161,7 @@ export default function Editor() {
         ctx.scale(scale, scale)
         ctx.drawImage(image, 0, 0)
       }
-      image.src = images[imageIndex]
+      image.src = images[imageIndex].path
     }
   }, [images, imageIndex, scale])
 
@@ -191,7 +187,6 @@ export default function Editor() {
 
   function onThumbnailClick(index) {
     setImageIndex(index)
-    setSelected(selected.map((el, i) => (i === index ? true : false)))
   }
 
   function onPlaybackClick(index) {
@@ -257,10 +252,10 @@ export default function Editor() {
             selected={imageIndex === i}
             onClick={() => onThumbnailClick(i)}
           >
-            <img src={el} />
+            <img src={el.path} />
             <div className='bottom'>
               <div className='index'>{i + 1}</div>
-              <div className='time'>{gifData.times[i]}ms</div>
+              <div className='time'>{el.time}ms</div>
             </div>
           </Thumbnail>
         ))}
