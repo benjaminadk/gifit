@@ -5,7 +5,8 @@ const mainWindow = {
 
 const defaultOptions = {
   alwaysOnTop: false,
-  sourceIndex: 0
+  sourceIndex: 0,
+  frameRate: 10
 }
 
 const grey = [
@@ -50,7 +51,6 @@ const constants = {
   VIDEO_CSS: 'position: absolute; top: -10000px; left: -10000px;',
   IMAGE_TYPE: 'image/png',
   IMAGE_REGEX: /^data:image\/(png|gif|jpeg);base64,/,
-  FRAME_RATE: Math.round(1000 / 10),
   MAX_LENGTH: 10 * 1000
 }
 

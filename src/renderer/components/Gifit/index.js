@@ -14,7 +14,7 @@ import config from 'common/config'
 
 const {
   ipcActions: { GIFIT_CLOSE, GIFIT_STOP },
-  constants: { VIDEO_CSS, IMAGE_TYPE, IMAGE_REGEX, FRAME_RATE, MAX_LENGTH }
+  constants: { VIDEO_CSS, IMAGE_TYPE, IMAGE_REGEX, MAX_LENGTH }
 } = config
 
 const mkdirAsync = promisify(mkdir)
@@ -70,6 +70,7 @@ export const Option = styled.div`
 export default function Gifit() {
   const { state, dispatch } = useContext(AppContext)
   const { options, sources } = state
+  const frameRate = options.get('frameRate')
   const sourceIndex = options.get('sourceIndex')
   const source = sources[sourceIndex]
 
@@ -116,7 +117,7 @@ export default function Gifit() {
       times.push(diff)
       const frame = canvas.toDataURL(IMAGE_TYPE)
       frames.push(frame)
-    }, FRAME_RATE)
+    }, Math.round(1000 / frameRate))
 
     const stopCapture = setTimeout(onStopGifit, MAX_LENGTH)
 
@@ -146,7 +147,7 @@ export default function Gifit() {
         relative: folder,
         width,
         height,
-        frameRate: FRAME_RATE,
+        frameRate,
         frames: data
       }
       await writeFileAsync(

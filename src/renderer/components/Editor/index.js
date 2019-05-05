@@ -1,15 +1,20 @@
 import React, { useRef, useEffect, useState, useContext } from 'react'
+import { remote } from 'electron'
 import styled from 'styled-components'
 import { AngleDoubleLeft } from 'styled-icons/fa-solid/AngleDoubleLeft'
 import { AngleLeft } from 'styled-icons/fa-solid/AngleLeft'
 import { AngleDoubleRight } from 'styled-icons/fa-solid/AngleDoubleRight'
 import { AngleRight } from 'styled-icons/fa-solid/AngleRight'
 import { Play } from 'styled-icons/fa-solid/Play'
+import { Save } from 'styled-icons/fa-solid/Save'
+import { FolderOpen } from 'styled-icons/fa-solid/FolderOpen'
 import { lighten } from 'polished'
 import { List } from 'immutable'
 import path from 'path'
 import { readFile } from 'fs'
 import { promisify } from 'util'
+import { spawn } from 'child_process'
+import createRandomString from '../../lib/createRandomString'
 import { AppContext } from '../App'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 
@@ -33,6 +38,22 @@ export const Tabs = styled.div`
 
 export const Tab = styled.div`
   background: ${p => (p.selected ? p.theme.grey[1] : 'transparent')};
+`
+
+export const File = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 100px);
+  .action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+    .text {
+    }
+  }
 `
 
 export const Playback = styled.div`
@@ -135,6 +156,7 @@ export default function Editor() {
 
       setImages(project.frames)
       setGifData({
+        relative: project.relative,
         width: project.width,
         height: project.height,
         frameRate: project.frameRate
@@ -177,7 +199,7 @@ export default function Editor() {
     if (playing) {
       playingId = setInterval(() => {
         setImageIndex(index => (index === images.length - 1 ? 0 : index + 1))
-      }, gifData.frameRate)
+      }, Math.round(1000 / gifData.frameRate))
     } else {
       clearInterval(playingId)
     }
@@ -185,8 +207,41 @@ export default function Editor() {
     return () => clearInterval(playingId)
   }, [playing])
 
-  function onThumbnailClick(index) {
-    setImageIndex(index)
+  function onSaveClick() {
+    const win = remote.getCurrentWindow()
+    const options = {
+      title: 'Save',
+      defaultPath: path.join(
+        remote.app.getPath('downloads'),
+        `${createRandomString()}.gif`
+      ),
+      buttonLabel: 'Save',
+      filters: [{ name: 'GIF File', extensions: ['gif'] }]
+    }
+    const callback = filepath => {
+      if (filepath) {
+        const srcPath = `${RECORDINGS_DIRECTORY}/${gifData.relative}/%d.png`
+        const scale = Math.min(gifData.width, 720) + ':-1'
+        const ffmpeg = spawn('ffmpeg', [
+          '-framerate',
+          gifData.frameRate,
+          '-i',
+          srcPath,
+          '-filter_complex',
+          `scale=${scale}:flags=lanczos,split [o1] [o2];[o1] palettegen=stats_mode=single [p]; [o2] fifo [o3];[o3] [p] paletteuse=new=1`,
+          filepath
+        ])
+
+        ffmpeg.on('close', code => {
+          console.log('ffmpeg exit code: ', code)
+        })
+
+        ffmpeg.on('error', error => {
+          console.error(error)
+        })
+      }
+    }
+    remote.dialog.showSaveDialog(win, options, callback)
   }
 
   function onPlaybackClick(index) {
@@ -217,7 +272,18 @@ export default function Editor() {
             </Tab>
           ))}
         </Tabs>
-        {menuIndex === 2 ? (
+        {menuIndex === 0 ? (
+          <File>
+            <div className='action' onClick={onSaveClick}>
+              <Save />
+              <div className='text'>Save As</div>
+            </div>
+            <div className='action'>
+              <FolderOpen />
+              <div className='text'>Recent Projects</div>
+            </div>
+          </File>
+        ) : menuIndex === 2 ? (
           <Playback>
             <div className='action' onClick={() => onPlaybackClick(0)}>
               <AngleDoubleLeft />
@@ -250,7 +316,7 @@ export default function Editor() {
             key={i}
             ref={imageIndex === i ? thumbnail : null}
             selected={imageIndex === i}
-            onClick={() => onThumbnailClick(i)}
+            onClick={() => setImageIndex(i)}
           >
             <img src={el.path} />
             <div className='bottom'>
