@@ -8,21 +8,25 @@ import { AngleRight } from 'styled-icons/fa-solid/AngleRight'
 import { Play } from 'styled-icons/fa-solid/Play'
 import { Save } from 'styled-icons/fa-solid/Save'
 import { FolderOpen } from 'styled-icons/fa-solid/FolderOpen'
+import { BorderOuter } from 'styled-icons/material/BorderOuter'
 import { lighten } from 'polished'
-import { List } from 'immutable'
 import path from 'path'
 import { readFile } from 'fs'
 import { promisify } from 'util'
 import { spawn } from 'child_process'
 import createRandomString from '../../lib/createRandomString'
 import { AppContext } from '../App'
+import Drawer from './Drawer'
+import Border from './Border'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 
 export const Container = styled.div`
+  position: relative;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
   display: grid;
-  grid-template-rows: 100px 1fr calc(calc(100px * 9 / 16) + 40px);
+  grid-template-rows: 100px 1fr 100px;
 `
 
 export const Toolbar = styled.div`
@@ -40,7 +44,7 @@ export const Tab = styled.div`
   background: ${p => (p.selected ? p.theme.grey[1] : 'transparent')};
 `
 
-export const File = styled.div`
+export const FileTab = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 100px);
   .action {
@@ -56,7 +60,7 @@ export const File = styled.div`
   }
 `
 
-export const Playback = styled.div`
+export const PlaybackTab = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 50px);
   .action {
@@ -70,10 +74,28 @@ export const Playback = styled.div`
   }
 `
 
+export const ImageTab = styled.div`
+  display: grid;
+  grid-template-columns: repeat(1, 50px);
+  .action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+    .text {
+    }
+  }
+`
+
 export const Main = styled.div`
   display: grid;
   justify-items: center;
   align-items: center;
+  transform: ${p => (p.shift ? 'translateX(-250px)' : 'translateX(0)')};
+  transition: 0.5s;
 `
 
 export const Wrapper = styled.div`
@@ -142,6 +164,12 @@ export default function Editor() {
   const [imageIndex, setImageIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
 
+  const [showDrawer, setShowDrawer] = useState(1)
+  const [borderLeft, setBorderLeft] = useState(0)
+  const [borderRight, setBorderRight] = useState(0)
+  const [borderTop, setBorderTop] = useState(0)
+  const [borderBottom, setBorderBottom] = useState(0)
+
   const main = useRef(null)
   const wrapper = useRef(null)
   const canvas = useRef(null)
@@ -153,7 +181,6 @@ export default function Editor() {
         path.join(RECORDINGS_DIRECTORY, gifFolder, 'project.json')
       )
       const project = JSON.parse(data)
-
       setImages(project.frames)
       setGifData({
         relative: project.relative,
@@ -161,6 +188,7 @@ export default function Editor() {
         height: project.height,
         frameRate: project.frameRate
       })
+
       const { clientHeight } = main.current
       const heightRatio =
         Math.round((clientHeight / project.height) * 100) / 100
@@ -273,7 +301,7 @@ export default function Editor() {
           ))}
         </Tabs>
         {menuIndex === 0 ? (
-          <File>
+          <FileTab>
             <div className='action' onClick={onSaveClick}>
               <Save />
               <div className='text'>Save As</div>
@@ -282,9 +310,9 @@ export default function Editor() {
               <FolderOpen />
               <div className='text'>Recent Projects</div>
             </div>
-          </File>
+          </FileTab>
         ) : menuIndex === 2 ? (
-          <Playback>
+          <PlaybackTab>
             <div className='action' onClick={() => onPlaybackClick(0)}>
               <AngleDoubleLeft />
             </div>
@@ -300,12 +328,19 @@ export default function Editor() {
             <div className='action' onClick={() => onPlaybackClick(4)}>
               <AngleDoubleRight />
             </div>
-          </Playback>
+          </PlaybackTab>
+        ) : menuIndex === 4 ? (
+          <ImageTab>
+            <div className='action' onClick={() => setShowDrawer(1)}>
+              <BorderOuter />
+              <div className='text'>Border</div>
+            </div>
+          </ImageTab>
         ) : (
           <div />
         )}
       </Toolbar>
-      <Main ref={main}>
+      <Main ref={main} shift={showDrawer}>
         <Wrapper ref={wrapper}>
           <Canvas ref={canvas} />
         </Wrapper>
@@ -326,6 +361,21 @@ export default function Editor() {
           </Thumbnail>
         ))}
       </Thumbnails>
+      <Drawer width={250} show={!!showDrawer}>
+        {showDrawer === 1 ? (
+          <Border
+            borderLeft={borderLeft}
+            borderRight={borderRight}
+            borderTop={borderTop}
+            borderBottom={borderBottom}
+            setBorderLeft={setBorderLeft}
+            setBorderRight={setBorderRight}
+            setBorderTop={setBorderTop}
+            setBorderBottom={setBorderBottom}
+            onClose={() => setShowDrawer(0)}
+          />
+        ) : null}
+      </Drawer>
     </Container>
   )
 }

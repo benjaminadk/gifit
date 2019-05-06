@@ -4,7 +4,7 @@ export default createGlobalStyle`
   html, body, div, span, applet, object, iframe, table, caption, tbody, tfoot, thead, tr, th, td,
   del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var,
   h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,
-  dl, dt, dd, ol, ul, li, fieldset, form, label, legend {
+  dl, dt, dd, ol, ul, li, fieldset, form, label, legend, input {
 	  vertical-align: baseline;
 	  font-family: inherit;
 	  font-weight: inherit;
@@ -28,7 +28,7 @@ export default createGlobalStyle`
     height: 100vh;
     line-height: 1;
   }
-    *, *:before, *:after {
+  *, *:before, *:after {
     box-sizing: inherit;
   }
   ol, ul {
