@@ -1,8 +1,12 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import styled from 'styled-components'
 import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
 import { BorderOuter } from 'styled-icons/material/BorderOuter'
+import { TriangleLeft } from 'styled-icons/octicons/TriangleLeft'
+import { TriangleRight } from 'styled-icons/octicons/TriangleRight'
+import { TriangleUp } from 'styled-icons/octicons/TriangleUp'
+import { TriangleDown } from 'styled-icons/octicons/TriangleDown'
 import NumberInput from '../../Shared/NumberInput'
 
 export const Container = styled.div`
@@ -61,6 +65,59 @@ export const Section = styled.div`
   }
 `
 
+export const Property = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`
+
+export const Label = styled.div`
+  width: ${p => p.width}px;
+  font-size: 1.2rem;
+  margin-left: 10px;
+`
+
+export const ColorSwatch = styled.div`
+  width: ${p => p.width}px;
+  height: 25px;
+  background: ${p => p.color};
+  outline: ${p => p.theme.border};
+  cursor: pointer;
+  &:hover {
+    outline: 1px solid ${p => p.theme.primary};
+  }
+  input[type='color'] {
+    display: none;
+  }
+`
+
+export const ColorInputs = styled.div`
+  display: grid;
+  grid-template-rows: repeat(3, 35px);
+  .end {
+    display: grid;
+    align-items: center;
+    margin-left: 30px;
+  }
+  .middle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 10px;
+  }
+`
+
+export const ColorInput = styled.div`
+  display: flex;
+  align-items: center;
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+  .spacer {
+    margin-right: 5px;
+  }
+`
+
 export const Footer = styled.footer`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -86,6 +143,8 @@ export const Button = styled.div`
 `
 
 export default function Border({ borderLeft, setBorderLeft, onClose }) {
+  const picker = useRef(null)
+
   function onChange({ target: { value } }, dimension) {
     const isDigit = /^\d*$/
     var newValue
@@ -159,14 +218,71 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
             <div className='divider' />
           </div>
           <div>
-            <NumberInput
-              width={61}
-              value={borderLeft}
-              onChange={e => onChange(e, 'left')}
-              onBlur={e => onBlur(e, 'left')}
-              onArrowUpClick={() => onArrowClick(true, 'left')}
-              onArrowDownClick={() => onArrowClick(false, 'left')}
-            />
+            <Property>
+              <Label width={60}>Color:</Label>
+              <ColorSwatch
+                width={160}
+                color='red'
+                onClick={() => picker.current.click()}
+              >
+                <input ref={picker} type='color' />
+              </ColorSwatch>
+            </Property>
+            <Property>
+              <Label width={60}>Thickness:</Label>
+              <ColorInputs>
+                <div className='end'>
+                  <ColorInput>
+                    <TriangleUp className='spacer' />
+                    <NumberInput
+                      width={61}
+                      value={borderLeft}
+                      onChange={e => onChange(e, 'up')}
+                      onBlur={e => onBlur(e, 'up')}
+                      onArrowUpClick={() => onArrowClick(true, 'up')}
+                      onArrowDownClick={() => onArrowClick(false, 'up')}
+                    />
+                  </ColorInput>
+                </div>
+                <div className='middle'>
+                  <ColorInput>
+                    <TriangleLeft />
+                    <NumberInput
+                      width={61}
+                      value={borderLeft}
+                      onChange={e => onChange(e, 'left')}
+                      onBlur={e => onBlur(e, 'left')}
+                      onArrowUpClick={() => onArrowClick(true, 'left')}
+                      onArrowDownClick={() => onArrowClick(false, 'left')}
+                    />
+                  </ColorInput>
+                  <ColorInput>
+                    <NumberInput
+                      width={61}
+                      value={borderLeft}
+                      onChange={e => onChange(e, 'right')}
+                      onBlur={e => onBlur(e, 'right')}
+                      onArrowUpClick={() => onArrowClick(true, 'right')}
+                      onArrowDownClick={() => onArrowClick(false, 'right')}
+                    />
+                    <TriangleRight />
+                  </ColorInput>
+                </div>
+                <div className='end'>
+                  <ColorInput>
+                    <TriangleDown className='spacer' />
+                    <NumberInput
+                      width={61}
+                      value={borderLeft}
+                      onChange={e => onChange(e, 'down')}
+                      onBlur={e => onBlur(e, 'down')}
+                      onArrowUpClick={() => onArrowClick(true, 'down')}
+                      onArrowDownClick={() => onArrowClick(false, 'down')}
+                    />
+                  </ColorInput>
+                </div>
+              </ColorInputs>
+            </Property>
           </div>
         </Section>
       </Main>

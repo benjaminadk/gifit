@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Container } from './styles'
 
 export default function NumberInput({
@@ -9,7 +9,14 @@ export default function NumberInput({
   onArrowUpClick,
   onArrowDownClick
 }) {
+  const input = useRef(null)
+
   const [focused, setFocused] = useState(false)
+
+  function onFocus() {
+    setFocused(true)
+    input.current.select()
+  }
 
   function _onBlur(e) {
     setFocused(false)
@@ -19,9 +26,10 @@ export default function NumberInput({
   return (
     <Container width={width} focused={focused}>
       <input
+        ref={input}
         value={value}
         onChange={onChange}
-        onFocus={() => setFocused(true)}
+        onFocus={onFocus}
         onBlur={_onBlur}
       />
       <div className='divider1' />

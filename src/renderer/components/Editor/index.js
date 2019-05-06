@@ -361,7 +361,7 @@ export default function Editor() {
           </Thumbnail>
         ))}
       </Thumbnails>
-      <Drawer width={250} show={!!showDrawer}>
+      <Drawer width={300} show={!!showDrawer}>
         {showDrawer === 1 ? (
           <Border
             borderLeft={borderLeft}
