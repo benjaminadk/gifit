@@ -5,8 +5,12 @@ import { AngleDoubleLeft } from 'styled-icons/fa-solid/AngleDoubleLeft'
 import { AngleLeft } from 'styled-icons/fa-solid/AngleLeft'
 import { AngleDoubleRight } from 'styled-icons/fa-solid/AngleDoubleRight'
 import { AngleRight } from 'styled-icons/fa-solid/AngleRight'
-import { Play } from 'styled-icons/fa-solid/Play'
+import { PlayArrow } from 'styled-icons/material/PlayArrow'
+import { Pause } from 'styled-icons/material/Pause'
 import { Save } from 'styled-icons/fa-solid/Save'
+import { Home } from 'styled-icons/material/Home'
+import { Edit } from 'styled-icons/material/Edit'
+import { Image as ImageIcon } from 'styled-icons/material/Image'
 import { FolderOpen } from 'styled-icons/fa-solid/FolderOpen'
 import { BorderOuter } from 'styled-icons/material/BorderOuter'
 import { lighten } from 'polished'
@@ -36,17 +40,47 @@ export const Container = styled.div`
 
 export const Toolbar = styled.div`
   display: grid;
-  grid-template-rows: 20px 1fr;
+  grid-template-rows: 25px 1fr;
   border-bottom: ${p => p.theme.border};
 `
 
 export const Tabs = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 100px);
+  grid-template-columns: 80px 90px 105px 80px 85px;
+  justify-items: center;
+  align-items: center;
+  background: ${p => p.theme.grey[1]};
+  border-bottom: ${p => p.theme.border};
 `
 
 export const Tab = styled.div`
-  background: ${p => (p.selected ? p.theme.grey[1] : 'transparent')};
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  background: ${p => (p.selected ? '#FFFFFF' : 'transparent')};
+  border: ${p =>
+    p.selected ? p.theme.border : `1px solid ${p.theme.grey[1]}`};
+  border-bottom: 0;
+  svg {
+    justify-self: flex-end;
+    width: 15px;
+    height: 15px;
+  }
+  .text {
+    padding-left: 5px;
+    font-size: 1.2rem;
+  }
+  .divider {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: ${p => (p.selected ? '#FFFFFF' : 'transparent')};
+  }
 `
 
 export const FileTab = styled.div`
@@ -172,7 +206,13 @@ export const Thumbnail = styled.div.attrs(p => ({
 const readFileAsync = promisify(readFile)
 const writeFileAsync = promisify(writeFile)
 
-const tabs = ['File', 'Home', 'Playback', 'Edit', 'Image']
+const tabs = [
+  { icon: <Save />, text: 'File' },
+  { icon: <Home />, text: 'Home' },
+  { icon: <PlayArrow />, text: 'Playback' },
+  { icon: <Edit />, text: 'Edit' },
+  { icon: <ImageIcon />, text: 'Image' }
+]
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
@@ -451,7 +491,9 @@ export default function Editor() {
               selected={i === menuIndex}
               onClick={() => setMenuIndex(i)}
             >
-              {el}
+              {el.icon}
+              <div className='text'>{el.text}</div>
+              <div className='divider' />
             </Tab>
           ))}
         </Tabs>
@@ -475,7 +517,7 @@ export default function Editor() {
               <AngleLeft />
             </div>
             <div className='action' onClick={() => onPlaybackClick(2)}>
-              <Play />
+              {playing ? <Pause /> : <PlayArrow />}
             </div>
             <div className='action' onClick={() => onPlaybackClick(3)}>
               <AngleRight />
@@ -517,7 +559,14 @@ export default function Editor() {
           </Thumbnail>
         ))}
       </Thumbnails>
-      <Drawer width={300} show={!!showDrawer}>
+      <Drawer
+        width={300}
+        show={!!showDrawer}
+        icon={<BorderOuter />}
+        title='Border'
+        onAccept={onBorderAccept}
+        onCancel={onBorderCancel}
+      >
         {showDrawer === 1 ? (
           <Border
             borderLeft={borderLeft}
@@ -530,8 +579,6 @@ export default function Editor() {
             setBorderTop={setBorderTop}
             setBorderBottom={setBorderBottom}
             setBorderColor={setBorderColor}
-            onBorderAccept={onBorderAccept}
-            onBorderCancel={onBorderCancel}
           />
         ) : null}
       </Drawer>
