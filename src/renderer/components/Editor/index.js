@@ -385,6 +385,7 @@ export default function Editor() {
         thumbnail.current.children[0].src =
           images[imageIndex].path + `#${new Date().getTime()}`
         setShowDrawer(0)
+        setScale(zoomToFit)
       })
     }
 
