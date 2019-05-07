@@ -6,6 +6,7 @@ import { readFile, writeFile } from 'fs'
 import { promisify } from 'util'
 import { spawn } from 'child_process'
 import createRandomString from '../../lib/createRandomString'
+import createHashPath from '../../lib/createHashPath'
 import drawBorder from './drawBorder'
 import { AppContext } from '../App'
 import Drawer from './Drawer'
@@ -200,10 +201,12 @@ export default function Editor() {
     const reader = new FileReader()
 
     reader.onload = () => {
+      const filepath = `${RECORDINGS_DIRECTORY}/${
+        gifData.relative
+      }/${imageIndex}.png`
       const buffer = Buffer.from(reader.result)
-      writeFileAsync(images[imageIndex].path, buffer).then(() => {
-        thumbnail.current.children[0].src =
-          images[imageIndex].path + `#${new Date().getTime()}`
+      writeFileAsync(filepath, buffer).then(() => {
+        images[imageIndex].path = createHashPath(images[imageIndex].path)
         setShowDrawer(false)
         setScale(zoomToFit)
       })

@@ -2,8 +2,6 @@ export default (canvas, left, right, top, bottom, color) => {
   const ctx = canvas.getContext('2d')
   ctx.strokeStyle = color
 
-  console.log('hei')
-
   if (left) {
     ctx.beginPath()
     ctx.lineWidth = left
