@@ -142,7 +142,20 @@ export const Button = styled.div`
   }
 `
 
-export default function Border({ borderLeft, setBorderLeft, onClose }) {
+export default function Border({
+  borderLeft,
+  borderRight,
+  borderTop,
+  borderBottom,
+  borderColor,
+  setBorderLeft,
+  setBorderRight,
+  setBorderTop,
+  setBorderBottom,
+  setBorderColor,
+  onBorderAccept,
+  onBorderCancel
+}) {
   const picker = useRef(null)
 
   function onChange({ target: { value } }, dimension) {
@@ -160,6 +173,12 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
     switch (dimension) {
       case 'left':
         return setBorderLeft(newValue)
+      case 'right':
+        return setBorderRight(newValue)
+      case 'top':
+        return setBorderTop(newValue)
+      case 'bottom':
+        return setBorderBottom(newValue)
       default:
         throw Error()
     }
@@ -177,7 +196,23 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
   }
 
   function onArrowClick(inc, dimension) {
-    var currentValue = dimension === 'left' ? borderLeft : 0
+    var currentValue
+    switch (dimension) {
+      case 'left':
+        currentValue = borderLeft
+        break
+      case 'right':
+        currentValue = borderRight
+        break
+      case 'top':
+        currentValue = borderTop
+        break
+      case 'bottom':
+        currentValue = borderBottom
+        break
+      default:
+        throw Error()
+    }
     var newValue
     if (inc) {
       if (currentValue < 10) {
@@ -195,6 +230,12 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
     switch (dimension) {
       case 'left':
         return setBorderLeft(newValue)
+      case 'right':
+        return setBorderRight(newValue)
+      case 'top':
+        return setBorderTop(newValue)
+      case 'bottom':
+        return setBorderBottom(newValue)
       default:
         throw Error()
     }
@@ -208,7 +249,7 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
           <div className='text'>Border</div>
         </div>
         <div className='right'>
-          <Close onClick={onClose} />
+          <Close onClick={onBorderCancel} />
         </div>
       </Header>
       <Main>
@@ -222,10 +263,14 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
               <Label width={60}>Color:</Label>
               <ColorSwatch
                 width={160}
-                color='red'
+                color={borderColor}
                 onClick={() => picker.current.click()}
               >
-                <input ref={picker} type='color' />
+                <input
+                  ref={picker}
+                  type='color'
+                  onChange={e => setBorderColor(e.target.value)}
+                />
               </ColorSwatch>
             </Property>
             <Property>
@@ -236,11 +281,11 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
                     <TriangleUp className='spacer' />
                     <NumberInput
                       width={61}
-                      value={borderLeft}
-                      onChange={e => onChange(e, 'up')}
-                      onBlur={e => onBlur(e, 'up')}
-                      onArrowUpClick={() => onArrowClick(true, 'up')}
-                      onArrowDownClick={() => onArrowClick(false, 'up')}
+                      value={borderTop}
+                      onChange={e => onChange(e, 'top')}
+                      onBlur={e => onBlur(e, 'top')}
+                      onArrowUpClick={() => onArrowClick(true, 'top')}
+                      onArrowDownClick={() => onArrowClick(false, 'top')}
                     />
                   </ColorInput>
                 </div>
@@ -259,7 +304,7 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
                   <ColorInput>
                     <NumberInput
                       width={61}
-                      value={borderLeft}
+                      value={borderRight}
                       onChange={e => onChange(e, 'right')}
                       onBlur={e => onBlur(e, 'right')}
                       onArrowUpClick={() => onArrowClick(true, 'right')}
@@ -273,11 +318,11 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
                     <TriangleDown className='spacer' />
                     <NumberInput
                       width={61}
-                      value={borderLeft}
-                      onChange={e => onChange(e, 'down')}
-                      onBlur={e => onBlur(e, 'down')}
-                      onArrowUpClick={() => onArrowClick(true, 'down')}
-                      onArrowDownClick={() => onArrowClick(false, 'down')}
+                      value={borderBottom}
+                      onChange={e => onChange(e, 'bottom')}
+                      onBlur={e => onBlur(e, 'bottom')}
+                      onArrowUpClick={() => onArrowClick(true, 'bottom')}
+                      onArrowDownClick={() => onArrowClick(false, 'bottom')}
                     />
                   </ColorInput>
                 </div>
@@ -287,11 +332,11 @@ export default function Border({ borderLeft, setBorderLeft, onClose }) {
         </Section>
       </Main>
       <Footer>
-        <Button width={115}>
+        <Button width={115} onClick={onBorderAccept}>
           <Check />
           <div className='text'>Accept</div>
         </Button>
-        <Button width={115} onClick={onClose}>
+        <Button width={115} onClick={onBorderCancel}>
           <Close />
           <div className='text'>Cancel</div>
         </Button>
