@@ -128,6 +128,7 @@ export default function Gifit() {
 
       const project = {
         relative: folder,
+        date: new Date().getTime(),
         width: cropped ? width : w,
         height: cropped ? height : h,
         frameRate,

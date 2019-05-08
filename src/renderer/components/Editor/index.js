@@ -18,6 +18,7 @@ import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
 const {
+  appActions: { SET_APP_MODE },
   constants: { IMAGE_TYPE }
 } = config
 
@@ -26,7 +27,7 @@ const writeFileAsync = promisify(writeFile)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
-  const { gifFolder } = state
+  const { options, gifFolder } = state
 
   const [images, setImages] = useState([])
   const [gifData, setGifData] = useState(null)
@@ -140,6 +141,10 @@ export default function Editor() {
     return () => clearInterval(playingId)
   }, [playing])
 
+  function onNewRecordingClick() {
+    dispatch({ type: SET_APP_MODE, payload: 0 })
+  }
+
   function onSaveClick() {
     const win = remote.getCurrentWindow()
     const options = {
@@ -243,11 +248,17 @@ export default function Editor() {
     <Container ref={container}>
       <Toolbar
         playing={playing}
+        onNewRecordingClick={onNewRecordingClick}
         onSaveClick={onSaveClick}
         onPlaybackClick={onPlaybackClick}
         onOpenBorderDrawer={onOpenBorderDrawer}
       />
-      <Main ref={main} shift={showDrawer}>
+      <Main
+        ref={main}
+        shift={showDrawer}
+        color={options.get('checkerColor')}
+        size={options.get('checkerSize')}
+      >
         <Wrapper ref={wrapper}>
           <Canvas1 ref={canvas1} />
           <Canvas2 ref={canvas2} />

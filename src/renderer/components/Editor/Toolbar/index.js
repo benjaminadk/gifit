@@ -45,6 +45,7 @@ const playback = [
 
 export default function Toolbar({
   playing,
+  onNewRecordingClick,
   onSaveClick,
   onPlaybackClick,
   onOpenBorderDrawer
@@ -69,7 +70,7 @@ export default function Toolbar({
         <Menu>
           <Section width={75}>
             <New>
-              <Action>
+              <Action onClick={onNewRecordingClick}>
                 <MediaRecord />
                 <div className='text'>Recording</div>
               </Action>

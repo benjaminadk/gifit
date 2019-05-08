@@ -6,7 +6,9 @@ const mainWindow = {
 const defaultOptions = {
   alwaysOnTop: false,
   sourceIndex: 0,
-  frameRate: 10
+  frameRate: 10,
+  checkerColor: '#F0F0F0',
+  checkerSize: 20
 }
 
 const grey = [
