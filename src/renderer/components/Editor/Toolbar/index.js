@@ -13,6 +13,9 @@ import { FolderOpen } from 'styled-icons/fa-solid/FolderOpen'
 import { BorderOuter } from 'styled-icons/material/BorderOuter'
 import { MediaRecord } from 'styled-icons/typicons/MediaRecord'
 import { Delete } from 'styled-icons/material/Delete'
+import { Search } from 'styled-icons/material/Search'
+import { Expand } from 'styled-icons/boxicons-regular/Expand'
+import NumberInput from '../../Shared/NumberInput'
 import {
   Container,
   Tabs,
@@ -23,6 +26,8 @@ import {
   Action,
   New,
   File,
+  Zoom,
+  ZoomInput,
   Playback,
   ImageTab
 } from './styles'
@@ -44,13 +49,49 @@ const playback = [
 ]
 
 export default function Toolbar({
+  scale,
+  zoomToFit,
   playing,
+  setScale,
   onNewRecordingClick,
   onSaveClick,
   onPlaybackClick,
   onOpenBorderDrawer
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
+
+  function onZoomChange({ target: { value } }) {
+    const isDigit = /^\d*$/
+    var newValue
+    if (isDigit.test(value)) {
+      if (Number(value) > 500) {
+        newValue = 500
+      } else if (Number(value) < 10) {
+        newValue = 10
+      } else {
+        newValue = value
+      }
+    } else {
+      newValue = 100
+    }
+    setScale(newValue / 100)
+  }
+
+  function onZoomArrowClick(inc) {
+    var currentValue = scale * 100
+    var newValue
+    if (inc) {
+      if (currentValue < 500) {
+        newValue = currentValue + 1
+      }
+    } else {
+      if (currentValue > 10) {
+        newValue = currentValue - 1
+      }
+    }
+    setScale(newValue / 100)
+  }
+
   return (
     <Container>
       <Tabs>
@@ -93,6 +134,33 @@ export default function Toolbar({
               </Action>
             </File>
             <SectionText>File</SectionText>
+          </Section>
+        </Menu>
+      ) : menuIndex === 1 ? (
+        <Menu>
+          <Section width={300}>
+            <Zoom>
+              <Action onClick={() => setScale(1)}>
+                <Expand className='expand' />
+                <div className='text'>100%</div>
+              </Action>
+              <Action onClick={() => setScale(zoomToFit)}>
+                <ImageIcon className='fit' />
+                <div className='text'>Fit Image</div>
+              </Action>
+              <ZoomInput>
+                <Search />
+                <NumberInput
+                  width={80}
+                  value={Math.round(scale * 100)}
+                  onChange={onZoomChange}
+                  onArrowUpClick={() => onZoomArrowClick(true)}
+                  onArrowDownClick={() => onZoomArrowClick(false)}
+                />
+                <div className='text'>%</div>
+              </ZoomInput>
+            </Zoom>
+            <SectionText>Zoom</SectionText>
           </Section>
         </Menu>
       ) : menuIndex === 2 ? (

@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 export const Container = styled.div`
   width: ${p => p.width}px;
+  height: 25px;
   display: grid;
   grid-template-columns: 1fr 1px 25px;
   outline: ${p =>

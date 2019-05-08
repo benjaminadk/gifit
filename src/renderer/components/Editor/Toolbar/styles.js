@@ -72,6 +72,7 @@ export const Action = styled.div`
   display: grid;
   grid-template-rows: 1fr 1fr;
   justify-items: center;
+  grid-gap: 5px;
   svg {
     align-self: flex-end;
     width: 20px;
@@ -81,11 +82,38 @@ export const Action = styled.div`
     text-align: center;
     font-size: 1.2rem;
   }
+  .expand {
+    transform: rotate(45deg);
+  }
+  .fit {
+    outline: 1px dashed;
+  }
+`
+
+export const ZoomInput = styled.div`
+  justify-self: center;
+  align-self: center;
+  display: grid;
+  grid-template-columns: 25px 80px 15px;
+  justify-items: center;
+  align-items: center;
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+  .text {
+    font-size: 1.2rem;
+  }
 `
 
 export const File = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 75px);
+`
+
+export const Zoom = styled.div`
+  display: grid;
+  grid-template-columns: 75px 75px 150px;
 `
 
 export const Playback = styled.div`

@@ -247,7 +247,10 @@ export default function Editor() {
   return (
     <Container ref={container}>
       <Toolbar
+        scale={scale}
+        zoomToFit={zoomToFit}
         playing={playing}
+        setScale={setScale}
         onNewRecordingClick={onNewRecordingClick}
         onSaveClick={onSaveClick}
         onPlaybackClick={onPlaybackClick}
