@@ -9,7 +9,7 @@ import { Save } from 'styled-icons/fa-solid/Save'
 import { Home } from 'styled-icons/material/Home'
 import { Edit } from 'styled-icons/material/Edit'
 import { Image as ImageIcon } from 'styled-icons/material/Image'
-import { FolderOpen } from 'styled-icons/fa-solid/FolderOpen'
+import { FileArchive } from 'styled-icons/fa-solid/FileArchive'
 import { BorderOuter } from 'styled-icons/material/BorderOuter'
 import { MediaRecord } from 'styled-icons/typicons/MediaRecord'
 import { Delete } from 'styled-icons/material/Delete'
@@ -56,7 +56,8 @@ export default function Toolbar({
   onNewRecordingClick,
   onSaveClick,
   onPlaybackClick,
-  onOpenBorderDrawer
+  onOpenBorderDrawer,
+  onOpenRecentDrawer
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
 
@@ -124,8 +125,8 @@ export default function Toolbar({
                 <Save />
                 <div className='text'>Save As</div>
               </Action>
-              <Action>
-                <FolderOpen />
+              <Action onClick={onOpenRecentDrawer}>
+                <FileArchive />
                 <div className='text'>Recent Projects</div>
               </Action>
               <Action>

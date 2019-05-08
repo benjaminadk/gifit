@@ -1,12 +1,7 @@
 import React from 'react'
 import { Container, Thumbnail } from './styles'
 
-export default function Thumbnails({
-  thumbnail,
-  images,
-  imageIndex,
-  setImageIndex
-}) {
+export default function Thumbnails({ thumbnail, images, imageIndex, onClick }) {
   return (
     <Container columns={images.length}>
       {images.map((el, i) => (
@@ -14,7 +9,7 @@ export default function Thumbnails({
           key={i}
           ref={imageIndex === i ? thumbnail : null}
           selected={imageIndex === i}
-          onClick={() => setImageIndex(i)}
+          onClick={e => onClick(e, i)}
         >
           <img src={el.path} />
           <div className='bottom'>

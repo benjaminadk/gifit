@@ -27,8 +27,8 @@ export const Header = styled.header`
     grid-template-columns: 30px 1fr;
     align-items: center;
     svg {
-      width: 30px;
-      height: 30px;
+      width: 25px;
+      height: 25px;
     }
     .text {
       font-size: 1.2rem;
@@ -41,6 +41,31 @@ export const Header = styled.header`
     svg {
       width: 30px;
       height: 30px;
+    }
+  }
+`
+
+export const Main = styled.main`
+  padding-top: 5px;
+`
+
+export const Section = styled.div`
+  height: ${p => p.height}px;
+  display: grid;
+  grid-template-rows: 20px 1fr;
+  .title {
+    display: flex;
+    .text {
+      font-size: 1.2rem;
+      white-space: nowrap;
+      margin-left: 3px;
+      margin-right: 3px;
+    }
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: ${p => p.theme.grey[2]};
+      margin-top: 7px;
     }
   }
 `

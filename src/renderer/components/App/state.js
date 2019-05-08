@@ -39,7 +39,7 @@ const initialState = {
   options: Map(),
   sources: null,
   mode: 1,
-  gifFolder: '2019-05-07 11-03-56'
+  gifFolder: '2019-05-07 23-41-45'
 }
 
 export { reducer, initialState }

@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
-import { BorderOuter } from 'styled-icons/material/BorderOuter'
 import path from 'path'
-import { readFile, writeFile } from 'fs'
+import { readFile, writeFile, readdir } from 'fs'
 import { promisify } from 'util'
 import { spawn } from 'child_process'
 import createRandomString from '../../lib/createRandomString'
@@ -11,6 +10,7 @@ import drawBorder from './drawBorder'
 import { AppContext } from '../App'
 import Drawer from './Drawer'
 import Border from './Border'
+import RecentProjects from './RecentProjects'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
 import { Container, Main, Wrapper, Canvas1, Canvas2 } from './styles'
@@ -22,12 +22,15 @@ const {
   constants: { IMAGE_TYPE }
 } = config
 
+const readdirAsync = promisify(readdir)
 const readFileAsync = promisify(readFile)
 const writeFileAsync = promisify(writeFile)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
   const { options, gifFolder } = state
+
+  const [recentProjects, setRecentProjects] = useState([])
 
   const [images, setImages] = useState([])
   const [gifData, setGifData] = useState(null)
@@ -37,7 +40,7 @@ export default function Editor() {
   const [playing, setPlaying] = useState(false)
 
   const [showDrawer, setShowDrawer] = useState(false)
-  const [drawerMode, setDrawerMode] = useState(1)
+  const [drawerMode, setDrawerMode] = useState(0)
 
   const [borderLeft, setBorderLeft] = useState(0)
   const [borderRight, setBorderRight] = useState(0)
@@ -54,28 +57,37 @@ export default function Editor() {
 
   useEffect(() => {
     async function initialize() {
-      const data = await readFileAsync(
-        path.join(RECORDINGS_DIRECTORY, gifFolder, 'project.json')
-      )
-      const project = JSON.parse(data)
-      setImages(project.frames)
-      setGifData({
-        relative: project.relative,
-        width: project.width,
-        height: project.height,
-        frameRate: project.frameRate
-      })
+      const projects = []
+      const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
 
-      const mainHeight = container.current.clientHeight - 200
-      main.current.style.height = mainHeight + 'px'
-      const heightRatio = Math.round((mainHeight / project.height) * 100) / 100
-      const initialScale = heightRatio < 1 ? heightRatio : 1
-      setScale(initialScale)
-      setZoomToFit(initialScale)
+      for (const dir of dirs) {
+        const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
+        const data = await readFileAsync(projectPath)
+        const project = JSON.parse(data)
+        if (dir === gifFolder) {
+          const mainHeight = container.current.clientHeight - 200
+          main.current.style.height = mainHeight + 'px'
+          const heightRatio =
+            Math.round((mainHeight / project.height) * 100) / 100
+          const initialScale = heightRatio < 1 ? heightRatio : 1
+          setImages(project.frames)
+          setGifData({
+            relative: project.relative,
+            width: project.width,
+            height: project.height,
+            frameRate: project.frameRate
+          })
+          setScale(initialScale)
+          setZoomToFit(initialScale)
+        } else {
+          projects.push(project)
+        }
+      }
+      setRecentProjects(projects)
     }
 
     initialize()
-  }, [])
+  }, [gifFolder])
 
   useEffect(() => {
     if (images.length && scale) {
@@ -244,6 +256,15 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
+  function onOpenRecentDrawer() {
+    setShowDrawer(true)
+    setDrawerMode(2)
+  }
+
+  function onThumbnailClick(e, i) {
+    setImageIndex(i)
+  }
+
   return (
     <Container ref={container}>
       <Toolbar
@@ -255,6 +276,7 @@ export default function Editor() {
         onSaveClick={onSaveClick}
         onPlaybackClick={onPlaybackClick}
         onOpenBorderDrawer={onOpenBorderDrawer}
+        onOpenRecentDrawer={onOpenRecentDrawer}
       />
       <Main
         ref={main}
@@ -271,15 +293,14 @@ export default function Editor() {
         thumbnail={thumbnail}
         images={images}
         imageIndex={imageIndex}
-        setImageIndex={setImageIndex}
+        onClick={onThumbnailClick}
       />
       <Drawer
         width={300}
         show={showDrawer}
-        icon={<BorderOuter />}
-        title='Border'
-        onAccept={onBorderAccept}
-        onCancel={onBorderCancel}
+        drawerMode={drawerMode}
+        onBorderAccept={onBorderAccept}
+        onBorderCancel={onBorderCancel}
       >
         {drawerMode === 1 ? (
           <Border
@@ -294,6 +315,8 @@ export default function Editor() {
             setBorderBottom={setBorderBottom}
             setBorderColor={setBorderColor}
           />
+        ) : drawerMode === 2 ? (
+          <RecentProjects recentProjects={recentProjects} />
         ) : null}
       </Drawer>
     </Container>

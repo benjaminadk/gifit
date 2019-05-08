@@ -5,30 +5,7 @@ import { TriangleRight } from 'styled-icons/octicons/TriangleRight'
 import { TriangleUp } from 'styled-icons/octicons/TriangleUp'
 import { TriangleDown } from 'styled-icons/octicons/TriangleDown'
 import NumberInput from '../../Shared/NumberInput'
-
-export const Main = styled.main`
-  padding-top: 5px;
-`
-
-export const Section = styled.div`
-  height: ${p => p.height}px;
-  display: grid;
-  grid-template-rows: 20px 1fr;
-  .title {
-    display: flex;
-    .text {
-      font-size: 1.2rem;
-      margin-left: 3px;
-      margin-right: 3px;
-    }
-    .divider {
-      width: 100%;
-      height: 1px;
-      background: ${p => p.theme.grey[2]};
-      margin-top: 7px;
-    }
-  }
-`
+import { Main, Section } from '../Drawer/styles'
 
 export const Property = styled.div`
   display: flex;
