@@ -38,8 +38,8 @@ const initialState = {
   windowID: null,
   options: Map(),
   sources: null,
-  mode: 0,
-  gifFolder: null
+  mode: 1,
+  gifFolder: '2019-05-08 21-43-34'
 }
 
 export { reducer, initialState }

@@ -1,7 +1,19 @@
 import React from 'react'
+import { remote, shell } from 'electron'
 import { Container, Thumbnail } from './styles'
 
 export default function Thumbnails({ thumbnail, images, imageIndex, onClick }) {
+  function onContextMenu() {
+    const template = [
+      {
+        label: 'Explore Folder',
+        click: () => shell.showItemInFolder(images[imageIndex].path)
+      }
+    ]
+    const menu = remote.Menu.buildFromTemplate(template)
+    menu.popup()
+  }
+
   return (
     <Container columns={images.length}>
       {images.map((el, i) => (
@@ -10,6 +22,7 @@ export default function Thumbnails({ thumbnail, images, imageIndex, onClick }) {
           ref={imageIndex === i ? thumbnail : null}
           selected={imageIndex === i}
           onClick={e => onClick(e, i)}
+          onContextMenu={onContextMenu}
         >
           <img src={el.path} />
           <div className='bottom'>

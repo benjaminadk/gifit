@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useRef } from 'react'
 import { remote } from 'electron'
 import jimp from 'jimp'
 import { CropFree } from 'styled-icons/material/CropFree'
@@ -30,6 +30,7 @@ export default function Gifit() {
   const source = sources[sourceIndex]
 
   const [mode, setMode] = useState(0)
+
   const [done, setDone] = useState(false)
   const [drawing, setDrawing] = useState(false)
   const [startX, setStartX] = useState(null)
@@ -38,6 +39,8 @@ export default function Gifit() {
   const [left, setLeft] = useState(null)
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
+
+  const clicked = useRef(false)
 
   async function onRecordStart(cropped) {
     setMode(2)
@@ -71,16 +74,25 @@ export default function Gifit() {
 
     const frames = []
     const times = []
+    const xPos = []
+    const yPos = []
+    const isClicked = []
     var t1 = performance.now()
     const captureFrame = setInterval(() => {
       ctx.clearRect(0, 0, w, h)
       ctx.drawImage(video, 0, 0, w, h)
+      const frame = canvas.toDataURL(IMAGE_TYPE)
+      frames.push(frame)
+
       const t2 = performance.now()
       const diff = Math.round(t2 - t1)
       t1 = t2
       times.push(diff)
-      const frame = canvas.toDataURL(IMAGE_TYPE)
-      frames.push(frame)
+
+      const { x, y } = remote.screen.getCursorScreenPoint()
+      xPos.push(x)
+      yPos.push(y)
+      isClicked.push(clicked.current)
     }, Math.round(1000 / frameRate))
 
     const stopCapture = setTimeout(() => onStopGifit(), MAX_LENGTH)
@@ -106,7 +118,10 @@ export default function Gifit() {
         const filepath = path.join(folderPath, `${i}.png`)
         data.push({
           path: filepath,
-          time: times[i]
+          time: times[i],
+          cursorX: xPos[i],
+          cursorY: yPos[i],
+          clicked: isClicked[i]
         })
         if (cropped) {
           const imageData = frame.replace(IMAGE_REGEX, '')
@@ -156,6 +171,17 @@ export default function Gifit() {
       setStartY(e.pageY)
       setTop(e.pageX)
       setLeft(e.pageY)
+    } else if (mode === 2) {
+      clicked.current = true
+    }
+  }
+
+  function onMouseUp(e) {
+    if (mode === 1 && drawing) {
+      setDone(true)
+      setDrawing(false)
+    } else if (mode === 2) {
+      clicked.current = false
     }
   }
 
@@ -165,13 +191,6 @@ export default function Gifit() {
       setLeft(e.pageX - startX < 0 ? e.pageX : startX)
       setWidth(Math.abs(e.pageX - startX))
       setHeight(Math.abs(e.pageY - startY))
-    }
-  }
-
-  function onMouseUp(e) {
-    if (mode === 1 && drawing) {
-      setDone(true)
-      setDrawing(false)
     }
   }
 
