@@ -1,5 +1,4 @@
 import React, { useRef } from 'react'
-import styled from 'styled-components'
 import { TriangleLeft } from 'styled-icons/octicons/TriangleLeft'
 import { TriangleRight } from 'styled-icons/octicons/TriangleRight'
 import { TriangleUp } from 'styled-icons/octicons/TriangleUp'
@@ -8,60 +7,17 @@ import { BorderOuter } from 'styled-icons/material/BorderOuter'
 import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
 import NumberInput from '../../Shared/NumberInput'
-import { Header, Main, Section, Footer, Button } from '../Drawer/styles'
-
-export const Property = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-`
-
-export const Label = styled.div`
-  width: ${p => p.width}px;
-  font-size: 1.2rem;
-  margin-left: 10px;
-`
-
-export const ColorSwatch = styled.div`
-  width: ${p => p.width}px;
-  height: 25px;
-  background: ${p => p.color};
-  outline: ${p => p.theme.border};
-  cursor: pointer;
-  &:hover {
-    outline: 1px solid ${p => p.theme.primary};
-  }
-  input[type='color'] {
-    display: none;
-  }
-`
-
-export const ColorInputs = styled.div`
-  display: grid;
-  grid-template-rows: repeat(3, 35px);
-  .end {
-    display: grid;
-    align-items: center;
-    margin-left: 30px;
-  }
-  .middle {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 10px;
-  }
-`
-
-export const ColorInput = styled.div`
-  display: flex;
-  align-items: center;
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-  .spacer {
-    margin-right: 5px;
-  }
-`
+import {
+  Header,
+  Main,
+  Section,
+  Property,
+  Label,
+  ColorSwatch,
+  Footer,
+  Button
+} from '../Drawer/styles'
+import { BorderInputs, BorderInput } from './styles'
 
 export default function Border({
   borderLeft,
@@ -196,9 +152,9 @@ export default function Border({
             </Property>
             <Property>
               <Label width={60}>Thickness:</Label>
-              <ColorInputs>
+              <BorderInputs>
                 <div className='end'>
-                  <ColorInput>
+                  <BorderInput>
                     <TriangleUp className='spacer' />
                     <NumberInput
                       width={61}
@@ -208,10 +164,10 @@ export default function Border({
                       onArrowUpClick={() => onArrowClick(true, 'top')}
                       onArrowDownClick={() => onArrowClick(false, 'top')}
                     />
-                  </ColorInput>
+                  </BorderInput>
                 </div>
                 <div className='middle'>
-                  <ColorInput>
+                  <BorderInput>
                     <TriangleLeft />
                     <NumberInput
                       width={61}
@@ -221,8 +177,8 @@ export default function Border({
                       onArrowUpClick={() => onArrowClick(true, 'left')}
                       onArrowDownClick={() => onArrowClick(false, 'left')}
                     />
-                  </ColorInput>
-                  <ColorInput>
+                  </BorderInput>
+                  <BorderInput>
                     <NumberInput
                       width={61}
                       value={borderRight}
@@ -232,10 +188,10 @@ export default function Border({
                       onArrowDownClick={() => onArrowClick(false, 'right')}
                     />
                     <TriangleRight />
-                  </ColorInput>
+                  </BorderInput>
                 </div>
                 <div className='end'>
-                  <ColorInput>
+                  <BorderInput>
                     <TriangleDown className='spacer' />
                     <NumberInput
                       width={61}
@@ -245,9 +201,9 @@ export default function Border({
                       onArrowUpClick={() => onArrowClick(true, 'bottom')}
                       onArrowDownClick={() => onArrowClick(false, 'bottom')}
                     />
-                  </ColorInput>
+                  </BorderInput>
                 </div>
-              </ColorInputs>
+              </BorderInputs>
             </Property>
           </div>
         </Section>
