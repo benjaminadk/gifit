@@ -18,7 +18,7 @@ import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
 const {
-  appActions: { SET_APP_MODE },
+  appActions: { SET_APP_MODE, SET_GIF_FOLDER },
   constants: { IMAGE_TYPE }
 } = config
 
@@ -60,13 +60,14 @@ export default function Editor() {
       const projects = []
       const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
 
+      const mainHeight = container.current.clientHeight - 200
+      main.current.style.height = mainHeight + 'px'
+
       for (const dir of dirs) {
         const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
         const data = await readFileAsync(projectPath)
         const project = JSON.parse(data)
         if (dir === gifFolder) {
-          const mainHeight = container.current.clientHeight - 200
-          main.current.style.height = mainHeight + 'px'
           const heightRatio =
             Math.round((mainHeight / project.height) * 100) / 100
           const initialScale = heightRatio < 1 ? heightRatio : 1
@@ -261,6 +262,15 @@ export default function Editor() {
     setDrawerMode(2)
   }
 
+  function onRecentAccept(folder) {
+    dispatch({ type: SET_GIF_FOLDER, payload: folder })
+    setShowDrawer(false)
+  }
+
+  function onRecentCancel() {
+    setShowDrawer(false)
+  }
+
   function onThumbnailClick(e, i) {
     setImageIndex(i)
   }
@@ -295,13 +305,7 @@ export default function Editor() {
         imageIndex={imageIndex}
         onClick={onThumbnailClick}
       />
-      <Drawer
-        width={300}
-        show={showDrawer}
-        drawerMode={drawerMode}
-        onBorderAccept={onBorderAccept}
-        onBorderCancel={onBorderCancel}
-      >
+      <Drawer width={300} show={showDrawer}>
         {drawerMode === 1 ? (
           <Border
             borderLeft={borderLeft}
@@ -314,9 +318,15 @@ export default function Editor() {
             setBorderTop={setBorderTop}
             setBorderBottom={setBorderBottom}
             setBorderColor={setBorderColor}
+            onAccept={onBorderAccept}
+            onCancel={onBorderCancel}
           />
         ) : drawerMode === 2 ? (
-          <RecentProjects recentProjects={recentProjects} />
+          <RecentProjects
+            recentProjects={recentProjects}
+            onAccept={onRecentAccept}
+            onCancel={onRecentCancel}
+          />
         ) : null}
       </Drawer>
     </Container>

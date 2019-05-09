@@ -30,7 +30,7 @@ const grey = [
 
 const theme = {
   primary: 'hsla(162, 89%, 53%, 1)',
-  secondary: '',
+  secondary: 'hsla(192, 89%, 53%, 1)',
   black: '#333333',
   grey,
   border: '1px solid #E0E0E0'

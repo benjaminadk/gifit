@@ -1,75 +1,25 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import styled from 'styled-components'
-import { Main, Section } from '../Drawer/styles'
+import { FileArchive } from 'styled-icons/fa-solid/FileArchive'
+import { Check } from 'styled-icons/material/Check'
+import { Close } from 'styled-icons/material/Close'
+import { Header, Main, Section, Footer, Button } from '../Drawer/styles'
+import { Table, Row } from './styles'
 
-export const Table = styled.div`
-  height: 100%;
-  overflow-y: auto;
-  border: ${p => p.theme.border};
-  margin: 5px;
-  .header {
-    display: grid;
-    grid-template-columns: 2fr 1.5fr;
-    font-size: 1.2rem;
-    border-bottom: ${p => p.theme.border};
-    .left {
-      height: 20px;
-      display: grid;
-      grid-template-columns: 1fr 20px;
-      align-items: center;
-      background: lightskyblue;
-      border-right: ${p => p.theme.border};
-      padding-left: 2px;
-    }
-    .right {
-      height: 20px;
-      display: grid;
-      grid-template-columns: 1fr 20px;
-      align-items: center;
-      background: lightskyblue;
-      padding-left: 2px;
-    }
-  }
-  .row {
-    display: grid;
-    grid-template-columns: 2fr 1.5fr;
-    align-items: center;
-    font-size: 1.2rem;
-    border-bottom: ${p => p.theme.border};
-    &:nth-child(odd) {
-      background: pink;
-    }
-    .left {
-      height: 20px;
-      display: grid;
-      align-items: center;
-      border-right: ${p => p.theme.border};
-      padding-left: 2px;
-    }
-    .right {
-      height: 20px;
-      display: grid;
-      align-items: center;
-      padding-left: 2px;
-    }
-  }
-`
-
-export default function RecentProjects({ recentProjects }) {
+export default function RecentProjects({ recentProjects, onAccept, onCancel }) {
   const [projects, setProjects] = useState([])
   const [projectIndex, setProjectIndex] = useState(0)
-  const [sortMode, setSortMode] = useState(2)
+  const [sortMode, setSortMode] = useState(0)
   const [sectionHeight, setSectionHeight] = useState(0)
 
   const main = useRef(null)
 
   useEffect(() => {
-    setSectionHeight(main.current.clientHeight - 50)
+    setSectionHeight(main.current.clientHeight - 20)
   }, [])
 
   useEffect(() => {
-    const sortedProjects = recentProjects.sort((a, b) => {
+    recentProjects.sort((a, b) => {
       if (sortMode === 0) {
         return b.date - a.date
       } else if (sortMode === 1) {
@@ -80,43 +30,79 @@ export default function RecentProjects({ recentProjects }) {
         return a.frames.length - b.frames.length
       }
     })
-    setProjects(sortedProjects)
-  }, [sortMode])
+    setProjects(recentProjects.slice())
+  }, [recentProjects, sortMode])
+
+  function onHeaderClick(left) {
+    if (left) {
+      setSortMode(state => (state === 0 ? 1 : 0))
+    } else {
+      setSortMode(state => (state === 2 ? 3 : 2))
+    }
+  }
 
   return (
-    <Main ref={main}>
-      <Section height={sectionHeight}>
-        <div className='title'>
+    <>
+      <Header>
+        <div className='left'>
+          <FileArchive />
           <div className='text'>Recent Projects</div>
-          <div className='divider' />
         </div>
-        <div>
-          <Table>
-            <div className='header'>
-              <div className='left'>
-                <div>Creation date</div>
-                <div>
-                  {sortMode === 0 ? '\u2bc6' : sortMode === 1 ? '\u2bc5' : ''}
-                </div>
-              </div>
-              <div className='right'>
-                <div>Frame count</div>
-                <div>
-                  {sortMode === 2 ? '\u2bc6' : sortMode === 3 ? '\u2bc5' : ''}
-                </div>
-              </div>
-            </div>
-            {projects.map((el, i) => (
-              <div key={i} className='row'>
-                <div className='left'>
-                  {format(new Date(el.date), 'MM/dd/yyyy K:mm:ss a')}
-                </div>
-                <div className='right'>{el.frames.length}</div>
-              </div>
-            ))}
-          </Table>
+        <div className='right'>
+          <Close onClick={onCancel} />
         </div>
-      </Section>
-    </Main>
+      </Header>
+      <Main ref={main}>
+        <Section height={sectionHeight}>
+          <div className='title'>
+            <div className='text'>Recent Projects</div>
+            <div className='divider' />
+          </div>
+          <div>
+            <Table>
+              <div className='header'>
+                <div className='left' onClick={() => onHeaderClick(true)}>
+                  <div>Creation date</div>
+                  <div>
+                    {sortMode === 0 ? '\u2bc6' : sortMode === 1 ? '\u2bc5' : ''}
+                  </div>
+                </div>
+                <div className='right' onClick={() => onHeaderClick(false)}>
+                  <div>Frame count</div>
+                  <div>
+                    {sortMode === 2 ? '\u2bc6' : sortMode === 3 ? '\u2bc5' : ''}
+                  </div>
+                </div>
+              </div>
+              {projects.map((el, i) => (
+                <Row
+                  key={i}
+                  selected={projectIndex === i}
+                  onClick={() => setProjectIndex(i)}
+                >
+                  <div className='left'>
+                    {format(new Date(el.date), 'MM/dd/yyyy K:mm:ss a')}
+                  </div>
+                  <div className='right'>{el.frames.length}</div>
+                </Row>
+              ))}
+            </Table>
+          </div>
+        </Section>
+      </Main>
+      <Footer>
+        <Button
+          width={115}
+          onClick={() => onAccept(projects[projectIndex].relative)}
+        >
+          <Check />
+          <div className='text'>Open</div>
+        </Button>
+        <Button width={115} onClick={onCancel}>
+          <Close />
+          <div className='text'>Cancel</div>
+        </Button>
+      </Footer>
+    </>
   )
 }
