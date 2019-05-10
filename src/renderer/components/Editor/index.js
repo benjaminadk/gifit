@@ -9,6 +9,7 @@ import drawBorder from './drawBorder'
 import createGIF from './createGIF'
 import { AppContext } from '../App'
 import Drawer from './Drawer'
+import TitleFrame from './TitleFrame'
 import Border from './Border'
 import RecentProjects from './RecentProjects'
 import Toolbar from './Toolbar'
@@ -40,13 +41,17 @@ export default function Editor() {
   const [playing, setPlaying] = useState(false)
 
   const [showDrawer, setShowDrawer] = useState(false)
-  const [drawerMode, setDrawerMode] = useState(0)
+  const [drawerMode, setDrawerMode] = useState('')
+  const [drawerHeight, setDrawerHeight] = useState(null)
 
   const [borderLeft, setBorderLeft] = useState(0)
   const [borderRight, setBorderRight] = useState(0)
   const [borderTop, setBorderTop] = useState(0)
   const [borderBottom, setBorderBottom] = useState(0)
   const [borderColor, setBorderColor] = useState('#000000')
+
+  const [titleDelay, setTitleDelay] = useState(500)
+  const [titleBackground, setTitleBackground] = useState('#FFFFFF')
 
   const container = useRef(null)
   const main = useRef(null)
@@ -62,6 +67,7 @@ export default function Editor() {
 
       const mainHeight = container.current.clientHeight - 200
       main.current.style.height = mainHeight + 'px'
+      setDrawerHeight(mainHeight - 90)
 
       for (const dir of dirs) {
         const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
@@ -192,12 +198,6 @@ export default function Editor() {
     }
   }
 
-  function onOpenBorderDrawer() {
-    setShowDrawer(true)
-    setDrawerMode(1)
-    setScale(1)
-  }
-
   function onBorderAccept() {
     const reader = new FileReader()
 
@@ -240,11 +240,6 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
-  function onOpenRecentDrawer() {
-    setShowDrawer(true)
-    setDrawerMode(2)
-  }
-
   function onRecentAccept(folder) {
     dispatch({ type: SET_GIF_FOLDER, payload: folder })
     setShowDrawer(false)
@@ -265,11 +260,11 @@ export default function Editor() {
         zoomToFit={zoomToFit}
         playing={playing}
         setScale={setScale}
+        setShowDrawer={setShowDrawer}
+        setDrawerMode={setDrawerMode}
         onNewRecordingClick={onNewRecordingClick}
         onSaveClick={onSaveClick}
         onPlaybackClick={onPlaybackClick}
-        onOpenBorderDrawer={onOpenBorderDrawer}
-        onOpenRecentDrawer={onOpenRecentDrawer}
       />
       <Main
         ref={main}
@@ -289,8 +284,17 @@ export default function Editor() {
         onClick={onThumbnailClick}
       />
       <Drawer width={300} show={showDrawer}>
-        {drawerMode === 1 ? (
+        {drawerMode === 'title' ? (
+          <TitleFrame
+            drawerHeight={drawerHeight}
+            titleDelay={titleDelay}
+            titleBackground={titleBackground}
+            setTitleDelay={setTitleDelay}
+            setTitleBackground={setTitleBackground}
+          />
+        ) : drawerMode === 'border' ? (
           <Border
+            drawerHeight={drawerHeight}
             borderLeft={borderLeft}
             borderRight={borderRight}
             borderTop={borderTop}
@@ -304,8 +308,9 @@ export default function Editor() {
             onAccept={onBorderAccept}
             onCancel={onBorderCancel}
           />
-        ) : drawerMode === 2 ? (
+        ) : drawerMode === 'recent' ? (
           <RecentProjects
+            drawerHeight={drawerHeight}
             recentProjects={recentProjects}
             onAccept={onRecentAccept}
             onCancel={onRecentCancel}

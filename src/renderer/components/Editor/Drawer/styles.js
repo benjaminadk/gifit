@@ -46,6 +46,8 @@ export const Header = styled.header`
 `
 
 export const Main = styled.main`
+  height: ${p => p.height}px;
+  overflow: auto;
   padding-top: 5px;
 `
 
@@ -80,20 +82,6 @@ export const Label = styled.div`
   width: ${p => p.width}px;
   font-size: 1.2rem;
   margin-left: 10px;
-`
-
-export const ColorSwatch = styled.div`
-  width: ${p => p.width}px;
-  height: 25px;
-  background: ${p => p.color};
-  outline: ${p => p.theme.border};
-  cursor: pointer;
-  &:hover {
-    outline: 1px solid ${p => p.theme.primary};
-  }
-  input[type='color'] {
-    display: none;
-  }
 `
 
 export const Footer = styled.footer`

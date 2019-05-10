@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { TriangleLeft } from 'styled-icons/octicons/TriangleLeft'
 import { TriangleRight } from 'styled-icons/octicons/TriangleRight'
 import { TriangleUp } from 'styled-icons/octicons/TriangleUp'
@@ -7,19 +7,20 @@ import { BorderOuter } from 'styled-icons/material/BorderOuter'
 import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
 import NumberInput from '../../Shared/NumberInput'
+import ColorSwatch from '../../Shared/ColorSwatch'
 import {
   Header,
   Main,
   Section,
   Property,
   Label,
-  ColorSwatch,
   Footer,
   Button
 } from '../Drawer/styles'
 import { BorderInputs, BorderInput } from './styles'
 
 export default function Border({
+  drawerHeight,
   borderLeft,
   borderRight,
   borderTop,
@@ -33,8 +34,6 @@ export default function Border({
   onAccept,
   onCancel
 }) {
-  const picker = useRef(null)
-
   function onChange({ target: { value } }, dimension) {
     const isDigit = /^\d*$/
     var newValue
@@ -66,6 +65,12 @@ export default function Border({
       switch (dimension) {
         case 'left':
           return setBorderLeft(0)
+        case 'right':
+          return setBorderRight(0)
+        case 'top':
+          return setBorderTop(0)
+        case 'bottom':
+          return setBorderBottom(0)
         default:
           throw Error()
       }
@@ -129,7 +134,7 @@ export default function Border({
           <Close onClick={onCancel} />
         </div>
       </Header>
-      <Main>
+      <Main height={drawerHeight}>
         <Section height={200}>
           <div className='title'>
             <div className='text'>Appearance</div>
@@ -141,14 +146,8 @@ export default function Border({
               <ColorSwatch
                 width={160}
                 color={borderColor}
-                onClick={() => picker.current.click()}
-              >
-                <input
-                  ref={picker}
-                  type='color'
-                  onChange={e => setBorderColor(e.target.value)}
-                />
-              </ColorSwatch>
+                onChange={setBorderColor}
+              />
             </Property>
             <Property>
               <Label width={60}>Thickness:</Label>

@@ -6,17 +6,15 @@ import { Close } from 'styled-icons/material/Close'
 import { Header, Main, Section, Footer, Button } from '../Drawer/styles'
 import { Table, Row } from './styles'
 
-export default function RecentProjects({ recentProjects, onAccept, onCancel }) {
+export default function RecentProjects({
+  drawerHeight,
+  recentProjects,
+  onAccept,
+  onCancel
+}) {
   const [projects, setProjects] = useState([])
   const [projectIndex, setProjectIndex] = useState(0)
   const [sortMode, setSortMode] = useState(0)
-  const [sectionHeight, setSectionHeight] = useState(0)
-
-  const main = useRef(null)
-
-  useEffect(() => {
-    setSectionHeight(main.current.clientHeight - 20)
-  }, [])
 
   useEffect(() => {
     recentProjects.sort((a, b) => {
@@ -52,8 +50,8 @@ export default function RecentProjects({ recentProjects, onAccept, onCancel }) {
           <Close onClick={onCancel} />
         </div>
       </Header>
-      <Main ref={main}>
-        <Section height={sectionHeight}>
+      <Main height={drawerHeight}>
+        <Section height={drawerHeight - 20}>
           <div className='title'>
             <div className='text'>Recent Projects</div>
             <div className='divider' />

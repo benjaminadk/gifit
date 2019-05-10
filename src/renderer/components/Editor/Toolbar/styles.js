@@ -121,7 +121,12 @@ export const Playback = styled.div`
   grid-template-columns: repeat(5, 50px);
 `
 
-export const ImageTab = styled.div`
+export const Text = styled.div`
+  display: grid;
+  grid-template-columns: repeat(1, 50px);
+`
+
+export const Overlay = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 50px);
 `

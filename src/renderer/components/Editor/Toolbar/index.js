@@ -15,6 +15,7 @@ import { MediaRecord } from 'styled-icons/typicons/MediaRecord'
 import { Delete } from 'styled-icons/material/Delete'
 import { Search } from 'styled-icons/material/Search'
 import { Expand } from 'styled-icons/boxicons-regular/Expand'
+import { Title } from 'styled-icons/material/Title'
 import NumberInput from '../../Shared/NumberInput'
 import {
   Container,
@@ -29,7 +30,8 @@ import {
   Zoom,
   ZoomInput,
   Playback,
-  ImageTab
+  Text,
+  Overlay
 } from './styles'
 
 const tabs = [
@@ -53,13 +55,30 @@ export default function Toolbar({
   zoomToFit,
   playing,
   setScale,
+  setShowDrawer,
+  setDrawerMode,
   onNewRecordingClick,
   onSaveClick,
-  onPlaybackClick,
-  onOpenBorderDrawer,
-  onOpenRecentDrawer
+  onPlaybackClick
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
+
+  function onOpenTitleDrawer() {
+    setShowDrawer(true)
+    setDrawerMode('title')
+    setScale(1)
+  }
+
+  function onOpenBorderDrawer() {
+    setShowDrawer(true)
+    setDrawerMode('border')
+    setScale(1)
+  }
+
+  function onOpenRecentDrawer() {
+    setShowDrawer(true)
+    setDrawerMode('recent')
+  }
 
   function onZoomChange({ target: { value } }) {
     const isDigit = /^\d*$/
@@ -181,12 +200,26 @@ export default function Toolbar({
           </Section>
         </Menu>
       ) : menuIndex === 4 ? (
-        <ImageTab>
-          <Action onClick={onOpenBorderDrawer}>
-            <BorderOuter />
-            <div className='text'>Border</div>
-          </Action>
-        </ImageTab>
+        <Menu>
+          <Section width={200}>
+            <Text>
+              <Action onClick={onOpenTitleDrawer}>
+                <Title />
+                <div className='text'>Title Frame</div>
+              </Action>
+            </Text>
+            <SectionText>Text</SectionText>
+          </Section>
+          <Section width={200}>
+            <Overlay>
+              <Action onClick={onOpenBorderDrawer}>
+                <BorderOuter />
+                <div className='text'>Border</div>
+              </Action>
+            </Overlay>
+            <SectionText>Overlay</SectionText>
+          </Section>
+        </Menu>
       ) : (
         <div />
       )}
