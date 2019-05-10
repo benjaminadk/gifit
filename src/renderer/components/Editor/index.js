@@ -3,10 +3,10 @@ import { remote } from 'electron'
 import path from 'path'
 import { readFile, writeFile, readdir } from 'fs'
 import { promisify } from 'util'
-import { spawn } from 'child_process'
 import createRandomString from '../../lib/createRandomString'
 import createHashPath from '../../lib/createHashPath'
 import drawBorder from './drawBorder'
+import createGIF from './createGIF'
 import { AppContext } from '../App'
 import Drawer from './Drawer'
 import Border from './Border'
@@ -171,25 +171,8 @@ export default function Editor() {
     }
     const callback = filepath => {
       if (filepath) {
-        const srcPath = `${RECORDINGS_DIRECTORY}/${gifData.relative}/%d.png`
-        const dstScale = Math.min(gifData.width, 720) + ':-1'
-        const ffmpeg = spawn('ffmpeg', [
-          '-framerate',
-          gifData.frameRate,
-          '-i',
-          srcPath,
-          '-filter_complex',
-          `scale=${dstScale}:flags=lanczos,split [o1] [o2];[o1] palettegen=stats_mode=single [p]; [o2] fifo [o3];[o3] [p] paletteuse=new=1`,
-          filepath
-        ])
-
-        ffmpeg.on('close', code => {
-          console.log('ffmpeg exit code: ', code)
-        })
-
-        ffmpeg.on('error', error => {
-          console.error(error)
-        })
+        const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+        createGIF(images, cwd, filepath)
       }
     }
     remote.dialog.showSaveDialog(win, options, callback)
