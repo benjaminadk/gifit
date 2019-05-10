@@ -66,7 +66,7 @@ export default function Toolbar({
   function onOpenTitleDrawer() {
     setShowDrawer(true)
     setDrawerMode('title')
-    setScale(1)
+    setScale(zoomToFit)
   }
 
   function onOpenBorderDrawer() {

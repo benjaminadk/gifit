@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Title } from 'styled-icons/material/Title'
 import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import NumberInput from '../../Shared/NumberInput'
+import Textarea from '../../Shared/Textarea'
 import {
   Header,
   Main,
@@ -13,17 +14,29 @@ import {
   Footer,
   Button
 } from '../Drawer/styles'
-import styled from 'styled-components'
+import config from 'common/config'
+
+const {
+  editor: { drawerWidth }
+} = config
 
 export default function TitleFrame({
   drawerHeight,
+  titleText,
   titleDelay,
   titleBackground,
+  setTitleText,
   setTitleDelay,
   setTitleBackground,
   onAccept,
   onCancel
 }) {
+  const textarea = useRef(null)
+
+  function onTitleTextChange({ target: { value } }) {
+    setTitleText(value)
+  }
+
   function onTitleDelayChange({ target: { value } }) {
     const isDigit = /^\d*$/
     var newValue
@@ -83,7 +96,14 @@ export default function TitleFrame({
             <div className='text'>Text</div>
             <div className='divider' />
           </div>
-          <div>textarea</div>
+          <div>
+            <Textarea
+              textarea={textarea}
+              width={drawerWidth - 50}
+              value={titleText}
+              onChange={onTitleTextChange}
+            />
+          </div>
         </Section>
         <Section height={200}>
           <div className='title'>

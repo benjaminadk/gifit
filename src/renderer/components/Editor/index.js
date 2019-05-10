@@ -5,6 +5,7 @@ import { readFile, writeFile, readdir } from 'fs'
 import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
 import createHashPath from '../../lib/createHashPath'
+import createTFName from '../../lib/createTFName'
 import drawBorder from './drawBorder'
 import createGIF from './createGIF'
 import { AppContext } from '../App'
@@ -50,8 +51,11 @@ export default function Editor() {
   const [borderBottom, setBorderBottom] = useState(0)
   const [borderColor, setBorderColor] = useState('#000000')
 
+  const [titleText, setTitleText] = useState('Title Frame')
+  const [titleColor, setTitleColor] = useState('#000000')
+  const [titleSize, setTitleSize] = useState(40)
   const [titleDelay, setTitleDelay] = useState(500)
-  const [titleBackground, setTitleBackground] = useState('#FFFFFF')
+  const [titleBackground, setTitleBackground] = useState('#FFFF00')
 
   const container = useRef(null)
   const main = useRef(null)
@@ -73,6 +77,7 @@ export default function Editor() {
         const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
         const data = await readFileAsync(projectPath)
         const project = JSON.parse(data)
+
         if (dir === gifFolder) {
           const heightRatio =
             Math.round((mainHeight / project.height) * 100) / 100
@@ -90,6 +95,7 @@ export default function Editor() {
           projects.push(project)
         }
       }
+
       setRecentProjects(projects)
     }
 
@@ -104,19 +110,40 @@ export default function Editor() {
       canvas1.current.height = gifData.height * scale
       canvas2.current.width = gifData.width * scale
       canvas2.current.height = gifData.height * scale
-
       const ctx1 = canvas1.current.getContext('2d')
-      ctx1.scale(scale, scale)
-      const image = new Image()
-      image.onload = () => {
-        ctx1.drawImage(image, 0, 0)
+
+      if (drawerMode === 'title') {
+        ctx1.fillStyle = titleBackground
+        ctx1.fillRect(0, 0, canvas1.current.width, canvas1.current.height)
+
+        ctx1.fillStyle = titleColor
+        ctx1.font = `${titleSize}px sans-serif`
+        const x =
+          canvas1.current.width / 2 - ctx1.measureText(titleText).width / 2
+        const y = canvas1.current.height / 2 - titleSize / 2
+        ctx1.fillText(titleText, x, y)
+      } else {
+        ctx1.scale(scale, scale)
+        const image = new Image()
+        image.onload = () => {
+          ctx1.drawImage(image, 0, 0)
+        }
+        image.src = images[imageIndex].path
       }
-      image.src = images[imageIndex].path
     }
-  }, [images, imageIndex, scale])
+  }, [
+    images,
+    imageIndex,
+    scale,
+    drawerMode,
+    titleText,
+    titleSize,
+    titleColor,
+    titleBackground
+  ])
 
   useEffect(() => {
-    if (drawerMode === 1) {
+    if (drawerMode === 'border') {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
       drawBorder(
@@ -198,13 +225,51 @@ export default function Editor() {
     }
   }
 
+  function onTitleAccept() {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      const filepath = path.join(
+        RECORDINGS_DIRECTORY,
+        gifData.relative,
+        createTFName()
+      )
+      const buffer = Buffer.from(reader.result)
+      writeFileAsync(filepath, buffer).then(() => {
+        setShowDrawer(false)
+        setDrawerMode('')
+      })
+    }
+
+    const canvas = document.createElement('canvas')
+    canvas.width = gifData.width
+    canvas.height = gifData.height
+    const ctx = canvas.getContext('2d')
+    ctx.fillStyle = titleBackground
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = titleColor
+    ctx.font = `${titleSize}px sans-serif`
+    const x = canvas.width / 2 - ctx.measureText(titleText).width / 2
+    const y = canvas.height / 2 - titleSize / 2
+    ctx.fillText(titleText, x, y)
+    canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+  }
+
+  function onTitleCancel() {
+    setShowDrawer(false)
+    setDrawerMode('')
+    setTitleText('Title Frame')
+  }
+
   function onBorderAccept() {
     const reader = new FileReader()
 
     reader.onload = () => {
-      const filepath = `${RECORDINGS_DIRECTORY}/${
-        gifData.relative
-      }/${imageIndex}.png`
+      const filepath = path.join(
+        RECORDINGS_DIRECTORY,
+        gifData.relative,
+        `${imageIndex}.png`
+      )
       const buffer = Buffer.from(reader.result)
       writeFileAsync(filepath, buffer).then(() => {
         images[imageIndex].path = createHashPath(images[imageIndex].path)
@@ -213,22 +278,22 @@ export default function Editor() {
       })
     }
 
-    const canvas3 = document.createElement('canvas')
-    canvas3.width = gifData.width
-    canvas3.height = gifData.height
-    const ctx3 = canvas3.getContext('2d')
+    const canvas = document.createElement('canvas')
+    canvas.width = gifData.width
+    canvas.height = gifData.height
+    const ctx = canvas.getContext('2d')
     const image = new Image()
     image.onload = () => {
-      ctx3.drawImage(image, 0, 0)
+      ctx.drawImage(image, 0, 0)
       drawBorder(
-        canvas3,
+        canvas,
         borderLeft,
         borderRight,
         borderTop,
         borderBottom,
         borderColor
       )
-      canvas3.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+      canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
     }
     image.src = images[imageIndex].path
   }
@@ -283,14 +348,18 @@ export default function Editor() {
         imageIndex={imageIndex}
         onClick={onThumbnailClick}
       />
-      <Drawer width={300} show={showDrawer}>
+      <Drawer show={showDrawer}>
         {drawerMode === 'title' ? (
           <TitleFrame
             drawerHeight={drawerHeight}
+            titleText={titleText}
             titleDelay={titleDelay}
             titleBackground={titleBackground}
+            setTitleText={setTitleText}
             setTitleDelay={setTitleDelay}
             setTitleBackground={setTitleBackground}
+            onAccept={onTitleAccept}
+            onCancel={onTitleCancel}
           />
         ) : drawerMode === 'border' ? (
           <Border

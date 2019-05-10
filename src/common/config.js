@@ -3,6 +3,10 @@ const mainWindow = {
   height: 400
 }
 
+const editor = {
+  drawerWidth: 300
+}
+
 const defaultOptions = {
   alwaysOnTop: false,
   sourceIndex: 0,
@@ -59,6 +63,7 @@ const constants = {
 export default {
   inDev: process.env.NODE_ENV === 'development',
   mainWindow,
+  editor,
   defaultOptions,
   theme,
   appActions,
