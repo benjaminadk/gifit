@@ -13,7 +13,6 @@ import Border from './Border'
 import RecentProjects from './RecentProjects'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
-import ContextMenu from '../Shared/ContextMenu'
 import { Container, Main, Wrapper, Canvas1, Canvas2 } from './styles'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
@@ -173,14 +172,14 @@ export default function Editor() {
     const callback = filepath => {
       if (filepath) {
         const srcPath = `${RECORDINGS_DIRECTORY}/${gifData.relative}/%d.png`
-        const scale = Math.min(gifData.width, 720) + ':-1'
+        const dstScale = Math.min(gifData.width, 720) + ':-1'
         const ffmpeg = spawn('ffmpeg', [
           '-framerate',
           gifData.frameRate,
           '-i',
           srcPath,
           '-filter_complex',
-          `scale=${scale}:flags=lanczos,split [o1] [o2];[o1] palettegen=stats_mode=single [p]; [o2] fifo [o3];[o3] [p] paletteuse=new=1`,
+          `scale=${dstScale}:flags=lanczos,split [o1] [o2];[o1] palettegen=stats_mode=single [p]; [o2] fifo [o3];[o3] [p] paletteuse=new=1`,
           filepath
         ])
 

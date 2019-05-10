@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react'
+import React, { useState, useContext, useRef, useEffect } from 'react'
 import { remote } from 'electron'
 import jimp from 'jimp'
 import { CropFree } from 'styled-icons/material/CropFree'
@@ -44,6 +44,7 @@ export default function Gifit() {
 
   async function onRecordStart(cropped) {
     setMode(2)
+    remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
 
     const { width: w, height: h } = source.display.bounds
 
@@ -171,8 +172,6 @@ export default function Gifit() {
       setStartY(e.pageY)
       setTop(e.pageX)
       setLeft(e.pageY)
-    } else if (mode === 2) {
-      clicked.current = true
     }
   }
 
@@ -180,8 +179,6 @@ export default function Gifit() {
     if (mode === 1 && drawing) {
       setDone(true)
       setDrawing(false)
-    } else if (mode === 2) {
-      clicked.current = false
     }
   }
 

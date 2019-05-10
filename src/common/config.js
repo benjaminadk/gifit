@@ -53,7 +53,7 @@ const constants = {
   VIDEO_CSS: 'position: absolute; top: -10000px; left: -10000px;',
   IMAGE_TYPE: 'image/png',
   IMAGE_REGEX: /^data:image\/(png|gif|jpeg);base64,/,
-  MAX_LENGTH: 10 * 1000
+  MAX_LENGTH: 20 * 1000
 }
 
 export default {

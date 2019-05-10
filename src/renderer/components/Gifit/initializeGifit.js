@@ -49,6 +49,7 @@ export default (state, dispatch) => {
     y,
     transparent: true,
     frame: false,
+    alwaysOnTop: true,
     webPreferences: { nodeIntegration: true }
   })
 
