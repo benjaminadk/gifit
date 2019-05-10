@@ -12,7 +12,7 @@ export const Container = styled.div.attrs(p => ({
 }))`
   position: absolute;
   top: 100px;
-  bottom: 100px;
+  bottom: 120px;
   width: ${drawerWidth}px;
   border-left: ${p => p.theme.border};
   transition: right 0.5s;

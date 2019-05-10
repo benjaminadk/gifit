@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 
 export const Container = styled.div`
+  height: 100px;
   display: grid;
   grid-template-rows: 25px 1fr;
   border-bottom: ${p => p.theme.border};
@@ -23,8 +24,7 @@ export const Tab = styled.div`
   grid-template-columns: 30px 1fr;
   align-items: center;
   background: ${p => (p.selected ? '#FFFFFF' : 'transparent')};
-  border: ${p =>
-    p.selected ? p.theme.border : `1px solid ${p.theme.grey[1]}`};
+  border: ${p => (p.selected ? p.theme.border : `1px solid ${p.theme.grey[1]}`)};
   border-bottom: 0;
   svg {
     justify-self: flex-end;

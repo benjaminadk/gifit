@@ -9,8 +9,6 @@ export const Container = styled.div`
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  display: grid;
-  grid-template-rows: 100px 1fr 100px;
 `
 
 export const Main = styled.div.attrs(p => ({
@@ -18,8 +16,8 @@ export const Main = styled.div.attrs(p => ({
     width: p.shift ? 'calc(100vw - 300px)' : '100vw',
     backgroundImage: createCheckerboard(p.color),
     backgroundSize: `${p.size}px ${p.size}px`,
-    backgroundPosition: `0 0, 0 ${p.size / 2}px, ${p.size / 2}px -${p.size /
-      2}px, -${p.size / 2}px 0px`
+    backgroundPosition: `0 0, 0 ${p.size / 2}px, ${p.size / 2}px -${p.size / 2}px, -${p.size /
+      2}px 0px`
   }
 }))`
   position: absolute;

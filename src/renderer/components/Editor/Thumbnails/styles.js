@@ -3,7 +3,7 @@ import { lighten } from 'polished'
 
 export const Container = styled.div`
   position: absolute;
-  bottom: 0;
+  bottom: 20px;
   left: 0;
   width: 100vw;
   height: 100px;
@@ -28,6 +28,7 @@ export const Thumbnail = styled.div.attrs(p => ({
     justify-self: center;
     width: 100px;
     height: calc(100px * 9 / 16);
+    box-shadow: 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.1);
   }
   .bottom {
     display: grid;

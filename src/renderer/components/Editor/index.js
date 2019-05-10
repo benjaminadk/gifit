@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
+import { Map, List } from 'immutable'
 import path from 'path'
 import { readFile, writeFile, readdir } from 'fs'
 import { promisify } from 'util'
@@ -15,6 +16,7 @@ import Border from './Border'
 import RecentProjects from './RecentProjects'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
+import BottomBar from './BottomBar'
 import { Container, Main, Wrapper, Canvas1, Canvas2 } from './styles'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
@@ -64,46 +66,55 @@ export default function Editor() {
   const canvas2 = useRef(null)
   const thumbnail = useRef(null)
 
-  useEffect(() => {
-    async function initialize() {
-      const projects = []
-      const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
-
-      const mainHeight = container.current.clientHeight - 200
-      main.current.style.height = mainHeight + 'px'
-      setDrawerHeight(mainHeight - 90)
-
-      for (const dir of dirs) {
-        const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
-        const data = await readFileAsync(projectPath)
-        const project = JSON.parse(data)
-
-        if (dir === gifFolder) {
-          const heightRatio =
-            Math.round((mainHeight / project.height) * 100) / 100
-          const initialScale = heightRatio < 1 ? heightRatio : 1
-          setImages(project.frames)
-          setGifData({
-            relative: project.relative,
-            width: project.width,
-            height: project.height,
-            frameRate: project.frameRate
-          })
-          setScale(initialScale)
-          setZoomToFit(initialScale)
-        } else {
-          projects.push(project)
-        }
+  // initialize editor
+  async function initialize() {
+    const projects = []
+    // read all project directories
+    const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
+    // calculate main editor section height
+    // total height - toolbar height - thumbnails height - bottom bar height
+    const mainHeight = container.current.clientHeight - 100 - 100 - 20
+    main.current.style.height = mainHeight + 'px'
+    // calculate main drawer height - drawer header height - drawer footer height
+    setDrawerHeight(mainHeight - 40 - 50)
+    // loop over all projects
+    for (const dir of dirs) {
+      // each project is represented by a project.json file
+      const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
+      const data = await readFileAsync(projectPath)
+      const project = JSON.parse(data)
+      // isolate current project by matching gifFolder app state
+      if (dir === gifFolder) {
+        const heightRatio = Math.floor((mainHeight / project.height) * 100) / 100
+        const initialScale = heightRatio < 1 ? heightRatio : 1
+        setScale(initialScale)
+        setZoomToFit(initialScale)
+        setImages(project.frames)
+        setGifData({
+          relative: project.relative,
+          date: project.date,
+          width: project.width,
+          height: project.height,
+          frameRate: project.frameRate
+        })
+        // store all other projects to reference in recent projects
+      } else {
+        projects.push(project)
       }
-
-      setRecentProjects(projects)
     }
+    setRecentProjects(projects)
+  }
 
+  useEffect(() => {
+    remote.getCurrentWindow().maximize()
+  }, [])
+
+  useEffect(() => {
     initialize()
   }, [gifFolder])
 
   useEffect(() => {
-    if (images.length && scale) {
+    if (images.length && scale && gifData) {
       wrapper.current.style.width = gifData.width * scale + 'px'
       wrapper.current.style.height = gifData.height * scale + 'px'
       canvas1.current.width = gifData.width * scale
@@ -115,11 +126,9 @@ export default function Editor() {
       if (drawerMode === 'title') {
         ctx1.fillStyle = titleBackground
         ctx1.fillRect(0, 0, canvas1.current.width, canvas1.current.height)
-
         ctx1.fillStyle = titleColor
-        ctx1.font = `${titleSize}px sans-serif`
-        const x =
-          canvas1.current.width / 2 - ctx1.measureText(titleText).width / 2
+        ctx1.font = `${titleSize * scale}px sans-serif`
+        const x = canvas1.current.width / 2 - ctx1.measureText(titleText).width / 2
         const y = canvas1.current.height / 2 - titleSize / 2
         ctx1.fillText(titleText, x, y)
       } else {
@@ -133,6 +142,7 @@ export default function Editor() {
     }
   }, [
     images,
+    gifData,
     imageIndex,
     scale,
     drawerMode,
@@ -146,26 +156,12 @@ export default function Editor() {
     if (drawerMode === 'border') {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
-      drawBorder(
-        canvas2.current,
-        borderLeft,
-        borderRight,
-        borderTop,
-        borderBottom,
-        borderColor
-      )
+      drawBorder(canvas2.current, borderLeft, borderRight, borderTop, borderBottom, borderColor)
     } else {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
     }
-  }, [
-    drawerMode,
-    borderLeft,
-    borderRight,
-    borderTop,
-    borderBottom,
-    borderColor
-  ])
+  }, [drawerMode, borderLeft, borderRight, borderTop, borderBottom, borderColor])
 
   useEffect(() => {
     if (thumbnail.current) {
@@ -195,17 +191,15 @@ export default function Editor() {
     const win = remote.getCurrentWindow()
     const options = {
       title: 'Save',
-      defaultPath: path.join(
-        remote.app.getPath('downloads'),
-        `${createRandomString()}.gif`
-      ),
+      defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
       buttonLabel: 'Save',
       filters: [{ name: 'GIF File', extensions: ['gif'] }]
     }
-    const callback = filepath => {
+    const callback = async filepath => {
       if (filepath) {
         const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-        createGIF(images, cwd, filepath)
+        const success = await createGIF(images, cwd, filepath)
+        console.log(success)
       }
     }
     remote.dialog.showSaveDialog(win, options, callback)
@@ -227,13 +221,8 @@ export default function Editor() {
 
   function onTitleAccept() {
     const reader = new FileReader()
-
+    const filepath = path.join(RECORDINGS_DIRECTORY, gifData.relative, createTFName())
     reader.onload = () => {
-      const filepath = path.join(
-        RECORDINGS_DIRECTORY,
-        gifData.relative,
-        createTFName()
-      )
       const buffer = Buffer.from(reader.result)
       writeFileAsync(filepath, buffer).then(() => {
         setShowDrawer(false)
@@ -253,6 +242,20 @@ export default function Editor() {
     const y = canvas.height / 2 - titleSize / 2
     ctx.fillText(titleText, x, y)
     canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+
+    const newImages = images.slice()
+    newImages.splice(imageIndex, 0, {
+      path: filepath,
+      time: titleDelay
+    })
+    const newProject = {
+      ...gifData,
+      frames: newImages
+    }
+    const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+    writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+      initialize()
+    })
   }
 
   function onTitleCancel() {
@@ -265,11 +268,7 @@ export default function Editor() {
     const reader = new FileReader()
 
     reader.onload = () => {
-      const filepath = path.join(
-        RECORDINGS_DIRECTORY,
-        gifData.relative,
-        `${imageIndex}.png`
-      )
+      const filepath = images[imageIndex].path
       const buffer = Buffer.from(reader.result)
       writeFileAsync(filepath, buffer).then(() => {
         images[imageIndex].path = createHashPath(images[imageIndex].path)
@@ -285,14 +284,7 @@ export default function Editor() {
     const image = new Image()
     image.onload = () => {
       ctx.drawImage(image, 0, 0)
-      drawBorder(
-        canvas,
-        borderLeft,
-        borderRight,
-        borderTop,
-        borderBottom,
-        borderColor
-      )
+      drawBorder(canvas, borderLeft, borderRight, borderTop, borderBottom, borderColor)
       canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
     }
     image.src = images[imageIndex].path
@@ -348,6 +340,7 @@ export default function Editor() {
         imageIndex={imageIndex}
         onClick={onThumbnailClick}
       />
+      <BottomBar />
       <Drawer show={showDrawer}>
         {drawerMode === 'title' ? (
           <TitleFrame
