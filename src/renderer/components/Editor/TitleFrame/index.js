@@ -1,19 +1,13 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
+import SystemFonts from 'system-font-families'
 import { Title } from 'styled-icons/material/Title'
 import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import NumberInput from '../../Shared/NumberInput'
 import Textarea from '../../Shared/Textarea'
-import {
-  Header,
-  Main,
-  Section,
-  Property,
-  Label,
-  Footer,
-  Button
-} from '../Drawer/styles'
+import Select from '../../Shared/Select'
+import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
 import config from 'common/config'
 
 const {
@@ -31,7 +25,14 @@ export default function TitleFrame({
   onAccept,
   onCancel
 }) {
+  const [fontFamilies, setFontFamilies] = useState([])
+
   const textarea = useRef(null)
+
+  useEffect(() => {
+    const systemFonts = new SystemFonts()
+    systemFonts.getFonts().then(res => setFontFamilies(res))
+  }, [])
 
   function onTitleTextChange({ target: { value } }) {
     setTitleText(value)
@@ -91,7 +92,7 @@ export default function TitleFrame({
         </div>
       </Header>
       <Main height={drawerHeight}>
-        <Section height={50}>
+        <Section height={40 + (textarea.current ? textarea.current.clientHeight : 10)}>
           <div className='title'>
             <div className='text'>Text</div>
             <div className='divider' />
@@ -110,7 +111,17 @@ export default function TitleFrame({
             <div className='text'>Font</div>
             <div className='divider' />
           </div>
-          <div>select font</div>
+          <div>
+            <Property>
+              <Label width={60}>Family:</Label>
+              <Select
+                valueWidth={150}
+                optionsWidth={150}
+                value={'benjamin'}
+                options={fontFamilies}
+              />
+            </Property>
+          </div>
         </Section>
         <Section height={50}>
           <div className='title'>
@@ -146,11 +157,7 @@ export default function TitleFrame({
           <div>
             <Property>
               <Label width={60}>Color:</Label>
-              <ColorSwatch
-                width={100}
-                color={titleBackground}
-                onChange={setTitleBackground}
-              />
+              <ColorSwatch width={100} color={titleBackground} onChange={setTitleBackground} />
             </Property>
           </div>
         </Section>

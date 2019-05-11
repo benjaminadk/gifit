@@ -34,13 +34,16 @@ export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
   const { options, gifFolder } = state
 
-  const [recentProjects, setRecentProjects] = useState([])
+  const [loading, setLoading] = useState(false)
 
   const [images, setImages] = useState([])
+  const [imageIndex, setImageIndex] = useState(0)
   const [gifData, setGifData] = useState(null)
+
   const [scale, setScale] = useState(null)
   const [zoomToFit, setZoomToFit] = useState(null)
-  const [imageIndex, setImageIndex] = useState(0)
+
+  const [recentProjects, setRecentProjects] = useState([])
   const [playing, setPlaying] = useState(false)
 
   const [showDrawer, setShowDrawer] = useState(false)
@@ -197,9 +200,10 @@ export default function Editor() {
     }
     const callback = async filepath => {
       if (filepath) {
+        setLoading(true)
         const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
         const success = await createGIF(images, cwd, filepath)
-        console.log(success)
+        setLoading(false)
       }
     }
     remote.dialog.showSaveDialog(win, options, callback)
@@ -340,7 +344,7 @@ export default function Editor() {
         imageIndex={imageIndex}
         onClick={onThumbnailClick}
       />
-      <BottomBar />
+      <BottomBar loading={loading} />
       <Drawer show={showDrawer}>
         {drawerMode === 'title' ? (
           <TitleFrame
