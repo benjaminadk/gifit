@@ -15,6 +15,7 @@ export const Value = styled.div`
   .text {
     align-self: center;
     font-size: 1.2rem;
+    font-family: ${p => p.fontFamily || 'Segoe UI'};
     padding-left: 5px;
   }
   .arrow {
@@ -26,9 +27,10 @@ export const Value = styled.div`
 export const Options = styled.div`
   position: absolute;
   top: 25px;
-  left: 0;
+  left: ${p => p.left}px;
+  z-index: ${p => (p.show ? 2 : 1)};
   width: ${p => p.width}px;
-  max-height: ${p => (p.show ? '200px' : '0px')};
+  max-height: ${p => (p.show ? '250px' : '0px')};
   overflow: auto;
   display: flex;
   flex-direction: column;
@@ -49,7 +51,7 @@ export const Option = styled.div`
   }
 `
 
-export default function Select({ valueWidth, optionsWidth, value, options }) {
+export default function Select({ type, width, value, options, onClick }) {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
@@ -62,13 +64,17 @@ export default function Select({ valueWidth, optionsWidth, value, options }) {
 
   return (
     <Container>
-      <Value width={valueWidth} onClick={() => setShow(true)}>
+      <Value
+        width={width}
+        fontFamily={type === 'family' ? value : null}
+        onClick={() => setShow(true)}
+      >
         <div className='text'>{value}</div>
         <div className='arrow'>{'\u2bc6'}</div>
       </Value>
-      <Options width={optionsWidth} show={show}>
+      <Options width={width} show={show}>
         {options.map((el, i) => (
-          <Option key={i} fontFamily={el}>
+          <Option key={i} fontFamily={type === 'family' ? el : null} onClick={() => onClick(el, i)}>
             {el}
           </Option>
         ))}

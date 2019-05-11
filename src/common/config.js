@@ -4,7 +4,8 @@ const mainWindow = {
 }
 
 const editor = {
-  drawerWidth: 300
+  drawerWidth: 300,
+  titleStyles: ['Normal', 'Italic', 'Bold']
 }
 
 const defaultOptions = {

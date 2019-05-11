@@ -11,16 +11,24 @@ import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawe
 import config from 'common/config'
 
 const {
-  editor: { drawerWidth }
+  editor: { drawerWidth, titleStyles }
 } = config
 
 export default function TitleFrame({
   drawerHeight,
   titleText,
   titleDelay,
+  titleSize,
+  titleFont,
+  titleStyle,
+  titleColor,
   titleBackground,
   setTitleText,
   setTitleDelay,
+  setTitleSize,
+  setTitleFont,
+  setTitleStyle,
+  setTitleColor,
   setTitleBackground,
   onAccept,
   onCancel
@@ -38,14 +46,45 @@ export default function TitleFrame({
     setTitleText(value)
   }
 
+  function onTitleFontSelect(font) {
+    setTitleFont(font)
+  }
+
+  function onTitleStyleSelect(style) {
+    setTitleStyle(style)
+  }
+
+  function onTitleSizeChange({ target: { value } }) {
+    const isDigit = /^\d*$/
+    var newValue
+    if (isDigit.test(value)) {
+      if (Number(value) > 200) {
+        newValue = 200
+      } else {
+        newValue = value
+      }
+    } else {
+      newValue = 40
+    }
+    setTitleSize(newValue)
+  }
+
+  function onTitleSizeBlur({ target: { value } }) {
+    var newValue
+    if (Number(value) < 10) {
+      newValue = 10
+    } else {
+      newValue = value
+    }
+    setTitleSize(newValue)
+  }
+
   function onTitleDelayChange({ target: { value } }) {
     const isDigit = /^\d*$/
     var newValue
     if (isDigit.test(value)) {
       if (Number(value) > 10000) {
         newValue = 10000
-      } else if (Number(value) < 10) {
-        newValue = 10
       } else {
         newValue = value
       }
@@ -56,9 +95,13 @@ export default function TitleFrame({
   }
 
   function onTitleDelayBlur({ target: { value } }) {
-    if ((value = '')) {
-      setTitleDelay(500)
+    var newValue
+    if (Number(value) < 100) {
+      newValue = 100
+    } else {
+      newValue = value
     }
+    setTitleDelay(newValue)
   }
 
   function onTitleDelayArrowClick(inc) {
@@ -71,10 +114,10 @@ export default function TitleFrame({
         newValue = 10000
       }
     } else {
-      if (currentValue > 10) {
+      if (currentValue > 100) {
         newValue = currentValue - 1
       } else {
-        newValue = 10
+        newValue = 100
       }
     }
     setTitleDelay(newValue)
@@ -92,7 +135,7 @@ export default function TitleFrame({
         </div>
       </Header>
       <Main height={drawerHeight}>
-        <Section height={40 + (textarea.current ? textarea.current.clientHeight : 10)}>
+        <Section height={40 + (textarea.current ? textarea.current.clientHeight : 23)}>
           <div className='title'>
             <div className='text'>Text</div>
             <div className='divider' />
@@ -115,11 +158,35 @@ export default function TitleFrame({
             <Property>
               <Label width={60}>Family:</Label>
               <Select
-                valueWidth={150}
-                optionsWidth={150}
-                value={'benjamin'}
+                width={200}
+                type='family'
+                value={titleFont}
                 options={fontFamilies}
+                onClick={onTitleFontSelect}
               />
+            </Property>
+            <Property>
+              <Label width={60}>Style:</Label>
+              <Select
+                width={100}
+                type='style'
+                value={titleStyle}
+                options={titleStyles}
+                onClick={onTitleStyleSelect}
+              />
+            </Property>
+            <Property>
+              <Label width={60}>Size:</Label>
+              <NumberInput
+                width={60}
+                value={titleSize}
+                onChange={onTitleSizeChange}
+                onBlur={onTitleSizeBlur}
+              />
+            </Property>
+            <Property>
+              <Label width={60}>Color:</Label>
+              <ColorSwatch width={100} color={titleColor} onChange={setTitleColor} />
             </Property>
           </div>
         </Section>

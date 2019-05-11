@@ -59,6 +59,8 @@ export default function Editor() {
   const [titleText, setTitleText] = useState('Title Frame')
   const [titleColor, setTitleColor] = useState('#000000')
   const [titleSize, setTitleSize] = useState(40)
+  const [titleFont, setTitleFont] = useState('Segoe UI')
+  const [titleStyle, setTitleStyle] = useState('Normal')
   const [titleDelay, setTitleDelay] = useState(500)
   const [titleBackground, setTitleBackground] = useState('#FFFF00')
 
@@ -108,16 +110,21 @@ export default function Editor() {
     setRecentProjects(projects)
   }
 
+  // ensure window is maximized
   useEffect(() => {
     remote.getCurrentWindow().maximize()
   }, [])
 
+  // call initialize onload and when gifFolder changes
   useEffect(() => {
     initialize()
   }, [gifFolder])
 
+  // manage main canvas
   useEffect(() => {
+    // only run if state variables are set
     if (images.length && scale && gifData) {
+      // set w:h to project size and adjust for scale
       wrapper.current.style.width = gifData.width * scale + 'px'
       wrapper.current.style.height = gifData.height * scale + 'px'
       canvas1.current.width = gifData.width * scale
@@ -126,14 +133,16 @@ export default function Editor() {
       canvas2.current.height = gifData.height * scale
       const ctx1 = canvas1.current.getContext('2d')
 
+      // title frame replace image when in title drawerMode
       if (drawerMode === 'title') {
         ctx1.fillStyle = titleBackground
         ctx1.fillRect(0, 0, canvas1.current.width, canvas1.current.height)
         ctx1.fillStyle = titleColor
-        ctx1.font = `${titleSize * scale}px sans-serif`
+        ctx1.font = `${titleStyle} ${titleSize * scale}px ${titleFont}`
         const x = canvas1.current.width / 2 - ctx1.measureText(titleText).width / 2
         const y = canvas1.current.height / 2 - titleSize / 2
         ctx1.fillText(titleText, x, y)
+        // create image, set scale on context and draw image
       } else {
         ctx1.scale(scale, scale)
         const image = new Image()
@@ -151,6 +160,8 @@ export default function Editor() {
     drawerMode,
     titleText,
     titleSize,
+    titleFont,
+    titleStyle,
     titleColor,
     titleBackground
   ])
@@ -351,9 +362,17 @@ export default function Editor() {
             drawerHeight={drawerHeight}
             titleText={titleText}
             titleDelay={titleDelay}
+            titleSize={titleSize}
+            titleFont={titleFont}
+            titleStyle={titleStyle}
+            titleColor={titleColor}
             titleBackground={titleBackground}
             setTitleText={setTitleText}
             setTitleDelay={setTitleDelay}
+            setTitleSize={setTitleSize}
+            setTitleFont={setTitleFont}
+            setTitleStyle={setTitleStyle}
+            setTitleColor={setTitleColor}
             setTitleBackground={setTitleBackground}
             onAccept={onTitleAccept}
             onCancel={onTitleCancel}
