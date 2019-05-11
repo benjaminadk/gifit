@@ -32,7 +32,7 @@ const writeFileAsync = promisify(writeFile)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, gifFolder } = state
+  const { options, gifFolder, ffmpegPath } = state
 
   const [loading, setLoading] = useState(false)
 
@@ -213,7 +213,7 @@ export default function Editor() {
       if (filepath) {
         setLoading(true)
         const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-        const success = await createGIF(images, cwd, filepath)
+        const success = await createGIF(ffmpegPath, images, cwd, filepath)
         setLoading(false)
       }
     }

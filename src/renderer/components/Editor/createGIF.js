@@ -5,7 +5,7 @@ import { promisify } from 'util'
 
 const writeFileAsync = promisify(writeFile)
 
-export default async (frames, cwd, dstPath) => {
+export default async (ffmpegPath, frames, cwd, dstPath) => {
   return new Promise(resolve => {
     let str = ''
     frames.forEach(el => {
@@ -17,7 +17,7 @@ export default async (frames, cwd, dstPath) => {
     const txtPath = path.join(cwd, 'file.txt')
     writeFileAsync(txtPath, str).then(() => {
       const ffmpeg = spawn(
-        'ffmpeg',
+        ffmpegPath,
         [
           '-f',
           'concat',

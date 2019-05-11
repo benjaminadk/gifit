@@ -2,11 +2,8 @@ import { remote, desktopCapturer, screen } from 'electron'
 import { Map } from 'immutable'
 import { existsSync, readFile, writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
-import {
-  APP_DIRECTORY,
-  RECORDINGS_DIRECTORY,
-  OPTIONS_PATH
-} from 'common/filepaths'
+import { spawn } from 'child_process'
+import { APP_DIRECTORY, RECORDINGS_DIRECTORY, OPTIONS_PATH } from 'common/filepaths'
 import config from 'common/config'
 
 const { defaultOptions } = config
@@ -57,5 +54,25 @@ export default async () => {
     }
   })
 
-  return Promise.all([p1, p2, p3, p4, p5])
+  const p6 = new Promise(async resolve => {
+    let ffmpegPath
+    const where = spawn('where', ['ffmpeg'])
+
+    where.stdout.on('data', chunk => {
+      const res = chunk.toString('utf8')
+      if (res) {
+        ffmpegPath = res
+      }
+    })
+
+    where.on('close', code => {
+      resolve(ffmpegPath)
+    })
+
+    where.on('error', error => {
+      resolve(null)
+    })
+  })
+
+  return Promise.all([p1, p2, p3, p4, p5, p6])
 }

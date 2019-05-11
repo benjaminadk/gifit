@@ -2,13 +2,7 @@ import { Map } from 'immutable'
 import config from 'common/config'
 
 const {
-  appActions: {
-    INITIALIZE,
-    LOADING_START,
-    LOADING_END,
-    SET_APP_MODE,
-    SET_GIF_FOLDER
-  }
+  appActions: { INITIALIZE, LOADING_START, LOADING_END, SET_APP_MODE, SET_GIF_FOLDER }
 } = config
 
 function reducer(state, action) {
@@ -18,7 +12,8 @@ function reducer(state, action) {
         ...state,
         windowID: action.payload[0],
         sources: action.payload[1],
-        options: action.payload[4]
+        options: action.payload[4],
+        ffmpegPath: action.payload[5]
       }
     case LOADING_START:
       return { ...state, loading: true }
@@ -38,8 +33,9 @@ const initialState = {
   windowID: null,
   options: Map(),
   sources: null,
-  mode: 1,
-  gifFolder: '2019-05-08 21-43-34'
+  mode: 0,
+  gifFolder: null,
+  ffmpegPath: null
 }
 
 export { reducer, initialState }
