@@ -35,9 +35,10 @@ export default function Editor() {
   const { options, gifFolder, ffmpegPath } = state
 
   const [loading, setLoading] = useState(false)
+  const [selected, setSelected] = useState([])
 
   const [images, setImages] = useState([])
-  const [imageIndex, setImageIndex] = useState(0)
+  const [imageIndex, setImageIndex] = useState(null)
   const [gifData, setGifData] = useState(null)
 
   const [scale, setScale] = useState(null)
@@ -92,9 +93,14 @@ export default function Editor() {
       if (dir === gifFolder) {
         const heightRatio = Math.floor((mainHeight / project.height) * 100) / 100
         const initialScale = heightRatio < 1 ? heightRatio : 1
+
+        const initialSelected = List([true, ...Array(project.frames.length - 1).fill(false)])
+
+        setSelected(initialSelected)
         setScale(initialScale)
         setZoomToFit(initialScale)
         setImages(project.frames)
+        setImageIndex(0)
         setGifData({
           relative: project.relative,
           date: project.date,
@@ -322,6 +328,23 @@ export default function Editor() {
   }
 
   function onThumbnailClick(e, i) {
+    if (e.ctrlKey && e.shiftKey) {
+      let newValue
+      const max = Math.max(i, imageIndex)
+      const min = Math.min(i, imageIndex)
+      newValue = selected.map((el, index) => {
+        if ((index >= min && index <= max) || el) {
+          return true
+        } else {
+          return false
+        }
+      })
+      setSelected(newValue)
+    } else if (e.ctrlKey) {
+      setSelected(selected.set(i, true))
+    } else {
+      setSelected(selected.map((el, index) => i === index))
+    }
     setImageIndex(i)
   }
 
@@ -351,6 +374,7 @@ export default function Editor() {
       </Main>
       <Thumbnails
         thumbnail={thumbnail}
+        selected={selected}
         images={images}
         imageIndex={imageIndex}
         onClick={onThumbnailClick}

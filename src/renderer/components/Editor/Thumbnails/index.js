@@ -2,7 +2,7 @@ import React from 'react'
 import { remote, shell } from 'electron'
 import { Container, Thumbnail } from './styles'
 
-export default function Thumbnails({ thumbnail, images, imageIndex, onClick }) {
+export default function Thumbnails({ thumbnail, selected, images, imageIndex, onClick }) {
   function onContextMenu() {
     const template = [
       {
@@ -20,7 +20,7 @@ export default function Thumbnails({ thumbnail, images, imageIndex, onClick }) {
         <Thumbnail
           key={i}
           ref={imageIndex === i ? thumbnail : null}
-          selected={imageIndex === i}
+          selected={selected.get(i)}
           onClick={e => onClick(e, i)}
           onContextMenu={onContextMenu}
         >

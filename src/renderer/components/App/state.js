@@ -33,8 +33,8 @@ const initialState = {
   windowID: null,
   options: Map(),
   sources: null,
-  mode: 0,
-  gifFolder: null,
+  mode: 1,
+  gifFolder: '2019-05-10@11-25-56',
   ffmpegPath: null
 }
 
