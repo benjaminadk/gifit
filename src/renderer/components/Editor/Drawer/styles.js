@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { lighten } from 'polished'
 import config from 'common/config'
 
 const {
@@ -14,6 +15,7 @@ export const Container = styled.div.attrs(p => ({
   top: 100px;
   bottom: 120px;
   width: ${drawerWidth}px;
+  background: ${p => p.theme.grey[0]};
   border-left: ${p => p.theme.border};
   transition: right 0.5s;
 `
@@ -103,7 +105,12 @@ export const Button = styled.div`
   grid-template-columns: 30px 1fr;
   justify-items: center;
   align-items: center;
+  background: #fff;
   border: ${p => p.theme.border};
+  &:hover {
+    border: 1px solid ${p => p.theme.primary};
+    background: ${p => lighten(0.4, p.theme.primary)};
+  }
   svg {
     width: 25px;
     height: 25px;

@@ -149,7 +149,7 @@ export default function TitleFrame({
             />
           </div>
         </Section>
-        <Section height={200}>
+        <Section height={170}>
           <div className='title'>
             <div className='text'>Font</div>
             <div className='divider' />

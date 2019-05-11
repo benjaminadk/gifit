@@ -5,8 +5,7 @@ export const Container = styled.div`
   height: 25px;
   display: grid;
   grid-template-columns: 1fr 1px 25px;
-  outline: ${p =>
-    p.focused ? `1px solid ${p.theme.primary}` : p.theme.border};
+  outline: ${p => (p.focused ? `1px solid ${p.theme.primary}` : p.theme.border)};
   &:hover {
     outline: 1px solid ${p => p.theme.primary};
   }
@@ -18,7 +17,7 @@ export const Container = styled.div`
     text-align: center;
     font-size: 1.2rem;
     padding: 0;
-    background: ${p => (p.focused ? p.theme.grey[0] : 'transparent')};
+    background: ${p => (p.focused ? p.theme.grey[0] : '#FFF')};
   }
   .divider1 {
     width: 1px;
@@ -36,7 +35,7 @@ export const Container = styled.div`
       display: grid;
       justify-items: center;
       align-items: center;
-      background: ${p => (p.focused ? p.theme.grey[0] : 'transparent')};
+      background: ${p => (p.focused ? p.theme.grey[0] : '#FFF')};
       &:hover {
         background: ${p => p.theme.grey[0]};
       }
