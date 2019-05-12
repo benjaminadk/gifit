@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
 import { Map, List } from 'immutable'
 import path from 'path'
-import { readFile, writeFile, readdir, unlink } from 'fs'
+import { readFile, writeFile, readdir, rmdir, unlink } from 'fs'
 import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
 import createHashPath from '../../lib/createHashPath'
@@ -29,6 +29,7 @@ const {
 const readFileAsync = promisify(readFile)
 const writeFileAsync = promisify(writeFile)
 const readdirAsync = promisify(readdir)
+const rmdirAsync = promisify(rmdir)
 const unlinkAsync = promisify(unlink)
 
 export default function Editor() {
@@ -36,7 +37,7 @@ export default function Editor() {
   const { options, gifFolder, ffmpegPath } = state
 
   const [loading, setLoading] = useState(false)
-  const [selected, setSelected] = useState([])
+  const [selected, setSelected] = useState(List())
 
   const [images, setImages] = useState([])
   const [imageIndex, setImageIndex] = useState(null)
@@ -160,12 +161,15 @@ export default function Editor() {
         ctx1.fillText(titleText, x, y)
         // create image, set scale on context and draw image
       } else {
-        ctx1.scale(scale, scale)
-        const image = new Image()
-        image.onload = () => {
-          ctx1.drawImage(image, 0, 0)
+        // only if imageIndex is not null
+        if (imageIndex !== null) {
+          ctx1.scale(scale, scale)
+          const image = new Image()
+          image.onload = () => {
+            ctx1.drawImage(image, 0, 0)
+          }
+          image.src = images[imageIndex].path
         }
-        image.src = images[imageIndex].path
       }
     }
   }, [
@@ -206,7 +210,6 @@ export default function Editor() {
   // play gif frame by frame when playing is set to true
   useEffect(() => {
     var playingId
-
     if (playing) {
       // use function version of useState setter
       playingId = setInterval(() => {
@@ -216,9 +219,21 @@ export default function Editor() {
     } else {
       clearInterval(playingId)
     }
-
     return () => clearInterval(playingId)
   }, [playing])
+
+  // listen for keypress events
+  useEffect(() => {
+    function onKeyDown({ keyCode }) {
+      if (keyCode === 46) {
+        onFrameDeleteClick()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [selected])
 
   function onNewRecordingClick() {
     dispatch({ type: SET_APP_MODE, payload: 0 })
@@ -226,21 +241,59 @@ export default function Editor() {
 
   function onSaveClick() {
     const win = remote.getCurrentWindow()
-    const options = {
-      title: 'Save',
-      defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
-      buttonLabel: 'Save',
-      filters: [{ name: 'GIF File', extensions: ['gif'] }]
+
+    if (ffmpegPath) {
+      const options = {
+        title: 'Save',
+        defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
+        buttonLabel: 'Save',
+        filters: [{ name: 'GIF File', extensions: ['gif'] }]
+      }
+      const callback = async filepath => {
+        if (filepath) {
+          setLoading(true)
+          const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+          const success = await createGIF(images, cwd, filepath)
+          setLoading(false)
+        }
+      }
+      remote.dialog.showSaveDialog(win, options, callback)
+    } else {
+      // go to options where ffmpeg can be added
     }
-    const callback = async filepath => {
-      if (filepath) {
-        setLoading(true)
-        const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-        const success = await createGIF(ffmpegPath, images, cwd, filepath)
-        setLoading(false)
+  }
+
+  function onDiscardProjectClick() {
+    const win = remote.getCurrentWindow()
+    const options = {
+      type: 'question',
+      buttons: ['Discard', 'Cancel'],
+      defaultId: 0,
+      title: `Discard Project`,
+      message: `Are you sure you want to discard?`,
+      detail: `Action will delete current project.`
+    }
+    const callback = async result => {
+      if (result === 0) {
+        const ctx1 = canvas1.current.getContext('2d')
+        ctx1.clearRect(0, 0, gifData.width, gifData.height)
+
+        const projectDir = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+        const files = await readdirAsync(projectDir)
+
+        for (const file of files) {
+          await unlinkAsync(path.join(projectDir, file))
+        }
+
+        rmdirAsync(projectDir).then(() => {
+          initialize(null)
+          setSelected(List())
+          setImages([])
+          setGifData(null)
+        })
       }
     }
-    remote.dialog.showSaveDialog(win, options, callback)
+    remote.dialog.showMessageBox(win, options, callback)
   }
 
   function onPlaybackClick(index) {
@@ -269,7 +322,7 @@ export default function Editor() {
       defaultId: 0,
       title: `Delete Frames`,
       message: `Are you sure you want to delete?`,
-      detail: `Action will delete ${count} selected frame${count === 1 ? '' : 's'}`
+      detail: `Action will delete ${count} selected frame${count === 1 ? '' : 's'}.`
     }
     const callback = result => {
       if (result === 0) {
@@ -376,18 +429,26 @@ export default function Editor() {
           (el, i) => (i >= Math.min(index, imageIndex) && i <= Math.max(index, imageIndex)) || el
         )
       )
+      setImageIndex(index)
     } else if (e.shiftKey) {
       setSelected(
         selected.map(
           (el, i) => i >= Math.min(index, imageIndex) && i <= Math.max(index, imageIndex)
         )
       )
+      setImageIndex(index)
     } else if (e.ctrlKey) {
-      setSelected(selected.set(index, true))
+      if (index === imageIndex) {
+        setSelected(selected.set(index, false))
+        setImageIndex(null)
+      } else {
+        setSelected(selected.set(index, true))
+        setImageIndex(index)
+      }
     } else {
       setSelected(selected.map((el, i) => index === i))
+      setImageIndex(index)
     }
-    setImageIndex(index)
   }
 
   return (
@@ -401,6 +462,7 @@ export default function Editor() {
         setDrawerMode={setDrawerMode}
         onNewRecordingClick={onNewRecordingClick}
         onSaveClick={onSaveClick}
+        onDiscardProjectClick={onDiscardProjectClick}
         onPlaybackClick={onPlaybackClick}
         onFrameDeleteClick={onFrameDeleteClick}
       />

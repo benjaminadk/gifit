@@ -34,7 +34,7 @@ const initialState = {
   options: Map(),
   sources: null,
   mode: 1,
-  gifFolder: '2019-05-10@11-25-56',
+  gifFolder: null,
   ffmpegPath: null
 }
 

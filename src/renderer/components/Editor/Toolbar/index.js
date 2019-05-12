@@ -60,6 +60,7 @@ export default function Toolbar({
   setDrawerMode,
   onNewRecordingClick,
   onSaveClick,
+  onDiscardProjectClick,
   onPlaybackClick,
   onFrameDeleteClick
 }) {
@@ -146,7 +147,7 @@ export default function Toolbar({
                 <FileArchive />
                 <div className='text'>Recent Projects</div>
               </Action>
-              <Action>
+              <Action onClick={onDiscardProjectClick}>
                 <Delete />
                 <div className='text'>Discard Project</div>
               </Action>
