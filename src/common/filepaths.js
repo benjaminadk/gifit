@@ -1,9 +1,10 @@
 import { remote } from 'electron'
 import path from 'path'
 
-const DATA_DIRECTORY = remote.app.getPath('userData')
-
-export const APP_DIRECTORY = path.join(DATA_DIRECTORY, 'Gifit')
-export const RECORDINGS_DIRECTORY = path.join(APP_DIRECTORY, 'Recordings')
-export const OPTIONS_PATH = path.join(APP_DIRECTORY, 'options.json')
+export const TEMP_DIRECTORY = path.join(remote.app.getPath('temp'), 'Gifit')
+// store recording projects
+export const RECORDINGS_DIRECTORY = path.join(TEMP_DIRECTORY, 'Recordings')
+// store options file
+export const OPTIONS_PATH = path.join(remote.app.getPath('userData'), 'options.json')
+// static assets
 export const RECORDING_ICON = path.join(__static, 'recording.ico')

@@ -14,6 +14,12 @@ const editor = {
 }
 
 const defaultOptions = {
+  optionsPath: '',
+  ffmpegPath: '',
+  tempPath: '',
+  showCursor: true,
+  useCountdown: false,
+  countdownSize: 3,
   alwaysOnTop: false,
   sourceIndex: 0,
   frameRate: 10,

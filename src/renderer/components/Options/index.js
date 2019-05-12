@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Check } from 'styled-icons/material/Check'
 import styled from 'styled-components'
+import { AppContext } from '../App'
 import Button from '../Shared/Button'
 
 const Container = styled.div`
@@ -18,6 +19,9 @@ const Container = styled.div`
 `
 
 export default function Options() {
+  const { state, dispatch } = useContext(AppContext)
+  const { options } = state
+
   return (
     <Container>
       <div />

@@ -13,8 +13,7 @@ function reducer(state, action) {
         windowID: action.payload[0].id,
         windowTitle: action.payload[0].getTitle(),
         sources: action.payload[1],
-        options: action.payload[4],
-        ffmpegPath: action.payload[5]
+        options: action.payload[3]
       }
     case LOADING_START:
       return { ...state, loading: true }
@@ -36,8 +35,7 @@ const initialState = {
   options: Map(),
   sources: null,
   mode: 1,
-  gifFolder: null,
-  ffmpegPath: null
+  gifFolder: null
 }
 
 export { reducer, initialState }

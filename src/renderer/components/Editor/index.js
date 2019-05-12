@@ -34,7 +34,7 @@ const unlinkAsync = promisify(unlink)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, gifFolder, ffmpegPath } = state
+  const { options, gifFolder } = state
 
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState(List())
@@ -242,8 +242,8 @@ export default function Editor() {
   function onSaveClick() {
     const win = remote.getCurrentWindow()
 
-    if (ffmpegPath) {
-      const options = {
+    if (options.get('ffmpegPath')) {
+      const opts = {
         title: 'Save',
         defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
         buttonLabel: 'Save',
@@ -257,7 +257,7 @@ export default function Editor() {
           setLoading(false)
         }
       }
-      remote.dialog.showSaveDialog(win, options, callback)
+      remote.dialog.showSaveDialog(win, opts, callback)
     } else {
       // go to options where ffmpeg can be added
     }
@@ -265,7 +265,7 @@ export default function Editor() {
 
   function onDiscardProjectClick() {
     const win = remote.getCurrentWindow()
-    const options = {
+    const opts = {
       type: 'question',
       buttons: ['Discard', 'Cancel'],
       defaultId: 0,
@@ -293,7 +293,7 @@ export default function Editor() {
         })
       }
     }
-    remote.dialog.showMessageBox(win, options, callback)
+    remote.dialog.showMessageBox(win, opts, callback)
   }
 
   function onPlaybackClick(index) {
@@ -316,7 +316,7 @@ export default function Editor() {
       return
     }
     const win = remote.getCurrentWindow()
-    const options = {
+    const opts = {
       type: 'question',
       buttons: ['Delete', 'Cancel'],
       defaultId: 0,
@@ -338,7 +338,7 @@ export default function Editor() {
         }
       }
     }
-    remote.dialog.showMessageBox(win, options, callback)
+    remote.dialog.showMessageBox(win, opts, callback)
   }
 
   function onTitleAccept() {
