@@ -4,8 +4,8 @@ const mainWindow = {
 }
 
 const optionsWindow = {
-  width: 600,
-  height: 600
+  width: 800,
+  height: 500
 }
 
 const editor = {
