@@ -30,6 +30,7 @@ import {
   Zoom,
   ZoomInput,
   Playback,
+  Frames,
   Text,
   Overlay
 } from './styles'
@@ -59,7 +60,8 @@ export default function Toolbar({
   setDrawerMode,
   onNewRecordingClick,
   onSaveClick,
-  onPlaybackClick
+  onPlaybackClick,
+  onFrameDeleteClick
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
 
@@ -116,11 +118,7 @@ export default function Toolbar({
     <Container>
       <Tabs>
         {tabs.map((el, i) => (
-          <Tab
-            key={i}
-            selected={i === menuIndex}
-            onClick={() => setMenuIndex(i)}
-          >
+          <Tab key={i} selected={i === menuIndex} onClick={() => setMenuIndex(i)}>
             {el.icon}
             <div className='text'>{el.text}</div>
             <div className='divider' />
@@ -190,13 +188,23 @@ export default function Toolbar({
               {playback.map((el, i) => (
                 <Action key={i} onClick={() => onPlaybackClick(i)}>
                   {i !== 2 ? el.icon : playing ? el.icon2 : el.icon1}
-                  <div className='text'>
-                    {i !== 2 ? el.text : playing ? el.text2 : el.text1}
-                  </div>
+                  <div className='text'>{i !== 2 ? el.text : playing ? el.text2 : el.text1}</div>
                 </Action>
               ))}
             </Playback>
             <SectionText>Playback</SectionText>
+          </Section>
+        </Menu>
+      ) : menuIndex === 3 ? (
+        <Menu>
+          <Section width={100}>
+            <Frames>
+              <Action onClick={onFrameDeleteClick}>
+                <Delete />
+                <div className='text'>Delete</div>
+              </Action>
+            </Frames>
+            <SectionText>Frames</SectionText>
           </Section>
         </Menu>
       ) : menuIndex === 4 ? (

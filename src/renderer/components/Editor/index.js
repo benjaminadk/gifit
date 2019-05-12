@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
 import { Map, List } from 'immutable'
 import path from 'path'
-import { readFile, writeFile, readdir } from 'fs'
+import { readFile, writeFile, readdir, unlink } from 'fs'
 import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
 import createHashPath from '../../lib/createHashPath'
@@ -26,9 +26,10 @@ const {
   constants: { IMAGE_TYPE }
 } = config
 
-const readdirAsync = promisify(readdir)
 const readFileAsync = promisify(readFile)
 const writeFileAsync = promisify(writeFile)
+const readdirAsync = promisify(readdir)
+const unlinkAsync = promisify(unlink)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
@@ -73,7 +74,8 @@ export default function Editor() {
   const thumbnail = useRef(null)
 
   // initialize editor
-  async function initialize() {
+  async function initialize(initialIndex = 0) {
+    setLoading(true)
     const projects = []
     // read all project directories
     const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
@@ -91,16 +93,23 @@ export default function Editor() {
       const project = JSON.parse(data)
       // isolate current project by matching gifFolder app state
       if (dir === gifFolder) {
+        // ratio of available height to height of image
         const heightRatio = Math.floor((mainHeight / project.height) * 100) / 100
+        // if ratio less than 1 image is taller than editor and height ratio is intial scale 0 - 1
+        // if ratio greater than 1 image is shorter than editor and set scale to 1 or actual size
         const initialScale = heightRatio < 1 ? heightRatio : 1
-
-        const initialSelected = List([true, ...Array(project.frames.length - 1).fill(false)])
-
+        // use immutable list to manage selected frames true=selected
+        // initialIndex default is 0 but other value can be used
+        const initialSelected = List(Array(project.frames.length).fill(false)).set(
+          initialIndex,
+          true
+        )
+        // set state
         setSelected(initialSelected)
         setScale(initialScale)
         setZoomToFit(initialScale)
         setImages(project.frames)
-        setImageIndex(0)
+        setImageIndex(initialIndex)
         setGifData({
           relative: project.relative,
           date: project.date,
@@ -108,12 +117,13 @@ export default function Editor() {
           height: project.height,
           frameRate: project.frameRate
         })
-        // store all other projects to reference in recent projects
+        // store all other projects as recent projects
       } else {
         projects.push(project)
       }
     }
     setRecentProjects(projects)
+    setLoading(false)
   }
 
   // ensure window is maximized
@@ -172,30 +182,37 @@ export default function Editor() {
     titleBackground
   ])
 
+  // manage second canvas (overlays)
   useEffect(() => {
+    // when border drawer open redraw canvas on size or color change
     if (drawerMode === 'border') {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
       drawBorder(canvas2.current, borderLeft, borderRight, borderTop, borderBottom, borderColor)
+      // clear canvas when drawer is closed
     } else {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
     }
   }, [drawerMode, borderLeft, borderRight, borderTop, borderBottom, borderColor])
 
+  // when imageIndex change is automated scroll to it
   useEffect(() => {
     if (thumbnail.current) {
       thumbnail.current.scrollIntoView()
     }
   }, [imageIndex])
 
+  // play gif frame by frame when playing is set to true
   useEffect(() => {
     var playingId
 
     if (playing) {
+      // use function version of useState setter
       playingId = setInterval(() => {
         setImageIndex(index => (index === images.length - 1 ? 0 : index + 1))
       }, Math.round(1000 / gifData.frameRate))
+      // clear interval when playing is set to false
     } else {
       clearInterval(playingId)
     }
@@ -240,6 +257,37 @@ export default function Editor() {
     }
   }
 
+  function onFrameDeleteClick() {
+    const count = selected.count(el => el)
+    if (count === 0) {
+      return
+    }
+    const win = remote.getCurrentWindow()
+    const options = {
+      type: 'question',
+      buttons: ['Delete', 'Cancel'],
+      defaultId: 0,
+      title: `Delete Frames`,
+      message: `Are you sure you want to delete?`,
+      detail: `Action will delete ${count} selected frame${count === 1 ? '' : 's'}`
+    }
+    const callback = result => {
+      if (result === 0) {
+        const oldImages = images.filter((el, i) => selected.get(i))
+        const newImages = images.filter((el, i) => !selected.get(i))
+        const newProject = { ...gifData, frames: newImages }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          initialize(selected.findIndex(el => el))
+        })
+        for (const image of oldImages) {
+          unlinkAsync(image.path)
+        }
+      }
+    }
+    remote.dialog.showMessageBox(win, options, callback)
+  }
+
   function onTitleAccept() {
     const reader = new FileReader()
     const filepath = path.join(RECORDINGS_DIRECTORY, gifData.relative, createTFName())
@@ -265,14 +313,8 @@ export default function Editor() {
     canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
 
     const newImages = images.slice()
-    newImages.splice(imageIndex, 0, {
-      path: filepath,
-      time: titleDelay
-    })
-    const newProject = {
-      ...gifData,
-      frames: newImages
-    }
+    newImages.splice(imageIndex, 0, { path: filepath, time: titleDelay })
+    const newProject = { ...gifData, frames: newImages }
     const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
     writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
       initialize()
@@ -327,25 +369,25 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
-  function onThumbnailClick(e, i) {
+  function onThumbnailClick(e, index) {
     if (e.ctrlKey && e.shiftKey) {
-      let newValue
-      const max = Math.max(i, imageIndex)
-      const min = Math.min(i, imageIndex)
-      newValue = selected.map((el, index) => {
-        if ((index >= min && index <= max) || el) {
-          return true
-        } else {
-          return false
-        }
-      })
-      setSelected(newValue)
+      setSelected(
+        selected.map(
+          (el, i) => (i >= Math.min(index, imageIndex) && i <= Math.max(index, imageIndex)) || el
+        )
+      )
+    } else if (e.shiftKey) {
+      setSelected(
+        selected.map(
+          (el, i) => i >= Math.min(index, imageIndex) && i <= Math.max(index, imageIndex)
+        )
+      )
     } else if (e.ctrlKey) {
-      setSelected(selected.set(i, true))
+      setSelected(selected.set(index, true))
     } else {
-      setSelected(selected.map((el, index) => i === index))
+      setSelected(selected.map((el, i) => index === i))
     }
-    setImageIndex(i)
+    setImageIndex(index)
   }
 
   return (
@@ -360,6 +402,7 @@ export default function Editor() {
         onNewRecordingClick={onNewRecordingClick}
         onSaveClick={onSaveClick}
         onPlaybackClick={onPlaybackClick}
+        onFrameDeleteClick={onFrameDeleteClick}
       />
       <Main
         ref={main}
