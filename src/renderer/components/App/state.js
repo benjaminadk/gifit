@@ -10,7 +10,8 @@ function reducer(state, action) {
     case INITIALIZE:
       return {
         ...state,
-        windowID: action.payload[0],
+        windowID: action.payload[0].id,
+        windowTitle: action.payload[0].getTitle(),
         sources: action.payload[1],
         options: action.payload[4],
         ffmpegPath: action.payload[5]
@@ -31,6 +32,7 @@ function reducer(state, action) {
 const initialState = {
   loading: true,
   windowID: null,
+  windowTitle: null,
   options: Map(),
   sources: null,
   mode: 1,

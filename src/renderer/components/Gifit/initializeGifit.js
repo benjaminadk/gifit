@@ -42,7 +42,7 @@ export default (state, dispatch) => {
   let gifferWindow
 
   gifferWindow = new remote.BrowserWindow({
-    title: 'Giffer',
+    title: 'Recorder',
     width,
     height,
     x,

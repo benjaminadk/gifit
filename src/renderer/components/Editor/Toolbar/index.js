@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { remote } from 'electron'
 import { AngleDoubleLeft } from 'styled-icons/fa-solid/AngleDoubleLeft'
 import { AngleLeft } from 'styled-icons/fa-solid/AngleLeft'
 import { AngleDoubleRight } from 'styled-icons/fa-solid/AngleDoubleRight'
@@ -16,11 +17,13 @@ import { Delete } from 'styled-icons/material/Delete'
 import { Search } from 'styled-icons/material/Search'
 import { Expand } from 'styled-icons/boxicons-regular/Expand'
 import { Title } from 'styled-icons/material/Title'
+import initializeOptions from '../../Options/initializeOptions'
 import NumberInput from '../../Shared/NumberInput'
 import {
   Container,
   Tabs,
   Tab,
+  Extras,
   Menu,
   Section,
   SectionText,
@@ -115,6 +118,11 @@ export default function Toolbar({
     setScale(newValue / 100)
   }
 
+  function onOptionsClick() {
+    const win = remote.getCurrentWindow()
+    initializeOptions(win)
+  }
+
   return (
     <Container>
       <Tabs>
@@ -125,6 +133,8 @@ export default function Toolbar({
             <div className='divider' />
           </Tab>
         ))}
+        <div />
+        <Extras onClick={onOptionsClick}>Extras</Extras>
       </Tabs>
       {menuIndex === 0 ? (
         <Menu>

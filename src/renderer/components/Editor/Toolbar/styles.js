@@ -9,7 +9,7 @@ export const Container = styled.div`
 
 export const Tabs = styled.div`
   display: grid;
-  grid-template-columns: 80px 90px 105px 80px 85px;
+  grid-template-columns: 80px 90px 105px 80px 85px 1fr 100px;
   justify-items: center;
   align-items: center;
   background: ${p => p.theme.grey[1]};
@@ -44,6 +44,8 @@ export const Tab = styled.div`
     background: ${p => (p.selected ? '#FFFFFF' : 'transparent')};
   }
 `
+
+export const Extras = styled.div``
 
 export const Menu = styled.div`
   display: flex;

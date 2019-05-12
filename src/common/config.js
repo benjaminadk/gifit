@@ -3,6 +3,11 @@ const mainWindow = {
   height: 400
 }
 
+const optionsWindow = {
+  width: 600,
+  height: 600
+}
+
 const editor = {
   drawerWidth: 300,
   titleStyles: ['Normal', 'Italic', 'Bold']
@@ -51,7 +56,9 @@ const appActions = {
 
 const ipcActions = {
   GIFIT_STOP: 'GIFIT_STOP',
-  GIFIT_CLOSE: 'GIFIT_CLOSE'
+  GIFIT_CLOSE: 'GIFIT_CLOSE',
+  OPTIONS_SAVE: 'OPTIONS_SAVE',
+  OPTIONS_CLOSE: 'OPTIONS_CLOSE'
 }
 
 const constants = {
@@ -64,6 +71,7 @@ const constants = {
 export default {
   inDev: process.env.NODE_ENV === 'development',
   mainWindow,
+  optionsWindow,
   editor,
   defaultOptions,
   theme,

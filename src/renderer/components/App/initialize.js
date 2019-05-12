@@ -2,7 +2,7 @@ import { remote, desktopCapturer, screen } from 'electron'
 import { Map } from 'immutable'
 import { existsSync, readFile, writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
-import { spawn, spawnSync } from 'child_process'
+import { spawnSync } from 'child_process'
 import { APP_DIRECTORY, RECORDINGS_DIRECTORY, OPTIONS_PATH } from 'common/filepaths'
 import config from 'common/config'
 
@@ -14,7 +14,7 @@ const mkdirAsync = promisify(mkdir)
 
 export default async () => {
   const p1 = new Promise(resolve => {
-    resolve(remote.getCurrentWindow().id)
+    resolve(remote.getCurrentWindow())
   })
 
   const p2 = new Promise(async resolve => {

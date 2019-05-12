@@ -5,6 +5,7 @@ import initialize from './initialize'
 import Landing from '../Landing'
 import Editor from '../Editor'
 import Gifit from '../Gifit'
+import Options from '../Options'
 import config from 'common/config'
 
 const {
@@ -15,7 +16,7 @@ export const AppContext = createContext()
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const { loading, windowID, mode } = state
+  const { loading, windowID, windowTitle, mode } = state
 
   useEffect(() => {
     dispatchAsync(dispatch).call(null, {
@@ -43,10 +44,18 @@ export default function App() {
       return <div>options</div>
     }
   } else {
-    return (
-      <AppContext.Provider value={{ state, dispatch }}>
-        <Gifit />
-      </AppContext.Provider>
-    )
+    if (windowTitle === 'Recorder') {
+      return (
+        <AppContext.Provider value={{ state, dispatch }}>
+          <Gifit />
+        </AppContext.Provider>
+      )
+    } else if (windowTitle === 'Options') {
+      return (
+        <AppContext.Provider value={{ state, dispatch }}>
+          <Options />
+        </AppContext.Provider>
+      )
+    }
   }
 }
