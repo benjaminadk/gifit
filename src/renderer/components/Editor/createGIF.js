@@ -12,7 +12,7 @@ export default async (frames, cwd, dstPath) => {
       str += `file ${path.basename(el.path).split('#')[0]}\n`
       str += `duration ${Math.round((el.time / 1000) * 100) / 100}\n`
     })
-    str += `file ${path.basename(frames[frames.length - 1].path)}`
+    str += `file ${path.basename(frames[frames.length - 1].path).split('#')[0]}`
 
     const txtPath = path.join(cwd, 'file.txt')
     writeFileAsync(txtPath, str).then(() => {

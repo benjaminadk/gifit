@@ -395,30 +395,47 @@ export default function Editor() {
     setTitleText('Title Frame')
   }
 
-  function onBorderAccept() {
-    const reader = new FileReader()
+  async function onBorderAccept() {
+    async function draw() {
+      return new Promise(resolve => {
+        const lastIndex = selected.findLastIndex(el => el)
 
-    reader.onload = () => {
-      const filepath = images[imageIndex].path
-      const buffer = Buffer.from(reader.result)
-      writeFileAsync(filepath, buffer).then(() => {
-        images[imageIndex].path = createHashPath(images[imageIndex].path)
-        setShowDrawer(false)
-        setScale(zoomToFit)
+        for (const [i, bool] of selected.toArray().entries()) {
+          if (bool) {
+            const reader = new FileReader()
+
+            reader.onload = () => {
+              const filepath = images[i].path
+              const buffer = Buffer.from(reader.result)
+              writeFileAsync(filepath, buffer).then(() => {
+                images[i].path = createHashPath(images[i].path)
+                if (i === lastIndex) {
+                  resolve()
+                }
+              })
+            }
+
+            const canvas = document.createElement('canvas')
+            canvas.width = gifData.width
+            canvas.height = gifData.height
+            const ctx = canvas.getContext('2d')
+            const image = new Image()
+            image.onload = () => {
+              ctx.drawImage(image, 0, 0)
+              drawBorder(canvas, borderLeft, borderRight, borderTop, borderBottom, borderColor)
+              canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            }
+            image.src = images[i].path
+          }
+        }
       })
     }
 
-    const canvas = document.createElement('canvas')
-    canvas.width = gifData.width
-    canvas.height = gifData.height
-    const ctx = canvas.getContext('2d')
-    const image = new Image()
-    image.onload = () => {
-      ctx.drawImage(image, 0, 0)
-      drawBorder(canvas, borderLeft, borderRight, borderTop, borderBottom, borderColor)
-      canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
-    }
-    image.src = images[imageIndex].path
+    setLoading(true)
+    await draw()
+    setLoading(false)
+    setShowDrawer(false)
+    setScale(zoomToFit)
   }
 
   function onBorderCancel() {

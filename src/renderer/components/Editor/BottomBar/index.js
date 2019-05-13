@@ -69,7 +69,7 @@ export default function BottomBar({ loading }) {
 
   return (
     <Container>
-      <Progress show={show}>
+      <Progress show={show || loading}>
         <Bar value={value} />
       </Progress>
       <div />
