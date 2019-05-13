@@ -22,6 +22,8 @@ function createMainWindow() {
     }
   })
 
+  mainWindow.setMenu(null)
+
   mainWindow.loadURL(getURL(inDev))
 
   installDevTools(inDev)

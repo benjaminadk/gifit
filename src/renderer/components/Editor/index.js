@@ -87,7 +87,7 @@ export default function Editor() {
     const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
     // calculate main editor section height
     // total height - toolbar height - thumbnails height - bottom bar height
-    const mainHeight = container.current.clientHeight - 100 - 100 - 20
+    const mainHeight = container.current.clientHeight - 120 - 100 - 20
     main.current.style.height = mainHeight + 'px'
     // calculate main drawer height - drawer header height - drawer footer height
     setDrawerHeight(mainHeight - 40 - 50)
@@ -577,12 +577,12 @@ export default function Editor() {
   return (
     <Container ref={container}>
       <Toolbar
+        images={images}
+        gifData={gifData}
         scale={scale}
         zoomToFit={zoomToFit}
         playing={playing}
         setScale={setScale}
-        setShowDrawer={setShowDrawer}
-        setDrawerMode={setDrawerMode}
         onOpenTitleDrawer={onOpenTitleDrawer}
         onOpenBorderDrawer={onOpenBorderDrawer}
         onOpenRecentDrawer={onOpenRecentDrawer}

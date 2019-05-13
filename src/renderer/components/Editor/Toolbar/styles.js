@@ -1,7 +1,8 @@
 import styled from 'styled-components'
+import { darken } from 'polished'
 
 export const Container = styled.div`
-  height: 100px;
+  height: 120px;
   display: grid;
   grid-template-rows: 25px 1fr;
   border-bottom: ${p => p.theme.border};
@@ -9,7 +10,7 @@ export const Container = styled.div`
 
 export const Tabs = styled.div`
   display: grid;
-  grid-template-columns: 80px 90px 105px 80px 85px 1fr 100px;
+  grid-template-columns: 80px 90px 105px 80px 85px 100px 100px 1fr 100px;
   justify-items: center;
   align-items: center;
   background: ${p => p.theme.grey[1]};
@@ -108,6 +109,31 @@ export const ZoomInput = styled.div`
   }
 `
 
+export const Statistic = styled.div`
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  font-size: 1.2rem;
+  .top {
+    justify-self: center;
+    align-self: flex-end;
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    align-items: center;
+    svg {
+      justify-self: center;
+      width: 15px;
+      height: 15px;
+    }
+  }
+  .bottom {
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    color: ${p => darken(0.1, p.theme.primary)};
+    margin-left: 20px;
+  }
+`
+
 export const File = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 75px);
@@ -141,4 +167,9 @@ export const Text = styled.div`
 export const Overlay = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 50px);
+`
+
+export const General = styled.div`
+  display: grid;
+  grid-template-columns: 100px 100px 125px 125px;
 `

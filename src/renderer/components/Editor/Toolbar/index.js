@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { format } from 'date-fns'
 import { AngleDoubleLeft } from 'styled-icons/fa-solid/AngleDoubleLeft'
 import { AngleLeft } from 'styled-icons/fa-solid/AngleLeft'
 import { AngleDoubleRight } from 'styled-icons/fa-solid/AngleDoubleRight'
@@ -19,6 +20,11 @@ import { Title } from 'styled-icons/material/Title'
 import { MousePointer } from 'styled-icons/fa-solid/MousePointer'
 import { Collections } from 'styled-icons/material/Collections'
 import { FilterNone } from 'styled-icons/material/FilterNone'
+import { Transfer } from 'styled-icons/boxicons-regular/Transfer'
+import { Stats } from 'styled-icons/boxicons-regular/Stats'
+import { Hashtag } from 'styled-icons/fa-solid/Hashtag'
+import { PhotoSizeSelectLarge } from 'styled-icons/material/PhotoSizeSelectLarge'
+import { AccessTime } from 'styled-icons/material/AccessTime'
 import NumberInput from '../../Shared/NumberInput'
 import {
   Container,
@@ -37,7 +43,9 @@ import {
   Playback,
   Frames,
   Text,
-  Overlay
+  Overlay,
+  General,
+  Statistic
 } from './styles'
 
 const tabs = [
@@ -45,7 +53,9 @@ const tabs = [
   { icon: <Home />, text: 'Home' },
   { icon: <PlayArrow />, text: 'Playback' },
   { icon: <Edit />, text: 'Edit' },
-  { icon: <ImageIcon />, text: 'Image' }
+  { icon: <ImageIcon />, text: 'Image' },
+  { icon: <Transfer />, text: 'Transitions' },
+  { icon: <Stats />, text: 'Statistics' }
 ]
 
 const playback = [
@@ -57,6 +67,8 @@ const playback = [
 ]
 
 export default function Toolbar({
+  images,
+  gifData,
   scale,
   zoomToFit,
   playing,
@@ -75,6 +87,9 @@ export default function Toolbar({
   onSelectClick
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
+
+  const totalDuration = images.reduce((acc, val) => (acc += val.time), 0)
+  const averageDuration = Math.round((totalDuration / images.length) * 10) / 10
 
   return (
     <Container>
@@ -207,6 +222,42 @@ export default function Toolbar({
               </Action>
             </Overlay>
             <SectionText>Overlay</SectionText>
+          </Section>
+        </Menu>
+      ) : menuIndex === 6 ? (
+        <Menu>
+          <Section width={450}>
+            <General>
+              <Statistic>
+                <div className='top'>
+                  <Hashtag />
+                  <div>Frame count</div>
+                </div>
+                <div className='bottom'>{images.length}</div>
+              </Statistic>
+              <Statistic>
+                <div className='top'>
+                  <PhotoSizeSelectLarge />
+                  <div>Frame size</div>
+                </div>
+                <div className='bottom'>{gifData.width + ' x ' + gifData.height}</div>
+              </Statistic>
+              <Statistic>
+                <div className='top'>
+                  <AccessTime />
+                  <div>Total duration</div>
+                </div>
+                <div className='bottom'>{format(new Date(totalDuration), 'mm:ss.SS')} m</div>
+              </Statistic>
+              <Statistic>
+                <div className='top'>
+                  <AccessTime />
+                  <div>Average duration</div>
+                </div>
+                <div className='bottom'>{averageDuration} ms</div>
+              </Statistic>
+            </General>
+            <SectionText>General</SectionText>
           </Section>
         </Menu>
       ) : (

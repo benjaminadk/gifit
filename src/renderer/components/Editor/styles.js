@@ -21,7 +21,7 @@ export const Main = styled.div.attrs(p => ({
   }
 }))`
   position: absolute;
-  top: 100px;
+  top: 120px;
   left: 0;
   overflow: auto;
   display: grid;
