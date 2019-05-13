@@ -11,7 +11,7 @@ import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawe
 import config from 'common/config'
 
 const {
-  editor: { drawerWidth, titleStyles }
+  editor: { drawerWidth, titleStyles, titleVerticals, titleHorizontals }
 } = config
 
 export default function TitleFrame({
@@ -22,6 +22,8 @@ export default function TitleFrame({
   titleFont,
   titleStyle,
   titleColor,
+  titleVertical,
+  titleHorizontal,
   titleBackground,
   setTitleText,
   setTitleDelay,
@@ -29,6 +31,8 @@ export default function TitleFrame({
   setTitleFont,
   setTitleStyle,
   setTitleColor,
+  setTitleVertical,
+  setTitleHorizontal,
   setTitleBackground,
   onAccept,
   onCancel
@@ -79,6 +83,25 @@ export default function TitleFrame({
     setTitleSize(newValue)
   }
 
+  function onTitleSizeArrowClick(inc) {
+    const currentValue = titleSize
+    var newValue
+    if (inc) {
+      if (currentValue < 200) {
+        newValue = currentValue + 1
+      } else {
+        newValue = 200
+      }
+    } else {
+      if (currentValue > 10) {
+        newValue = currentValue - 1
+      } else {
+        newValue = 10
+      }
+    }
+    setTitleSize(newValue)
+  }
+
   function onTitleDelayChange({ target: { value } }) {
     const isDigit = /^\d*$/
     var newValue
@@ -105,7 +128,7 @@ export default function TitleFrame({
   }
 
   function onTitleDelayArrowClick(inc) {
-    var currentValue = titleDelay
+    const currentValue = titleDelay
     var newValue
     if (inc) {
       if (currentValue < 10000) {
@@ -121,6 +144,14 @@ export default function TitleFrame({
       }
     }
     setTitleDelay(newValue)
+  }
+
+  function onTitleVerticalSelect(vertical) {
+    setTitleVertical(vertical)
+  }
+
+  function onTitleHorizontalSelect(horizontal) {
+    setTitleHorizontal(horizontal)
   }
 
   return (
@@ -169,7 +200,6 @@ export default function TitleFrame({
               <Label width={60}>Style:</Label>
               <Select
                 width={100}
-                type='style'
                 value={titleStyle}
                 options={titleStyles}
                 onClick={onTitleStyleSelect}
@@ -182,6 +212,8 @@ export default function TitleFrame({
                 value={titleSize}
                 onChange={onTitleSizeChange}
                 onBlur={onTitleSizeBlur}
+                onArrowUpClick={() => onTitleSizeArrowClick(true)}
+                onArrowDownClick={() => onTitleSizeArrowClick(false)}
               />
             </Property>
             <Property>
@@ -214,7 +246,26 @@ export default function TitleFrame({
             <div className='text'>Layout</div>
             <div className='divider' />
           </div>
-          <div>input</div>
+          <div>
+            <Property>
+              <Label width={70}>Vertical:</Label>
+              <Select
+                width={100}
+                value={titleVertical}
+                options={titleVerticals}
+                onClick={onTitleVerticalSelect}
+              />
+            </Property>
+            <Property>
+              <Label width={70}>Horizontal:</Label>
+              <Select
+                width={100}
+                value={titleHorizontal}
+                options={titleHorizontals}
+                onClick={onTitleHorizontalSelect}
+              />
+            </Property>
+          </div>
         </Section>
         <Section height={50}>
           <div className='title'>

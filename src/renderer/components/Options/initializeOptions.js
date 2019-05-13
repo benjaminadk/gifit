@@ -26,7 +26,6 @@ export default (parent, dispatch) => {
     resizable: false,
     minimizable: false,
     maximizable: false,
-    alwaysOnTop: true,
     webPreferences: {
       nodeIntegration: true
     }

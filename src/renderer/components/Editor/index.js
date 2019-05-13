@@ -10,6 +10,7 @@ import createTFName from '../../lib/createTFName'
 import initializeOptions from '../Options/initializeOptions'
 import drawBorder from './drawBorder'
 import createGIF from './createGIF'
+import getTextXY from './getTextXY'
 import { AppContext } from '../App'
 import Drawer from './Drawer'
 import TitleFrame from './TitleFrame'
@@ -67,6 +68,8 @@ export default function Editor() {
   const [titleFont, setTitleFont] = useState('Segoe UI')
   const [titleStyle, setTitleStyle] = useState('Normal')
   const [titleDelay, setTitleDelay] = useState(500)
+  const [titleVertical, setTitleVertical] = useState('Center')
+  const [titleHorizontal, setTitleHorizontal] = useState('Center')
   const [titleBackground, setTitleBackground] = useState('#FFFF00')
 
   const container = useRef(null)
@@ -151,15 +154,21 @@ export default function Editor() {
       canvas2.current.width = gifData.width * scale
       canvas2.current.height = gifData.height * scale
       const ctx1 = canvas1.current.getContext('2d')
-
       // title frame replace image when in title drawerMode
       if (drawerMode === 'title') {
+        ctx1.textBaseline = 'middle'
         ctx1.fillStyle = titleBackground
         ctx1.fillRect(0, 0, canvas1.current.width, canvas1.current.height)
         ctx1.fillStyle = titleColor
         ctx1.font = `${titleStyle} ${titleSize * scale}px ${titleFont}`
-        const x = canvas1.current.width / 2 - ctx1.measureText(titleText).width / 2
-        const y = canvas1.current.height / 2 - titleSize / 2
+        const { x, y } = getTextXY(
+          canvas1.current,
+          titleVertical,
+          titleHorizontal,
+          titleSize,
+          titleText,
+          scale
+        )
         ctx1.fillText(titleText, x, y)
         // create image, set scale on context and draw image
       } else {
@@ -185,6 +194,8 @@ export default function Editor() {
     titleFont,
     titleStyle,
     titleColor,
+    titleVertical,
+    titleHorizontal,
     titleBackground
   ])
 
@@ -504,6 +515,8 @@ export default function Editor() {
             titleFont={titleFont}
             titleStyle={titleStyle}
             titleColor={titleColor}
+            titleVertical={titleVertical}
+            titleHorizontal={titleHorizontal}
             titleBackground={titleBackground}
             setTitleText={setTitleText}
             setTitleDelay={setTitleDelay}
@@ -511,6 +524,8 @@ export default function Editor() {
             setTitleFont={setTitleFont}
             setTitleStyle={setTitleStyle}
             setTitleColor={setTitleColor}
+            setTitleVertical={setTitleVertical}
+            setTitleHorizontal={setTitleHorizontal}
             setTitleBackground={setTitleBackground}
             onAccept={onTitleAccept}
             onCancel={onTitleCancel}

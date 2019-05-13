@@ -34,9 +34,9 @@ export const Options = styled.div`
   left: ${p => p.left}px;
   z-index: ${p => (p.show ? 2 : 1)};
   width: ${p => p.width}px;
-  max-height: ${p => (p.show ? '250px' : '0px')};
+  max-height: 250px;
   overflow: auto;
-  display: flex;
+  display: ${p => (p.show ? 'flex' : 'none')};
   flex-direction: column;
   border: ${p => (p.show ? p.theme.border : `1px solid transparent`)};
   border-top: 0;

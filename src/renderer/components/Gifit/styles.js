@@ -1,4 +1,5 @@
 import styled, { keyframes } from 'styled-components'
+import { lighten } from 'polished'
 
 const slideDown = keyframes`
   from {
@@ -25,6 +26,7 @@ export const Toolbar = styled.div`
   height: 50px;
   display: ${p => (p.show ? 'grid' : 'none')};
   grid-template-columns: repeat(3, 50px);
+  outline: 1px solid ${p => p.theme.grey[10]};
   transform: translateY(-50px);
   animation: ${slideDown} 1s linear 0.5s forwards;
 `
@@ -36,11 +38,13 @@ export const Option = styled.div`
   justify-items: center;
   align-items: center;
   background: ${p => p.theme.grey[0]};
+  border: 1px solid ${p => p.theme.grey[0]};
   color: ${p => p.theme.black};
   transition: 0.2s;
   cursor: pointer;
   &:hover {
-    background: ${p => p.theme.grey[4]};
+    background: ${p => lighten(0.4, p.theme.primary)};
+    border: 1px solid ${p => p.theme.primary};
   }
   svg {
     width: 20px;
@@ -55,7 +59,7 @@ export const Rectangle = styled.div.attrs(p => ({
     width: p.width + 'px',
     height: p.height + 'px',
     display: p.show ? 'block' : 'none',
-    border: p.width || p.height ? `2px solid green` : 0
+    border: p.width || p.height ? `2px solid ${p.theme.primary}` : 0
   }
 }))`
   position: absolute;
@@ -73,6 +77,7 @@ export const Confirm = styled.div.attrs(p => ({
   width: 150px;
   height: 50px;
   grid-template-columns: repeat(3, 50px);
+  outline: 1px solid ${p => p.theme.grey[10]};
 `
 
 export const Countdown = styled.div`
