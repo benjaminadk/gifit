@@ -11,7 +11,7 @@ import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawe
 import config from 'common/config'
 
 const {
-  editor: { drawerWidth, titleStyles, titleVerticals, titleHorizontals }
+  editor: { drawerWidth, titleStyles, verticalOptions, horizontalOptions }
 } = config
 
 export default function TitleFrame({
@@ -252,7 +252,7 @@ export default function TitleFrame({
               <Select
                 width={100}
                 value={titleVertical}
-                options={titleVerticals}
+                options={verticalOptions}
                 onClick={onTitleVerticalSelect}
               />
             </Property>
@@ -261,7 +261,7 @@ export default function TitleFrame({
               <Select
                 width={100}
                 value={titleHorizontal}
-                options={titleHorizontals}
+                options={horizontalOptions}
                 onClick={onTitleHorizontalSelect}
               />
             </Property>

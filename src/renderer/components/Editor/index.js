@@ -9,6 +9,7 @@ import createHashPath from '../../lib/createHashPath'
 import createTFName from '../../lib/createTFName'
 import initializeOptions from '../Options/initializeOptions'
 import drawBorder from './drawBorder'
+import drawProgress from './drawProgress'
 import createGIF from './createGIF'
 import getTextXY from './getTextXY'
 import { AppContext } from '../App'
@@ -62,6 +63,13 @@ export default function Editor() {
   const [borderTop, setBorderTop] = useState(0)
   const [borderBottom, setBorderBottom] = useState(0)
   const [borderColor, setBorderColor] = useState('#000000')
+
+  const [progressType, setProgressType] = useState('bar')
+  const [progressBackground, setProgressBackground] = useState('#00FF00')
+  const [progressThickness, setProgressThickness] = useState(20)
+  const [progressVertical, setProgressVertical] = useState('Bottom')
+  const [progressHorizontal, setProgressHorizontal] = useState('Left')
+  const [progressOrientation, setProgressOrientation] = useState('Horizontal')
 
   const [titleText, setTitleText] = useState('Title Frame')
   const [titleColor, setTitleColor] = useState('#000000')
@@ -155,7 +163,7 @@ export default function Editor() {
       canvas2.current.width = gifData.width * scale
       canvas2.current.height = gifData.height * scale
       const ctx1 = canvas1.current.getContext('2d')
-      // title frame replace image when in title drawerMode
+      // title frame replaces image when in title drawerMode
       if (drawerMode === 'title') {
         ctx1.textBaseline = 'middle'
         ctx1.fillStyle = titleBackground
@@ -211,11 +219,35 @@ export default function Editor() {
     } else if (drawerMode === 'progress') {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
+      drawProgress(
+        canvas2.current,
+        50,
+        progressType,
+        progressBackground,
+        progressHorizontal,
+        progressVertical,
+        progressOrientation,
+        progressThickness
+      )
     } else {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
     }
-  }, [drawerMode, borderLeft, borderRight, borderTop, borderBottom, borderColor])
+  }, [
+    showDrawer,
+    drawerMode,
+    borderLeft,
+    borderRight,
+    borderTop,
+    borderBottom,
+    borderColor,
+    progressType,
+    progressBackground,
+    progressThickness,
+    progressVertical,
+    progressHorizontal,
+    progressOrientation
+  ])
 
   // when imageIndex change is automated scroll to it
   useEffect(() => {
@@ -254,7 +286,10 @@ export default function Editor() {
 
   // navigate back to Landing page
   function onNewRecordingClick() {
-    dispatch({ type: SET_APP_MODE, payload: 0 })
+    dispatch({
+      type: SET_APP_MODE,
+      payload: 0
+    })
     remote.getCurrentWindow().setSize(mainWindow.width, mainWindow.height)
     remote.getCurrentWindow().center()
   }
@@ -268,7 +303,12 @@ export default function Editor() {
         title: 'Save',
         defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
         buttonLabel: 'Save',
-        filters: [{ name: 'GIF File', extensions: ['gif'] }]
+        filters: [
+          {
+            name: 'GIF File',
+            extensions: ['gif']
+          }
+        ]
       }
       const callback = async filepath => {
         if (filepath) {
@@ -355,7 +395,10 @@ export default function Editor() {
       if (result === 0) {
         const oldImages = images.filter((el, i) => selected.get(i))
         const newImages = images.filter((el, i) => !selected.get(i))
-        const newProject = { ...gifData, frames: newImages }
+        const newProject = {
+          ...gifData,
+          frames: newImages
+        }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           initialize(selected.findIndex(el => el))
@@ -426,10 +469,33 @@ export default function Editor() {
     } else if (drawer === 'border') {
       setScale(1)
     } else if (drawer === 'progress') {
-      setScale(zoomToFit)
+      setScale(1)
+      setTimeout(() => {
+        var height
+        if (progressVertical === 'Bottom') {
+          height = main.current.scrollHeight
+        } else if (progressVertical === 'Center') {
+          height = main.current.scrollHeight / 2
+        }
+        main.current.scrollTop = height
+      }, 500)
     }
     setShowDrawer(true)
     setDrawerMode(drawer)
+  }
+
+  // open a recent project
+  function onRecentAccept(folder) {
+    dispatch({
+      type: SET_GIF_FOLDER,
+      payload: folder
+    })
+    setShowDrawer(false)
+  }
+
+  // close recent project drawer
+  function onRecentCancel() {
+    setShowDrawer(false)
   }
 
   // create a new title frame image file and update project.json
@@ -455,8 +521,14 @@ export default function Editor() {
     canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
     // update project.json and overwrite
     const newImages = images.slice()
-    newImages.splice(imageIndex, 0, { path: filepath, time: titleDelay })
-    const newProject = { ...gifData, frames: newImages }
+    newImages.splice(imageIndex, 0, {
+      path: filepath,
+      time: titleDelay
+    })
+    const newProject = {
+      ...gifData,
+      frames: newImages
+    }
     const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
     writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
       // after new project.json is saved
@@ -476,25 +548,28 @@ export default function Editor() {
 
   // add configured border to selected frames
   async function onBorderAccept() {
+    // draw function returns promise to make sure all borders are created
     async function draw() {
       return new Promise(resolve => {
+        // last selected index
         const lastIndex = selected.findLastIndex(el => el)
-
+        // loop over array entries to get index and value in for of loop
         for (const [i, bool] of selected.toArray().entries()) {
           if (bool) {
             const reader = new FileReader()
-
+            // read file and hash path to force ui update
             reader.onload = () => {
               const filepath = images[i].path
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
                 images[i].path = createHashPath(images[i].path)
+                // wait for last selection to be saved to resolve
                 if (i === lastIndex) {
                   resolve()
                 }
               })
             }
-
+            // create new canvas draw image and then border on top of it
             const canvas = document.createElement('canvas')
             canvas.width = gifData.width
             canvas.height = gifData.height
@@ -510,7 +585,7 @@ export default function Editor() {
         }
       })
     }
-
+    // wait for draw to resolve to close drawer and reset zoom
     setLoading(true)
     await draw()
     setLoading(false)
@@ -520,21 +595,19 @@ export default function Editor() {
 
   // cancel adding border
   function onBorderCancel() {
-    const ctx2 = canvas2.current.getContext('2d')
-    ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
     setShowDrawer(false)
+    setDrawerMode('')
     setScale(zoomToFit)
   }
 
-  // open a recent project
-  function onRecentAccept(folder) {
-    dispatch({ type: SET_GIF_FOLDER, payload: folder })
-    setShowDrawer(false)
-  }
+  // add configured progress to all frames
+  function onProgressAccept() {}
 
-  // close recent project drawer
-  function onRecentCancel() {
+  // cancel adding progress bar
+  function onProgressCancel() {
     setShowDrawer(false)
+    setDrawerMode('')
+    setScale(zoomToFit)
   }
 
   // open options window
@@ -542,8 +615,10 @@ export default function Editor() {
     initializeOptions(remote.getCurrentWindow(), dispatch)
   }
 
-  // handle clicking a thumbail
+  // handle clicking a thumbail with modifier keys
+  // immutable List and function useState setter makes this easier
   function onThumbnailClick(e, index) {
+    // select multiple and consecutive
     if (e.ctrlKey && e.shiftKey) {
       setSelected(
         selected.map(
@@ -551,6 +626,7 @@ export default function Editor() {
         )
       )
       setImageIndex(index)
+      // select consecutive between current image and clicked thumbnail
     } else if (e.shiftKey) {
       setSelected(
         selected.map(
@@ -558,7 +634,9 @@ export default function Editor() {
         )
       )
       setImageIndex(index)
+      // select multiple
     } else if (e.ctrlKey) {
+      // able to effectively select nothing with ctrl click on only selection
       if (index === imageIndex) {
         setSelected(selected.set(index, false))
         setImageIndex(null)
@@ -567,6 +645,7 @@ export default function Editor() {
         setImageIndex(index)
       }
     } else {
+      // normal select with no modifiers
       setSelected(selected.map((el, i) => index === i))
       setImageIndex(index)
     }
@@ -660,7 +739,23 @@ export default function Editor() {
             onCancel={onBorderCancel}
           />
         ) : drawerMode === 'progress' ? (
-          <Progress />
+          <Progress
+            drawerHeight={drawerHeight}
+            progressType={progressType}
+            progressBackground={progressBackground}
+            progressThickness={progressThickness}
+            progressVertical={progressVertical}
+            progressHorizontal={progressHorizontal}
+            progressOrientation={progressOrientation}
+            setProgressType={setProgressType}
+            setProgressBackground={setProgressBackground}
+            setProgressThickness={setProgressThickness}
+            setProgressVertical={setProgressVertical}
+            setProgressHorizontal={setProgressHorizontal}
+            setProgressOrientation={setProgressOrientation}
+            onAccept={onProgressAccept}
+            onCancel={onProgressCancel}
+          />
         ) : null}
       </Drawer>
     </Container>
