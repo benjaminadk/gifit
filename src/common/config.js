@@ -1,6 +1,6 @@
 const mainWindow = {
   width: 600,
-  height: 400
+  height: 300
 }
 
 const optionsWindow = {
@@ -57,7 +57,8 @@ const appActions = {
   LOADING_START: 'LOADING_START',
   LOADING_END: 'LOADING_END',
   SET_APP_MODE: 'SET_APP_MODE',
-  SET_GIF_FOLDER: 'SET_GIF_FOLDER'
+  SET_GIF_FOLDER: 'SET_GIF_FOLDER',
+  SET_OPTIONS: 'SET_OPTIONS'
 }
 
 const ipcActions = {

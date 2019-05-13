@@ -2,7 +2,7 @@ import { Map } from 'immutable'
 import config from 'common/config'
 
 const {
-  appActions: { INITIALIZE, LOADING_START, LOADING_END, SET_APP_MODE, SET_GIF_FOLDER }
+  appActions: { INITIALIZE, LOADING_START, LOADING_END, SET_APP_MODE, SET_GIF_FOLDER, SET_OPTIONS }
 } = config
 
 function reducer(state, action) {
@@ -23,6 +23,8 @@ function reducer(state, action) {
       return { ...state, mode: action.payload }
     case SET_GIF_FOLDER:
       return { ...state, gifFolder: action.payload }
+    case SET_OPTIONS:
+      return { ...state, options: action.payload }
     default:
       throw new Error()
   }
@@ -34,7 +36,7 @@ const initialState = {
   windowTitle: null,
   options: Map(),
   sources: null,
-  mode: 1,
+  mode: 0,
   gifFolder: null
 }
 

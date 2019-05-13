@@ -22,6 +22,7 @@ import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
 const {
+  mainWindow,
   appActions: { SET_APP_MODE, SET_GIF_FOLDER },
   constants: { IMAGE_TYPE }
 } = config
@@ -237,6 +238,8 @@ export default function Editor() {
 
   function onNewRecordingClick() {
     dispatch({ type: SET_APP_MODE, payload: 0 })
+    remote.getCurrentWindow().setSize(mainWindow.width, mainWindow.height)
+    remote.getCurrentWindow().center()
   }
 
   function onSaveClick() {

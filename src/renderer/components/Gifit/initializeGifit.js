@@ -1,10 +1,10 @@
 import { remote, ipcRenderer } from 'electron'
-import getMainWindowDimensions from 'common/getMainWindowDimensions'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
 const {
   inDev,
+  mainWindow,
   ipcActions: { GIFIT_STOP, GIFIT_CLOSE },
   appActions: { SET_APP_MODE, SET_GIF_FOLDER }
 } = config
@@ -22,14 +22,8 @@ export default (state, dispatch) => {
   }
 
   function onGifitClose() {
-    const { width, height, x, y } = getMainWindowDimensions(sourceIndex)
-    const bounds = {
-      width,
-      height,
-      x,
-      y
-    }
-    remote.BrowserWindow.fromId(1).setBounds(bounds, true)
+    remote.BrowserWindow.fromId(1).setSize(mainWindow.width, mainWindow.height)
+    remote.BrowserWindow.fromId(1).center()
     remote.BrowserWindow.fromId(1).show()
     remote.BrowserWindow.fromId(1).focus()
   }
