@@ -248,12 +248,14 @@ export default function Editor() {
     }
   }, [selected])
 
+  // navigate back to Landing page
   function onNewRecordingClick() {
     dispatch({ type: SET_APP_MODE, payload: 0 })
     remote.getCurrentWindow().setSize(mainWindow.width, mainWindow.height)
     remote.getCurrentWindow().center()
   }
 
+  // save project as a GIF
   function onSaveClick() {
     const win = remote.getCurrentWindow()
 
@@ -278,6 +280,7 @@ export default function Editor() {
     }
   }
 
+  // remove a project and delete all associated files
   function onDiscardProjectClick() {
     const win = remote.getCurrentWindow()
     const opts = {
@@ -311,9 +314,12 @@ export default function Editor() {
     remote.dialog.showMessageBox(win, opts, callback)
   }
 
+  // playback interface
+  // index refers to button order 0=first 1=previous 2=play/pause 3=next 4=last
   function onPlaybackClick(index) {
     if (index === 0) {
       setImageIndex(0)
+      setSelected(selected.map((el, i) => i === 0))
     } else if (index === 1) {
       setImageIndex(imageIndex === 0 ? images.length - 1 : imageIndex - 1)
     } else if (index === 2) {
@@ -322,9 +328,11 @@ export default function Editor() {
       setImageIndex(imageIndex === images.length - 1 ? 0 : imageIndex + 1)
     } else if (index === 4) {
       setImageIndex(images.length - 1)
+      setSelected(selected.map((el, i) => i === images.length - 1))
     }
   }
 
+  // delete selected frames from project
   function onFrameDeleteClick() {
     const count = selected.count(el => el)
     if (count === 0) {
@@ -356,17 +364,31 @@ export default function Editor() {
     remote.dialog.showMessageBox(win, opts, callback)
   }
 
+  // toolbar selection controls
+  // index refers to button 0=all 1=inverse 2=deselect
+  function onSelectClick(index) {
+    if (index === 0) {
+      setImageIndex(imageIndex === null ? 0 : imageIndex)
+      setSelected(selected.map(el => true))
+    } else if (index === 1) {
+      const newIndex = selected.findIndex(el => !el)
+      setImageIndex(newIndex === -1 ? null : newIndex)
+      setSelected(selected.map(el => !el))
+    } else if (index === 2) {
+      setImageIndex(null)
+      setSelected(selected.map(el => false))
+    }
+  }
+
+  // create a new title frame image file and update project.json
   function onTitleAccept() {
     const reader = new FileReader()
     const filepath = path.join(RECORDINGS_DIRECTORY, gifData.relative, createTFName())
     reader.onload = () => {
       const buffer = Buffer.from(reader.result)
-      writeFileAsync(filepath, buffer).then(() => {
-        setShowDrawer(false)
-        setDrawerMode('')
-      })
+      writeFileAsync(filepath, buffer).then(() => {})
     }
-
+    //create full size canvas in memory
     const canvas = document.createElement('canvas')
     canvas.width = gifData.width
     canvas.height = gifData.height
@@ -379,22 +401,28 @@ export default function Editor() {
     const { x, y } = getTextXY(canvas, titleVertical, titleHorizontal, titleSize, titleText, 1)
     ctx.fillText(titleText, x, y)
     canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
-
+    // update project.json and overwrite
     const newImages = images.slice()
     newImages.splice(imageIndex, 0, { path: filepath, time: titleDelay })
     const newProject = { ...gifData, frames: newImages }
     const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
     writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+      // after new project.json is saved
+      // re-initialize editor to include new title frame and close drawer
       initialize(imageIndex)
+      setShowDrawer(false)
+      setDrawerMode('')
     })
   }
 
+  // cancel title frame creation
   function onTitleCancel() {
     setShowDrawer(false)
     setDrawerMode('')
     setTitleText('Title Frame')
   }
 
+  // add configured border to selected frames
   async function onBorderAccept() {
     async function draw() {
       return new Promise(resolve => {
@@ -438,6 +466,7 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
+  // cancel adding border
   function onBorderCancel() {
     const ctx2 = canvas2.current.getContext('2d')
     ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
@@ -445,19 +474,23 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
+  // open a recent project
   function onRecentAccept(folder) {
     dispatch({ type: SET_GIF_FOLDER, payload: folder })
     setShowDrawer(false)
   }
 
+  // close recent project drawer
   function onRecentCancel() {
     setShowDrawer(false)
   }
 
+  // open options window
   function onOptionsClick() {
     initializeOptions(remote.getCurrentWindow(), dispatch)
   }
 
+  // handle clicking a thumbail
   function onThumbnailClick(e, index) {
     if (e.ctrlKey && e.shiftKey) {
       setSelected(
@@ -502,6 +535,7 @@ export default function Editor() {
         onPlaybackClick={onPlaybackClick}
         onFrameDeleteClick={onFrameDeleteClick}
         onOptionsClick={onOptionsClick}
+        onSelectClick={onSelectClick}
       />
       <Main
         ref={main}

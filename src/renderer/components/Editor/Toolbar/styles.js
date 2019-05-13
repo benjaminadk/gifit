@@ -118,6 +118,11 @@ export const Zoom = styled.div`
   grid-template-columns: 75px 75px 150px;
 `
 
+export const Selection = styled.div`
+  display: grid;
+  grid-template-columns: 75px 75px 75px;
+`
+
 export const Playback = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 50px);

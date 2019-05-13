@@ -16,6 +16,9 @@ import { Delete } from 'styled-icons/material/Delete'
 import { Search } from 'styled-icons/material/Search'
 import { Expand } from 'styled-icons/boxicons-regular/Expand'
 import { Title } from 'styled-icons/material/Title'
+import { MousePointer } from 'styled-icons/fa-solid/MousePointer'
+import { Collections } from 'styled-icons/material/Collections'
+import { FilterNone } from 'styled-icons/material/FilterNone'
 import NumberInput from '../../Shared/NumberInput'
 import {
   Container,
@@ -30,6 +33,7 @@ import {
   File,
   Zoom,
   ZoomInput,
+  Selection,
   Playback,
   Frames,
   Text,
@@ -64,7 +68,8 @@ export default function Toolbar({
   onDiscardProjectClick,
   onPlaybackClick,
   onFrameDeleteClick,
-  onOptionsClick
+  onOptionsClick,
+  onSelectClick
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
 
@@ -184,6 +189,23 @@ export default function Toolbar({
               </ZoomInput>
             </Zoom>
             <SectionText>Zoom</SectionText>
+          </Section>
+          <Section width={300}>
+            <Selection>
+              <Action onClick={() => onSelectClick(0)}>
+                <MousePointer />
+                <div className='text'>Select All</div>
+              </Action>
+              <Action onClick={() => onSelectClick(1)}>
+                <Collections />
+                <div className='text'>Inverse</div>
+              </Action>
+              <Action onClick={() => onSelectClick(2)}>
+                <FilterNone />
+                <div className='text'>Deselect</div>
+              </Action>
+            </Selection>
+            <SectionText>Select</SectionText>
           </Section>
         </Menu>
       ) : menuIndex === 2 ? (
