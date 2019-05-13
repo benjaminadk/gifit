@@ -39,7 +39,7 @@ export default function Options() {
 
   useEffect(() => {
     writeFileAsync(OPTIONS_PATH, JSON.stringify(options)).then(() => {
-      remote.BrowserWindow.fromId(1).webContents.send(OPTIONS_UPDATE, options)
+      remote.BrowserWindow.fromId(1).webContents.send(OPTIONS_UPDATE, options.toObject())
     })
   }, [options])
 

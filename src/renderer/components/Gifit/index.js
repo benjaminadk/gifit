@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef, useEffect } from 'react'
+import React, { useState, useContext, useRef } from 'react'
 import { remote } from 'electron'
 import jimp from 'jimp'
 import { CropFree } from 'styled-icons/material/CropFree'
@@ -44,7 +44,10 @@ export default function Gifit() {
 
   async function onRecordStart(cropped) {
     setMode(2)
-    remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
+
+    if (options.get('showCursor')) {
+      remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
+    }
 
     const { width: w, height: h } = source.display.bounds
 
@@ -107,7 +110,7 @@ export default function Gifit() {
       clearInterval(captureFrame)
       clearTimeout(stopCapture)
       tray.destroy()
-      remote.globalShortcut.unregister('Esc ')
+      remote.globalShortcut.unregister('Esc')
       stream.getTracks().forEach(track => track.stop())
 
       const folder = createFolderName()
@@ -150,10 +153,7 @@ export default function Gifit() {
         frameRate,
         frames: data
       }
-      await writeFileAsync(
-        path.join(folderPath, 'project.json'),
-        JSON.stringify(project)
-      )
+      await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
 
       remote.BrowserWindow.fromId(1).webContents.send(GIFIT_STOP, folder)
       remote.getCurrentWindow().close()
@@ -211,6 +211,7 @@ export default function Gifit() {
     <Container
       transparent={mode !== 0}
       crosshair={mode === 1 && !done}
+      noCursor={mode === 2 && !options.get('showCursor')}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
@@ -226,18 +227,8 @@ export default function Gifit() {
           <Close />
         </Option>
       </Toolbar>
-      <Rectangle
-        show={mode === 1}
-        top={top}
-        left={left}
-        width={width}
-        height={height}
-      />
-      <Confirm
-        show={mode === 1 && done}
-        top={top + height + 5}
-        left={left + width / 2 - 50}
-      >
+      <Rectangle show={mode === 1} top={top} left={left} width={width} height={height} />
+      <Confirm show={mode === 1 && done} top={top + height + 5} left={left + width / 2 - 50}>
         <Option onClick={() => onRecordStart(true)}>
           <Check />
         </Option>

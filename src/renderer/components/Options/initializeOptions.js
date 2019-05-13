@@ -1,4 +1,5 @@
 import { remote, ipcRenderer } from 'electron'
+import { Map } from 'immutable'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
@@ -10,8 +11,10 @@ const {
 } = config
 
 export default (parent, dispatch) => {
-  function onOptionsUpdate(options) {
-    dispatch({ type: SET_OPTIONS, payload: options })
+  function onOptionsUpdate(e, options) {
+    console.log(options)
+    console.log(Map(options))
+    dispatch({ type: SET_OPTIONS, payload: Map(options) })
   }
 
   let optionsWindow

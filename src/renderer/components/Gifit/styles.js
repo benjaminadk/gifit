@@ -17,7 +17,7 @@ export const Container = styled.div`
   justify-items: center;
   align-items: flex-start;
   background: ${p => (p.transparent ? 'transparent' : 'rgba(0, 0, 0, 0.25)')};
-  cursor: ${p => (p.crosshair ? 'crosshair' : 'normal')};
+  cursor: ${p => (p.crosshair ? 'crosshair' : p.noCursor ? 'none' : 'normal')};
 `
 
 export const Toolbar = styled.div`
