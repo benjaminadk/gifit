@@ -371,12 +371,12 @@ export default function Editor() {
     canvas.width = gifData.width
     canvas.height = gifData.height
     const ctx = canvas.getContext('2d')
+    ctx.textBaseline = 'middle'
     ctx.fillStyle = titleBackground
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.fillStyle = titleColor
-    ctx.font = `${titleSize}px sans-serif`
-    const x = canvas.width / 2 - ctx.measureText(titleText).width / 2
-    const y = canvas.height / 2 - titleSize / 2
+    ctx.font = `${titleStyle} ${titleSize}px ${titleFont}`
+    const { x, y } = getTextXY(canvas, titleVertical, titleHorizontal, titleSize, titleText, 1)
     ctx.fillText(titleText, x, y)
     canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
 
@@ -385,7 +385,7 @@ export default function Editor() {
     const newProject = { ...gifData, frames: newImages }
     const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
     writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
-      initialize()
+      initialize(imageIndex)
     })
   }
 
