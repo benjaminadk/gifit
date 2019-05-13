@@ -25,6 +25,7 @@ import { Stats } from 'styled-icons/boxicons-regular/Stats'
 import { Hashtag } from 'styled-icons/fa-solid/Hashtag'
 import { PhotoSizeSelectLarge } from 'styled-icons/material/PhotoSizeSelectLarge'
 import { AccessTime } from 'styled-icons/material/AccessTime'
+import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
 import NumberInput from '../../Shared/NumberInput'
 import {
   Container,
@@ -73,9 +74,7 @@ export default function Toolbar({
   zoomToFit,
   playing,
   setScale,
-  onOpenTitleDrawer,
-  onOpenBorderDrawer,
-  onOpenRecentDrawer,
+  onOpenDrawer,
   onZoomChange,
   onZoomArrowClick,
   onNewRecordingClick,
@@ -121,7 +120,7 @@ export default function Toolbar({
                 <Save />
                 <div className='text'>Save As</div>
               </Action>
-              <Action onClick={onOpenRecentDrawer}>
+              <Action onClick={() => onOpenDrawer('recent')}>
                 <FileArchive />
                 <div className='text'>Recent Projects</div>
               </Action>
@@ -207,18 +206,22 @@ export default function Toolbar({
         <Menu>
           <Section width={200}>
             <Text>
-              <Action onClick={onOpenTitleDrawer}>
+              <Action onClick={() => onOpenDrawer('title')}>
                 <Title />
                 <div className='text'>Title Frame</div>
               </Action>
             </Text>
             <SectionText>Text</SectionText>
           </Section>
-          <Section width={200}>
+          <Section width={150}>
             <Overlay>
-              <Action onClick={onOpenBorderDrawer}>
+              <Action onClick={() => onOpenDrawer('border')}>
                 <BorderOuter />
                 <div className='text'>Border</div>
+              </Action>
+              <Action onClick={() => onOpenDrawer('progress')}>
+                <RemoveFromQueue />
+                <div className='text'>Progress</div>
               </Action>
             </Overlay>
             <SectionText>Overlay</SectionText>

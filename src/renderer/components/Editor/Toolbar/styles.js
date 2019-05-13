@@ -166,7 +166,7 @@ export const Text = styled.div`
 
 export const Overlay = styled.div`
   display: grid;
-  grid-template-columns: repeat(1, 50px);
+  grid-template-columns: repeat(2, 75px);
 `
 
 export const General = styled.div`

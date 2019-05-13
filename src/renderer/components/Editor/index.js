@@ -15,6 +15,7 @@ import { AppContext } from '../App'
 import Drawer from './Drawer'
 import TitleFrame from './TitleFrame'
 import Border from './Border'
+import Progress from './Progress'
 import RecentProjects from './RecentProjects'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
@@ -207,6 +208,9 @@ export default function Editor() {
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
       drawBorder(canvas2.current, borderLeft, borderRight, borderTop, borderBottom, borderColor)
       // clear canvas when drawer is closed
+    } else if (drawerMode === 'progress') {
+      const ctx2 = canvas2.current.getContext('2d')
+      ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
     } else {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
@@ -414,11 +418,18 @@ export default function Editor() {
     }
   }
 
-  // open title frame drawer
-  function onOpenTitleDrawer() {
+  // open drawer
+  function onOpenDrawer(drawer) {
+    if (drawer === 'recent') {
+    } else if (drawer === 'title') {
+      setScale(zoomToFit)
+    } else if (drawer === 'border') {
+      setScale(1)
+    } else if (drawer === 'progress') {
+      setScale(zoomToFit)
+    }
     setShowDrawer(true)
-    setDrawerMode('title')
-    setScale(zoomToFit)
+    setDrawerMode(drawer)
   }
 
   // create a new title frame image file and update project.json
@@ -461,13 +472,6 @@ export default function Editor() {
     setShowDrawer(false)
     setDrawerMode('')
     setTitleText('Title Frame')
-  }
-
-  // open border drawer
-  function onOpenBorderDrawer() {
-    setShowDrawer(true)
-    setDrawerMode('border')
-    setScale(1)
   }
 
   // add configured border to selected frames
@@ -520,12 +524,6 @@ export default function Editor() {
     ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
     setShowDrawer(false)
     setScale(zoomToFit)
-  }
-
-  // open recent project drawer
-  function onOpenRecentDrawer() {
-    setShowDrawer(true)
-    setDrawerMode('recent')
   }
 
   // open a recent project
@@ -583,9 +581,7 @@ export default function Editor() {
         zoomToFit={zoomToFit}
         playing={playing}
         setScale={setScale}
-        onOpenTitleDrawer={onOpenTitleDrawer}
-        onOpenBorderDrawer={onOpenBorderDrawer}
-        onOpenRecentDrawer={onOpenRecentDrawer}
+        onOpenDrawer={onOpenDrawer}
         onZoomChange={onZoomChange}
         onZoomArrowClick={onZoomArrowClick}
         onNewRecordingClick={onNewRecordingClick}
@@ -616,7 +612,14 @@ export default function Editor() {
       />
       <BottomBar loading={loading} />
       <Drawer show={showDrawer}>
-        {drawerMode === 'title' ? (
+        {drawerMode === 'recent' ? (
+          <RecentProjects
+            drawerHeight={drawerHeight}
+            recentProjects={recentProjects}
+            onAccept={onRecentAccept}
+            onCancel={onRecentCancel}
+          />
+        ) : drawerMode === 'title' ? (
           <TitleFrame
             drawerHeight={drawerHeight}
             titleText={titleText}
@@ -656,13 +659,8 @@ export default function Editor() {
             onAccept={onBorderAccept}
             onCancel={onBorderCancel}
           />
-        ) : drawerMode === 'recent' ? (
-          <RecentProjects
-            drawerHeight={drawerHeight}
-            recentProjects={recentProjects}
-            onAccept={onRecentAccept}
-            onCancel={onRecentCancel}
-          />
+        ) : drawerMode === 'progress' ? (
+          <Progress />
         ) : null}
       </Drawer>
     </Container>
