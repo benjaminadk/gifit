@@ -7,7 +7,8 @@ import { promisify } from 'util'
 import { AppContext } from '../App'
 import Checkbox from '../Shared/Checkbox'
 import Button from '../Shared/Button'
-import { Container, MenuItem, Application, Section } from './styles'
+import NumberInput from '../Shared/NumberInput'
+import { Container, MenuItem, Application, Section, CountdownSize } from './styles'
 import { OPTIONS_PATH } from 'common/filepaths'
 import config from 'common/config'
 
@@ -44,11 +45,41 @@ export default function Options() {
   }, [options])
 
   function onCheckboxClick(x) {
-    var payload
-    if (x === 0) {
-      payload = options.set('showCursor', !options.get('showCursor'))
+    dispatch({ type: SET_OPTIONS, payload: options.set(x, !options.get(x)) })
+  }
+
+  function onCountdownSizeChange({ target: { value } }) {
+    const isDigit = /^\d*$/
+    var newValue
+    if (isDigit.test(value)) {
+      if (Number(value) > 15) {
+        newValue = 15
+      } else {
+        newValue = value
+      }
+    } else {
+      newValue = 2
     }
-    dispatch({ type: SET_OPTIONS, payload })
+    dispatch({ type: SET_OPTIONS, payload: options.set('countdownSize', Number(newValue)) })
+  }
+
+  function onCountdownSizeBlur({ target: { value } }) {
+    if (Number(value) < 2 || !value) {
+      dispatch({ type: SET_OPTIONS, payload: options.set('countdownSize', 2) })
+    }
+  }
+
+  function onCountdownSizeArrowClick(inc) {
+    const currentValue = options.get('countdownSize')
+    if (inc) {
+      if (currentValue < 15) {
+        dispatch({ type: SET_OPTIONS, payload: options.set('countdownSize', currentValue + 1) })
+      }
+    } else {
+      if (currentValue > 2) {
+        dispatch({ type: SET_OPTIONS, payload: options.set('countdownSize', currentValue - 1) })
+      }
+    }
   }
 
   function onClose() {
@@ -78,8 +109,26 @@ export default function Options() {
                   <Checkbox
                     value={options.get('showCursor')}
                     primary='Show the mouse cursor in the recording.'
-                    onClick={() => onCheckboxClick(0)}
+                    onClick={() => onCheckboxClick('showCursor')}
                   />
+                  <Checkbox
+                    value={options.get('useCountdown')}
+                    primary='Use pre start countdown.'
+                    onClick={() => onCheckboxClick('useCountdown')}
+                  />
+                  {options.get('useCountdown') && (
+                    <CountdownSize>
+                      <NumberInput
+                        width={60}
+                        value={options.get('countdownSize')}
+                        onChange={onCountdownSizeChange}
+                        onBlur={onCountdownSizeBlur}
+                        onArrowUpClick={() => onCountdownSizeArrowClick(true)}
+                        onArrowDownClick={() => onCountdownSizeArrowClick(false)}
+                      />
+                      <div className='text'>(In seconds, wait before start capture.)</div>
+                    </CountdownSize>
+                  )}
                 </div>
               </Section>
             </Application>

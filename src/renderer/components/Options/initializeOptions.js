@@ -12,8 +12,6 @@ const {
 
 export default (parent, dispatch) => {
   function onOptionsUpdate(e, options) {
-    console.log(options)
-    console.log(Map(options))
     dispatch({ type: SET_OPTIONS, payload: Map(options) })
   }
 

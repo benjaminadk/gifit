@@ -4,6 +4,7 @@ export const Container = styled.div`
   display: grid;
   grid-template-columns: 25px 1fr;
   align-items: center;
+  margin-bottom: 10px;
   svg {
     justify-self: center;
     width: 15px;

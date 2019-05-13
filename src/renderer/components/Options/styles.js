@@ -74,3 +74,14 @@ export const Section = styled.div`
     padding: 10px;
   }
 `
+
+export const CountdownSize = styled.div`
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  align-items: center;
+  margin-left: 30px;
+  .text {
+    font-size: 1.2rem;
+    color: ${p => p.theme.grey[5]};
+  }
+`
