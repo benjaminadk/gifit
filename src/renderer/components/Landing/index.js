@@ -26,7 +26,7 @@ export default function Landing() {
   }, [])
 
   function onOptionsClick() {
-    initializeOptions(remote.getCurrentWindow())
+    initializeOptions(remote.getCurrentWindow(), dispatch)
   }
 
   function onRecordingClick() {

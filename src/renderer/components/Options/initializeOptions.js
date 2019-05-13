@@ -4,13 +4,16 @@ import config from 'common/config'
 
 const {
   inDev,
-  ipcActions: { OPTIONS_SAVE, OPTIONS_CLOSE },
+  ipcActions: { OPTIONS_UPDATE },
+  appActions: { SET_OPTIONS },
   optionsWindow: { width, height }
 } = config
 
-function onOptionsClose() {}
+export default (parent, dispatch) => {
+  function onOptionsUpdate(options) {
+    dispatch({ type: SET_OPTIONS, payload: options })
+  }
 
-export default parent => {
   let optionsWindow
 
   optionsWindow = new remote.BrowserWindow({
@@ -32,7 +35,10 @@ export default parent => {
 
   inDev && optionsWindow.webContents.openDevTools({ mode: 'detach' })
 
+  ipcRenderer.on(OPTIONS_UPDATE, onOptionsUpdate)
+
   optionsWindow.on('close', () => {
+    ipcRenderer.removeListener(OPTIONS_UPDATE, onOptionsUpdate)
     optionsWindow = null
   })
 }

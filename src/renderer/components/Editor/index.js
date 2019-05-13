@@ -7,6 +7,7 @@ import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
 import createHashPath from '../../lib/createHashPath'
 import createTFName from '../../lib/createTFName'
+import initializeOptions from '../Options/initializeOptions'
 import drawBorder from './drawBorder'
 import createGIF from './createGIF'
 import { AppContext } from '../App'
@@ -425,6 +426,10 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  function onOptionsClick() {
+    initializeOptions(remote.getCurrentWindow(), dispatch)
+  }
+
   function onThumbnailClick(e, index) {
     if (e.ctrlKey && e.shiftKey) {
       setSelected(
@@ -468,6 +473,7 @@ export default function Editor() {
         onDiscardProjectClick={onDiscardProjectClick}
         onPlaybackClick={onPlaybackClick}
         onFrameDeleteClick={onFrameDeleteClick}
+        onOptionsClick={onOptionsClick}
       />
       <Main
         ref={main}

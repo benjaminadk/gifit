@@ -64,8 +64,7 @@ const appActions = {
 const ipcActions = {
   GIFIT_STOP: 'GIFIT_STOP',
   GIFIT_CLOSE: 'GIFIT_CLOSE',
-  OPTIONS_SAVE: 'OPTIONS_SAVE',
-  OPTIONS_CLOSE: 'OPTIONS_CLOSE'
+  OPTIONS_UPDATE: 'OPTIONS_UPDATE'
 }
 
 const constants = {

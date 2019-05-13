@@ -1,10 +1,22 @@
-import React, { useState, useContext } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
+import { remote } from 'electron'
 import { Check } from 'styled-icons/material/Check'
 import { DesktopWindows } from 'styled-icons/material/DesktopWindows'
+import { writeFile } from 'fs'
+import { promisify } from 'util'
 import { AppContext } from '../App'
 import Checkbox from '../Shared/Checkbox'
 import Button from '../Shared/Button'
 import { Container, MenuItem, Application, Section } from './styles'
+import { OPTIONS_PATH } from 'common/filepaths'
+import config from 'common/config'
+
+const {
+  ipcActions: { OPTIONS_UPDATE },
+  appActions: { SET_OPTIONS }
+} = config
+
+const writeFileAsync = promisify(writeFile)
 
 const menu = [
   'Application',
@@ -24,6 +36,24 @@ export default function Options() {
   const { options } = state
 
   const [menuIndex, setMenuIndex] = useState(0)
+
+  useEffect(() => {
+    writeFileAsync(OPTIONS_PATH, JSON.stringify(options)).then(() => {
+      remote.BrowserWindow.fromId(1).webContents.send(OPTIONS_UPDATE, options)
+    })
+  }, [options])
+
+  function onCheckboxClick(x) {
+    var payload
+    if (x === 0) {
+      payload = options.set('showCursor', !options.get('showCursor'))
+    }
+    dispatch({ type: SET_OPTIONS, payload })
+  }
+
+  function onClose() {
+    remote.getCurrentWindow().close()
+  }
 
   return (
     <Container>
@@ -48,6 +78,7 @@ export default function Options() {
                   <Checkbox
                     value={options.get('showCursor')}
                     primary='Show the mouse cursor in the recording.'
+                    onClick={() => onCheckboxClick(0)}
                   />
                 </div>
               </Section>
@@ -56,9 +87,9 @@ export default function Options() {
         </div>
       </div>
       <div className='bottom'>
-        <Button width={115}>
+        <Button width={115} onClick={onClose}>
           <Check />
-          <div className='text'>Save</div>
+          <div className='text'>Close</div>
         </Button>
       </div>
     </Container>
