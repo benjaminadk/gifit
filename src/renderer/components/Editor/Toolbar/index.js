@@ -61,8 +61,11 @@ export default function Toolbar({
   zoomToFit,
   playing,
   setScale,
-  setShowDrawer,
-  setDrawerMode,
+  onOpenTitleDrawer,
+  onOpenBorderDrawer,
+  onOpenRecentDrawer,
+  onZoomChange,
+  onZoomArrowClick,
   onNewRecordingClick,
   onSaveClick,
   onDiscardProjectClick,
@@ -72,55 +75,6 @@ export default function Toolbar({
   onSelectClick
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
-
-  function onOpenTitleDrawer() {
-    setShowDrawer(true)
-    setDrawerMode('title')
-    setScale(zoomToFit)
-  }
-
-  function onOpenBorderDrawer() {
-    setShowDrawer(true)
-    setDrawerMode('border')
-    setScale(1)
-  }
-
-  function onOpenRecentDrawer() {
-    setShowDrawer(true)
-    setDrawerMode('recent')
-  }
-
-  function onZoomChange({ target: { value } }) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 500) {
-        newValue = 500
-      } else if (Number(value) < 10) {
-        newValue = 10
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 100
-    }
-    setScale(newValue / 100)
-  }
-
-  function onZoomArrowClick(inc) {
-    var currentValue = scale * 100
-    var newValue
-    if (inc) {
-      if (currentValue < 500) {
-        newValue = currentValue + 1
-      }
-    } else {
-      if (currentValue > 10) {
-        newValue = currentValue - 1
-      }
-    }
-    setScale(newValue / 100)
-  }
 
   return (
     <Container>

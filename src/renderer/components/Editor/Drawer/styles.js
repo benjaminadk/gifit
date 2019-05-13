@@ -48,6 +48,10 @@ export const Header = styled.header`
     svg {
       width: 30px;
       height: 30px;
+      margin-right: 10px;
+      &:hover {
+        background: ${p => lighten(0.4, p.theme.primary)};
+      }
     }
   }
 `

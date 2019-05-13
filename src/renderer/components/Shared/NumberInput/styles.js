@@ -21,6 +21,10 @@ export const Container = styled.div`
     font-size: 1.2rem;
     padding: 0;
     background: ${p => (p.focused ? p.theme.grey[0] : '#FFF')};
+    &::selection {
+      background: ${p => p.theme.primary};
+      color: #fff;
+    }
   }
   .divider1 {
     width: 1px;

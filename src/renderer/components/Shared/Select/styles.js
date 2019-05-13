@@ -41,6 +41,7 @@ export const Options = styled.div`
   border: ${p => (p.show ? p.theme.border : `1px solid transparent`)};
   border-top: 0;
   background: #fff;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1), -0.5px -0.5px 0.5px rgba(0, 0, 0, 0.05);
   transition: ${p => (p.show ? `max-height 0.2s` : '0')};
 `
 

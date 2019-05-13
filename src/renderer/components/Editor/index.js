@@ -364,6 +364,40 @@ export default function Editor() {
     remote.dialog.showMessageBox(win, opts, callback)
   }
 
+  // zoom input keyboard entry
+  function onZoomChange({ target: { value } }) {
+    const isDigit = /^\d*$/
+    var newValue
+    if (isDigit.test(value)) {
+      if (Number(value) > 500) {
+        newValue = 500
+      } else if (Number(value) < 10) {
+        newValue = 10
+      } else {
+        newValue = value
+      }
+    } else {
+      newValue = 100
+    }
+    setScale(newValue / 100)
+  }
+
+  // zoom input arrows
+  function onZoomArrowClick(inc) {
+    var currentValue = scale * 100
+    var newValue
+    if (inc) {
+      if (currentValue < 500) {
+        newValue = currentValue + 1
+      }
+    } else {
+      if (currentValue > 10) {
+        newValue = currentValue - 1
+      }
+    }
+    setScale(newValue / 100)
+  }
+
   // toolbar selection controls
   // index refers to button 0=all 1=inverse 2=deselect
   function onSelectClick(index) {
@@ -378,6 +412,13 @@ export default function Editor() {
       setImageIndex(null)
       setSelected(selected.map(el => false))
     }
+  }
+
+  // open title frame drawer
+  function onOpenTitleDrawer() {
+    setShowDrawer(true)
+    setDrawerMode('title')
+    setScale(zoomToFit)
   }
 
   // create a new title frame image file and update project.json
@@ -420,6 +461,13 @@ export default function Editor() {
     setShowDrawer(false)
     setDrawerMode('')
     setTitleText('Title Frame')
+  }
+
+  // open border drawer
+  function onOpenBorderDrawer() {
+    setShowDrawer(true)
+    setDrawerMode('border')
+    setScale(1)
   }
 
   // add configured border to selected frames
@@ -472,6 +520,12 @@ export default function Editor() {
     ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
     setShowDrawer(false)
     setScale(zoomToFit)
+  }
+
+  // open recent project drawer
+  function onOpenRecentDrawer() {
+    setShowDrawer(true)
+    setDrawerMode('recent')
   }
 
   // open a recent project
@@ -529,6 +583,11 @@ export default function Editor() {
         setScale={setScale}
         setShowDrawer={setShowDrawer}
         setDrawerMode={setDrawerMode}
+        onOpenTitleDrawer={onOpenTitleDrawer}
+        onOpenBorderDrawer={onOpenBorderDrawer}
+        onOpenRecentDrawer={onOpenRecentDrawer}
+        onZoomChange={onZoomChange}
+        onZoomArrowClick={onZoomArrowClick}
         onNewRecordingClick={onNewRecordingClick}
         onSaveClick={onSaveClick}
         onDiscardProjectClick={onDiscardProjectClick}
