@@ -19,7 +19,7 @@ const defaultOptions = {
   tempPath: '',
   showCursor: true,
   useCountdown: false,
-  countdownSize: 3,
+  countdownTime: 3,
   alwaysOnTop: false,
   sourceIndex: 0,
   frameRate: 10,

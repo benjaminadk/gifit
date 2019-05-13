@@ -74,3 +74,11 @@ export const Confirm = styled.div.attrs(p => ({
   height: 50px;
   grid-template-columns: repeat(3, 50px);
 `
+
+export const Countdown = styled.div`
+  justify-self: center;
+  align-self: center;
+  display: ${p => (p.show ? 'block' : 'none')};
+  font-size: 4rem;
+  color: #fff;
+`

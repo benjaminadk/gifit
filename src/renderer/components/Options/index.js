@@ -48,7 +48,7 @@ export default function Options() {
     dispatch({ type: SET_OPTIONS, payload: options.set(x, !options.get(x)) })
   }
 
-  function onCountdownSizeChange({ target: { value } }) {
+  function onCountdownTimeChange({ target: { value } }) {
     const isDigit = /^\d*$/
     var newValue
     if (isDigit.test(value)) {
@@ -60,24 +60,24 @@ export default function Options() {
     } else {
       newValue = 2
     }
-    dispatch({ type: SET_OPTIONS, payload: options.set('countdownSize', Number(newValue)) })
+    dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', Number(newValue)) })
   }
 
-  function onCountdownSizeBlur({ target: { value } }) {
+  function onCountdownTimeBlur({ target: { value } }) {
     if (Number(value) < 2 || !value) {
-      dispatch({ type: SET_OPTIONS, payload: options.set('countdownSize', 2) })
+      dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', 2) })
     }
   }
 
-  function onCountdownSizeArrowClick(inc) {
-    const currentValue = options.get('countdownSize')
+  function onCountdownTimeArrowClick(inc) {
+    const currentValue = options.get('countdownTime')
     if (inc) {
       if (currentValue < 15) {
-        dispatch({ type: SET_OPTIONS, payload: options.set('countdownSize', currentValue + 1) })
+        dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', currentValue + 1) })
       }
     } else {
       if (currentValue > 2) {
-        dispatch({ type: SET_OPTIONS, payload: options.set('countdownSize', currentValue - 1) })
+        dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', currentValue - 1) })
       }
     }
   }
@@ -120,11 +120,11 @@ export default function Options() {
                     <CountdownSize>
                       <NumberInput
                         width={60}
-                        value={options.get('countdownSize')}
-                        onChange={onCountdownSizeChange}
-                        onBlur={onCountdownSizeBlur}
-                        onArrowUpClick={() => onCountdownSizeArrowClick(true)}
-                        onArrowDownClick={() => onCountdownSizeArrowClick(false)}
+                        value={options.get('countdownTime')}
+                        onChange={onCountdownTimeChange}
+                        onBlur={onCountdownTimeBlur}
+                        onArrowUpClick={() => onCountdownTimeArrowClick(true)}
+                        onArrowDownClick={() => onCountdownTimeArrowClick(false)}
                       />
                       <div className='text'>(In seconds, wait before start capture.)</div>
                     </CountdownSize>

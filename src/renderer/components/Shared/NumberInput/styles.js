@@ -1,16 +1,19 @@
 import styled from 'styled-components'
+import { lighten } from 'polished'
+
+const shade = 0.3
 
 export const Container = styled.div`
   width: ${p => p.width}px;
   height: 25px;
   display: grid;
   grid-template-columns: 1fr 1px 25px;
-  outline: ${p => (p.focused ? `1px solid ${p.theme.primary}` : p.theme.border)};
+  outline: ${p => (p.focused ? `1px solid ${lighten(shade, p.theme.primary)}` : p.theme.border)};
   &:hover {
-    outline: 1px solid ${p => p.theme.primary};
+    outline: 1px solid ${p => lighten(shade, p.theme.primary)};
   }
   &:hover > .divider1 {
-    background: ${p => p.theme.primary};
+    background: ${p => lighten(shade, p.theme.primary)};
   }
   input {
     width: 100%;
@@ -22,7 +25,7 @@ export const Container = styled.div`
   .divider1 {
     width: 1px;
     height: 25px;
-    background: ${p => (p.focused ? p.theme.primary : 'transparent')};
+    background: ${p => (p.focused ? lighten(shade, p.theme.primary) : 'transparent')};
   }
   .arrows {
     display: grid;
@@ -43,10 +46,10 @@ export const Container = styled.div`
     .divider2 {
       width: 25px;
       height: 1px;
-      background: ${p => (p.focused ? p.theme.primary : 'transparent')};
+      background: ${p => (p.focused ? lighten(shade, p.theme.primary) : 'transparent')};
     }
     &:hover .divider2 {
-      background: ${p => p.theme.primary};
+      background: ${p => lighten(shade, p.theme.primary)};
     }
   }
 `

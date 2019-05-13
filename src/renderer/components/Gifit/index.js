@@ -10,7 +10,7 @@ import { writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
 import createFolderName from '../../lib/createFolderName'
 import { AppContext } from '../App'
-import { Container, Toolbar, Option, Rectangle, Confirm } from './styles'
+import { Container, Toolbar, Option, Rectangle, Confirm, Countdown } from './styles'
 import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
 import config from 'common/config'
 
@@ -25,6 +25,9 @@ const writeFileAsync = promisify(writeFile)
 export default function Gifit() {
   const { state, dispatch } = useContext(AppContext)
   const { options, sources } = state
+  const showCursor = options.get('showCursor')
+  const useCountdown = options.get('useCountdown')
+  const countdownTime = options.get('countdownTime')
   const frameRate = options.get('frameRate')
   const sourceIndex = options.get('sourceIndex')
   const source = sources[sourceIndex]
@@ -40,12 +43,32 @@ export default function Gifit() {
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
 
+  const [time, setTime] = useState(countdownTime)
+
   const clicked = useRef(false)
 
   async function onRecordStart(cropped) {
     setMode(2)
 
-    if (options.get('showCursor')) {
+    await new Promise(resolve => {
+      if (useCountdown) {
+        console.log('start countdown')
+        const countdown = setInterval(() => {
+          setTime(x => x - 1)
+        }, 1000)
+        setTimeout(() => {
+          console.log('start recording')
+          clearInterval(countdown)
+          setMode(3)
+          resolve()
+        }, countdownTime * 1000)
+      } else {
+        setMode(3)
+        resolve()
+      }
+    })
+
+    if (showCursor) {
       remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
     }
 
@@ -209,9 +232,9 @@ export default function Gifit() {
 
   return (
     <Container
-      transparent={mode !== 0}
+      transparent={[1, 3].includes(mode)}
       crosshair={mode === 1 && !done}
-      noCursor={mode === 2 && !options.get('showCursor')}
+      noCursor={mode === 3 && !showCursor}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
@@ -239,6 +262,7 @@ export default function Gifit() {
           <Close />
         </Option>
       </Confirm>
+      <Countdown show={mode === 2 && useCountdown}>Start recording in {time} seconds...</Countdown>
     </Container>
   )
 }
