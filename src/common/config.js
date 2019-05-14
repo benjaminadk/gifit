@@ -10,7 +10,7 @@ const optionsWindow = {
 
 const editor = {
   drawerWidth: 300,
-  titleStyles: ['Normal', 'Italic', 'Bold'],
+  styleOptions: ['Normal', 'Italic', 'Bold'],
   verticalOptions: ['Top', 'Center', 'Bottom'],
   horizontalOptions: ['Left', 'Center', 'Right'],
   orientationOptions: ['Horizontal', 'Vertical']

@@ -39,7 +39,7 @@ const unlinkAsync = promisify(unlink)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, gifFolder } = state
+  const { options, fontOptions, gifFolder } = state
 
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState(List())
@@ -71,6 +71,10 @@ export default function Editor() {
   const [progressVertical, setProgressVertical] = useState('Bottom')
   const [progressHorizontal, setProgressHorizontal] = useState('Left')
   const [progressOrientation, setProgressOrientation] = useState('Horizontal')
+  const [progressColor, setProgressColor] = useState('#000000')
+  const [progressSize, setProgressSize] = useState(40)
+  const [progressFont, setProgressFont] = useState('Segoe UI')
+  const [progressStyle, setProgressStyle] = useState('Normal')
 
   const [titleText, setTitleText] = useState('Title Frame')
   const [titleColor, setTitleColor] = useState('#000000')
@@ -213,12 +217,12 @@ export default function Editor() {
 
   // manage second canvas (overlays)
   useEffect(() => {
-    // when border drawer open redraw canvas on size or color change
+    // when border drawer open redraw borders preview based on border parameters
     if (drawerMode === 'border') {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
       drawBorder(canvas2.current, borderLeft, borderRight, borderTop, borderBottom, borderColor)
-      // clear canvas when drawer is closed
+      // when progress drawer is open redraw progress preview based on progress parameters
     } else if (drawerMode === 'progress') {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
@@ -232,6 +236,7 @@ export default function Editor() {
         progressOrientation,
         progressThickness
       )
+      // clear canvas when drawer is closed
     } else {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
@@ -760,6 +765,7 @@ export default function Editor() {
         ) : drawerMode === 'title' ? (
           <TitleFrame
             drawerHeight={drawerHeight}
+            fontOptions={fontOptions}
             titleText={titleText}
             titleDelay={titleDelay}
             titleSize={titleSize}
@@ -800,18 +806,27 @@ export default function Editor() {
         ) : drawerMode === 'progress' ? (
           <Progress
             drawerHeight={drawerHeight}
+            fontOptions={fontOptions}
             progressType={progressType}
             progressBackground={progressBackground}
             progressThickness={progressThickness}
             progressVertical={progressVertical}
             progressHorizontal={progressHorizontal}
             progressOrientation={progressOrientation}
+            progressColor={progressColor}
+            progressSize={progressSize}
+            progressFont={progressFont}
+            progressStyle={progressStyle}
             setProgressType={setProgressType}
             setProgressBackground={setProgressBackground}
             setProgressThickness={setProgressThickness}
             setProgressVertical={setProgressVertical}
             setProgressHorizontal={setProgressHorizontal}
             setProgressOrientation={setProgressOrientation}
+            setProgressColor={setProgressColor}
+            setProgressSize={setProgressSize}
+            setProgressFont={setProgressFont}
+            setProgressStyle={setProgressStyle}
             onAccept={onProgressAccept}
             onCancel={onProgressCancel}
           />

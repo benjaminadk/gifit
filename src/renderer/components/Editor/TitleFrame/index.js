@@ -1,5 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
-import SystemFonts from 'system-font-families'
+import React, { useRef } from 'react'
 import { Title } from 'styled-icons/material/Title'
 import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
@@ -11,7 +10,7 @@ import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawe
 import config from 'common/config'
 
 const {
-  editor: { drawerWidth, titleStyles, verticalOptions, horizontalOptions }
+  editor: { drawerWidth, styleOptions, verticalOptions, horizontalOptions }
 } = config
 
 export default function TitleFrame({
@@ -37,14 +36,7 @@ export default function TitleFrame({
   onAccept,
   onCancel
 }) {
-  const [fontFamilies, setFontFamilies] = useState([])
-
   const textarea = useRef(null)
-
-  useEffect(() => {
-    const systemFonts = new SystemFonts()
-    systemFonts.getFonts().then(res => setFontFamilies(res))
-  }, [])
 
   function onTitleTextChange({ target: { value } }) {
     setTitleText(value)
@@ -201,7 +193,7 @@ export default function TitleFrame({
               <Select
                 width={100}
                 value={titleStyle}
-                options={titleStyles}
+                options={styleOptions}
                 onClick={onTitleStyleSelect}
               />
             </Property>

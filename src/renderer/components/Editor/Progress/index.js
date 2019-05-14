@@ -3,57 +3,40 @@ import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
 import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
 import { TextFields } from 'styled-icons/material/TextFields'
-import styled from 'styled-components'
-import { lighten } from 'polished'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import Select from '../../Shared/Select'
 import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
+import { Choices, Choice } from './styles'
 import config from 'common/config'
 
-const Choices = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  justify-items: center;
-  align-items: center;
-`
-
-const Choice = styled.div`
-  width: 80%;
-  display: grid;
-  grid-template-columns: 25px 1fr;
-  justify-items: center;
-  align-items: center;
-  background: ${p => (p.selected ? lighten(0.3, p.theme.primary) : 'transparent')};
-  font-size: 1.2rem;
-  padding: 5px;
-  &:hover {
-    background: ${p => lighten(0.4, p.theme.primary)};
-  }
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`
-
 const {
-  editor: { verticalOptions, horizontalOptions, orientationOptions }
+  editor: { styleOptions, verticalOptions, horizontalOptions, orientationOptions }
 } = config
 
 export default function Progress({
   drawerHeight,
+  fontOptions,
   progressType,
   progressBackground,
   progressThickness,
   progressVertical,
   progressHorizontal,
   progressOrientation,
+  progressColor,
+  progressSize,
+  progressFont,
+  progressStyle,
   setProgressType,
   setProgressBackground,
   setProgressThickness,
   setProgressVertical,
   setProgressHorizontal,
   setProgressOrientation,
+  setProgressColor,
+  setProgressSize,
+  setProgressFont,
+  setProgressStyle,
   onAccept,
   onCancel
 }) {
@@ -199,7 +182,77 @@ export default function Progress({
                 <div className='text'>Font</div>
                 <div className='divider' />
               </div>
-              <div />
+              <div>
+                <Property>
+                  <Label width={70}>Family:</Label>
+                  <Select
+                    width={200}
+                    type='family'
+                    value={progressFont}
+                    options={fontOptions}
+                    onClick={setProgressFont}
+                  />
+                </Property>
+                <Property>
+                  <Label width={70}>Style:</Label>
+                  <Select
+                    width={100}
+                    value={progressStyle}
+                    options={styleOptions}
+                    onClick={setProgressStyle}
+                  />
+                </Property>
+                <Property>
+                  <Label width={70}>Size:</Label>
+                  <NumberInput width={80} value={progressSize} />
+                </Property>
+                <Property>
+                  <Label width={70}>Color:</Label>
+                  <ColorSwatch width={100} color={progressColor} onChange={setProgressColor} />
+                </Property>
+              </div>
+            </Section>
+            <Section height={100}>
+              <div className='title'>
+                <div className='text'>Appearance:</div>
+                <div className='divider' />
+              </div>
+              <div>
+                <Property>
+                  <Label width={70}>Color:</Label>
+                  <ColorSwatch
+                    width={100}
+                    color={progressBackground}
+                    onChange={setProgressBackground}
+                  />
+                </Property>
+              </div>
+            </Section>
+            <Section height={100}>
+              <div className='title'>
+                <div className='text'>Layout:</div>
+                <div className='divider' />
+              </div>
+              <div>
+                <Property>
+                  <Label width={70}>Vertical:</Label>
+                  <Select
+                    width={100}
+                    value={progressVertical}
+                    options={verticalOptions}
+                    onClick={setProgressVertical}
+                  />
+                </Property>
+                <Property>
+                  <Label width={70}>Horizontal:</Label>
+                  <Select
+                    width={100}
+                    value={progressHorizontal}
+                    options={horizontalOptions}
+                    onClick={setProgressHorizontal}
+                  />
+                </Property>
+              </div>
             </Section>
           </>
         )}

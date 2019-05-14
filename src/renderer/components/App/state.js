@@ -13,7 +13,8 @@ function reducer(state, action) {
         windowID: action.payload[0].id,
         windowTitle: action.payload[0].getTitle(),
         sources: action.payload[1],
-        options: action.payload[3]
+        options: action.payload[3],
+        fontOptions: action.payload[4]
       }
     case LOADING_START:
       return { ...state, loading: true }
@@ -35,6 +36,7 @@ const initialState = {
   windowID: null,
   windowTitle: null,
   options: Map(),
+  fontOptions: null,
   sources: null,
   mode: 1,
   gifFolder: null

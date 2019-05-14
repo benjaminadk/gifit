@@ -1,5 +1,6 @@
 import { remote, desktopCapturer, screen } from 'electron'
 import { Map } from 'immutable'
+import SystemFonts from 'system-font-families'
 import { existsSync, readFile, writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
 import { spawnSync } from 'child_process'
@@ -52,5 +53,11 @@ export default async () => {
     }
   })
 
-  return Promise.all([p1, p2, p3, p4])
+  const p5 = new Promise(async resolve => {
+    const systemFonts = new SystemFonts()
+    const fonts = await systemFonts.getFonts()
+    resolve(fonts)
+  })
+
+  return Promise.all([p1, p2, p3, p4, p5])
 }
