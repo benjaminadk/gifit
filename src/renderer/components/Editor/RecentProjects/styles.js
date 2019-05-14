@@ -16,7 +16,8 @@ export const Table = styled.div`
       display: grid;
       grid-template-columns: 1fr 20px;
       align-items: center;
-      background: ${p => darken(0.2, p.theme.secondary)};
+      background: ${p => darken(0.2, p.theme.primary)};
+      color: #fff;
       border-right: ${p => p.theme.border};
       padding-left: 2px;
     }
@@ -25,7 +26,8 @@ export const Table = styled.div`
       display: grid;
       grid-template-columns: 1fr 20px;
       align-items: center;
-      background: ${p => darken(0.2, p.theme.secondary)};
+      background: ${p => darken(0.2, p.theme.primary)};
+      color: #fff;
       padding-left: 2px;
     }
   }
@@ -37,14 +39,10 @@ export const Row = styled.div`
   align-items: center;
   font-size: 1.2rem;
   border-bottom: ${p => p.theme.border};
-  background: ${p =>
-    p.selected ? darken(0.2, p.theme.primary) : 'transparent'};
+  background: ${p => (p.selected ? p.theme.grey[8] : 'transparent')};
   color: ${p => (p.selected ? '#FFF' : '#000')};
   &:nth-child(odd) {
-    background: ${p =>
-      p.selected
-        ? darken(0.2, p.theme.primary)
-        : lighten(0.4, p.theme.primary)};
+    background: ${p => (p.selected ? p.theme.grey[8] : lighten(0.4, p.theme.primary))};
   }
   .left {
     height: 20px;

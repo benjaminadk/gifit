@@ -47,11 +47,12 @@ export default function Editor() {
   const [images, setImages] = useState([])
   const [imageIndex, setImageIndex] = useState(null)
   const [gifData, setGifData] = useState(null)
+  const [originalPaths, setOriginalPaths] = useState(null)
 
   const [scale, setScale] = useState(null)
   const [zoomToFit, setZoomToFit] = useState(null)
 
-  const [recentProjects, setRecentProjects] = useState([])
+  const [recentProjects, setRecentProjects] = useState(null)
   const [playing, setPlaying] = useState(false)
 
   const [showDrawer, setShowDrawer] = useState(false)
@@ -132,6 +133,7 @@ export default function Editor() {
           height: project.height,
           frameRate: project.frameRate
         })
+        setOriginalPaths(project.frames.map(el => el.path))
         // store all other projects as recent projects
       } else {
         projects.push(project)
@@ -559,7 +561,7 @@ export default function Editor() {
             const reader = new FileReader()
             // read file and hash path to force ui update
             reader.onload = () => {
-              const filepath = images[i].path
+              const filepath = originalPaths[i]
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
                 images[i].path = createHashPath(images[i].path)
@@ -590,6 +592,7 @@ export default function Editor() {
     await draw()
     setLoading(false)
     setShowDrawer(false)
+    setDrawerMode('')
     setScale(zoomToFit)
   }
 
@@ -601,7 +604,55 @@ export default function Editor() {
   }
 
   // add configured progress to all frames
-  function onProgressAccept() {}
+  async function onProgressAccept() {
+    async function draw() {
+      return new Promise(resolve => {
+        for (let i = 0; i < images.length; i++) {
+          const reader = new FileReader()
+
+          reader.onload = () => {
+            const filepath = originalPaths[i]
+            const buffer = Buffer.from(reader.result)
+            writeFileAsync(filepath, buffer).then(() => {
+              images[i].path = createHashPath(images[i].path)
+              if (i === images.length - 1) {
+                resolve()
+              }
+            })
+          }
+
+          const canvas = document.createElement('canvas')
+          canvas.width = gifData.width
+          canvas.height = gifData.height
+          const ctx = canvas.getContext('2d')
+          const image = new Image()
+          const progress = progressType === 'bar' ? Math.round((i / (images.length - 1)) * 100) : 1
+          image.onload = () => {
+            ctx.drawImage(image, 0, 0)
+            drawProgress(
+              canvas,
+              progress,
+              progressType,
+              progressBackground,
+              progressHorizontal,
+              progressVertical,
+              progressOrientation,
+              progressThickness
+            )
+            canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+          }
+          image.src = images[i].path
+        }
+      })
+    }
+
+    await setLoading(true)
+    await draw()
+    setLoading(false)
+    setShowDrawer(false)
+    setDrawerMode('')
+    setScale(zoomToFit)
+  }
 
   // cancel adding progress bar
   function onProgressCancel() {

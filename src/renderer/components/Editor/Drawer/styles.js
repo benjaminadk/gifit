@@ -12,7 +12,7 @@ export const Container = styled.div.attrs(p => ({
   }
 }))`
   position: absolute;
-  top: 100px;
+  top: 120px;
   bottom: 120px;
   width: ${drawerWidth}px;
   background: ${p => p.theme.grey[0]};
