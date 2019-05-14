@@ -141,6 +141,7 @@ export default function Editor() {
     }
     setRecentProjects(projects)
     setLoading(false)
+    setShowDrawer(false)
   }
 
   // ensure window is maximized
@@ -269,6 +270,7 @@ export default function Editor() {
       // clear interval when playing is set to false
     } else {
       clearInterval(playingId)
+      setSelected(selected.map((el, i) => i === imageIndex))
     }
     return () => clearInterval(playingId)
   }, [playing])
@@ -363,18 +365,21 @@ export default function Editor() {
   // playback interface
   // index refers to button order 0=first 1=previous 2=play/pause 3=next 4=last
   function onPlaybackClick(index) {
-    if (index === 0) {
-      setImageIndex(0)
-      setSelected(selected.map((el, i) => i === 0))
-    } else if (index === 1) {
-      setImageIndex(imageIndex === 0 ? images.length - 1 : imageIndex - 1)
-    } else if (index === 2) {
+    if (index === 2) {
       setPlaying(!playing)
-    } else if (index === 3) {
-      setImageIndex(imageIndex === images.length - 1 ? 0 : imageIndex + 1)
-    } else if (index === 4) {
-      setImageIndex(images.length - 1)
-      setSelected(selected.map((el, i) => i === images.length - 1))
+    } else {
+      var x
+      if (index === 0) {
+        x = 0
+      } else if (index === 1) {
+        x = imageIndex === 0 ? images.length - 1 : imageIndex - 1
+      } else if (index === 3) {
+        x = imageIndex === images.length - 1 ? 0 : imageIndex + 1
+      } else if (index === 4) {
+        x = images.length - 1
+      }
+      setImageIndex(x)
+      setSelected(selected.map((el, i) => i === x))
     }
   }
 
@@ -482,17 +487,13 @@ export default function Editor() {
         main.current.scrollTop = height
       }, 500)
     }
-    setShowDrawer(true)
     setDrawerMode(drawer)
+    setShowDrawer(true)
   }
 
   // open a recent project
   function onRecentAccept(folder) {
-    dispatch({
-      type: SET_GIF_FOLDER,
-      payload: folder
-    })
-    setShowDrawer(false)
+    dispatch({ type: SET_GIF_FOLDER, payload: folder })
   }
 
   // close recent project drawer
@@ -740,7 +741,14 @@ export default function Editor() {
         imageIndex={imageIndex}
         onClick={onThumbnailClick}
       />
-      <BottomBar loading={loading} />
+      <BottomBar
+        loading={loading}
+        playing={playing}
+        total={images.length}
+        selected={selected.count(el => el)}
+        index={imageIndex + 1}
+        onPlaybackClick={onPlaybackClick}
+      />
       <Drawer show={showDrawer}>
         {drawerMode === 'recent' ? (
           <RecentProjects
