@@ -235,7 +235,7 @@ export default function Toolbar({
                   <Hashtag />
                   <div>Frame count</div>
                 </div>
-                <div className='bottom'>{totalLength}</div>
+                <div className='bottom'>{totalFrames}</div>
               </Statistic>
               <Statistic>
                 <div className='top'>
