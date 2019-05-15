@@ -342,8 +342,8 @@ export default function Editor() {
   // save project as a GIF
   function onSaveClick() {
     const win = remote.getCurrentWindow()
-
-    if (options.get('ffmpegPath')) {
+    const ffmpegPath = options.get('ffmpegPath')
+    if (ffmpegPath) {
       const opts = {
         title: 'Save',
         defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
@@ -359,7 +359,7 @@ export default function Editor() {
         if (filepath) {
           setLoading(true)
           const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-          const success = await createGIF(images, cwd, filepath)
+          const success = await createGIF(ffmpegPath, images, cwd, filepath)
           setLoading(false)
         }
       }

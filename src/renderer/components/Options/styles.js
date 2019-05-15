@@ -51,6 +51,8 @@ export const MenuItem = styled.div`
 
 export const Application = styled.div``
 
+export const FFMpeg = styled.div``
+
 export const Section = styled.div`
   height: ${p => p.height}px;
   display: grid;

@@ -8,7 +8,7 @@ import { AppContext } from '../App'
 import Checkbox from '../Shared/Checkbox'
 import Button from '../Shared/Button'
 import NumberInput from '../Shared/NumberInput'
-import { Container, MenuItem, Application, Section, CountdownSize } from './styles'
+import { Container, MenuItem, Application, FFMpeg, Section, CountdownSize } from './styles'
 import { OPTIONS_PATH } from 'common/filepaths'
 import config from 'common/config'
 
@@ -27,7 +27,7 @@ const menu = [
   'Languages',
   'Temporary Files',
   'Upload Services',
-  'Extras',
+  'FFMpeg',
   'Donate',
   'About'
 ]
@@ -132,6 +132,15 @@ export default function Options() {
                 </div>
               </Section>
             </Application>
+          ) : menuIndex === 7 ? (
+            <FFMpeg>
+              <Section height={200}>
+                <div className='title'>
+                  <div className='text'>FFMpeg Path</div>
+                  <div className='divider' />
+                </div>
+              </Section>
+            </FFMpeg>
           ) : null}
         </div>
       </div>

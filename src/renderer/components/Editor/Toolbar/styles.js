@@ -46,7 +46,9 @@ export const Tab = styled.div`
   }
 `
 
-export const Extras = styled.div``
+export const Extras = styled.div`
+  font-size: 1.2rem;
+`
 
 export const Menu = styled.div`
   display: flex;
