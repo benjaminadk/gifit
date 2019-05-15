@@ -53,6 +53,11 @@ export const Application = styled.div``
 
 export const FFMpeg = styled.div``
 
+export const PathInput = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 30px;
+`
+
 export const Section = styled.div`
   height: ${p => p.height}px;
   display: grid;

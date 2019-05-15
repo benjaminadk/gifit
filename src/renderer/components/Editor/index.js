@@ -11,7 +11,8 @@ import initializeOptions from '../Options/initializeOptions'
 import drawBorder from './drawBorder'
 import drawProgressBar from './drawProgressBar'
 import drawProgressText from './drawProgressText'
-import createGIF from './createGIF'
+import createGIFFfmpeg from './createGIFFfmpeg'
+import createGIFEncoder from './createGIFEncoder'
 import getTextXY from './getTextXY'
 import { AppContext } from '../App'
 import Drawer from './Drawer'
@@ -359,7 +360,10 @@ export default function Editor() {
         if (filepath) {
           setLoading(true)
           const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-          const success = await createGIF(ffmpegPath, images, cwd, filepath)
+          console.time('createGIF')
+          const success = await createGIFFfmpeg(ffmpegPath, images, originalPaths, cwd, filepath)
+          // const success = await createGIFEncoder(images, originalPaths, gifData, filepath)
+          console.timeEnd('createGIF')
           setLoading(false)
         }
       }
