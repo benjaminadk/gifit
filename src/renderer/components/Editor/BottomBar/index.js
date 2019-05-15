@@ -22,23 +22,18 @@ export default function BottomBar({ loading, playing, total, selected, index, on
   const timer = useRef(null)
 
   useEffect(() => {
+    var id
     if (loading) {
       setShow(true)
-    }
-    if (!loading && show) {
-      setValue(100)
-    }
-  }, [loading])
-
-  useEffect(() => {
-    var id
-    if (show) {
       id = setInterval(() => {
         setValue(state => state + 1)
       }, 250)
       timer.current = id
     }
-  }, [show])
+    if (!loading && show) {
+      setValue(100)
+    }
+  }, [loading])
 
   useEffect(() => {
     if (value === 100) {

@@ -673,10 +673,9 @@ export default function Editor() {
           image.onload = () => {
             ctx.drawImage(image, 0, 0)
             if (progressType === 'bar') {
-              drawProgress(
+              drawProgressBar(
                 canvas,
                 Math.round((i / (images.length - 1)) * 100),
-                progressType,
                 progressBackground,
                 progressHorizontal,
                 progressVertical,
@@ -703,7 +702,6 @@ export default function Editor() {
         }
       })
     }
-
     await setLoading(true)
     await draw()
     setLoading(false)
