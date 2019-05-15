@@ -78,6 +78,7 @@ export default function Editor() {
   const [progressSize, setProgressSize] = useState(40)
   const [progressFont, setProgressFont] = useState('Segoe UI')
   const [progressStyle, setProgressStyle] = useState('Normal')
+  const [progressPrecision, setProgressPrecision] = useState('Seconds')
 
   const [titleText, setTitleText] = useState('Title Frame')
   const [titleColor, setTitleColor] = useState('#000000')
@@ -255,7 +256,8 @@ export default function Editor() {
           progressFont,
           progressSize,
           progressStyle,
-          progressColor
+          progressColor,
+          progressPrecision
         )
       }
       // clear canvas when drawer is closed
@@ -281,7 +283,8 @@ export default function Editor() {
     progressFont,
     progressSize,
     progressStyle,
-    progressColor
+    progressColor,
+    progressPrecision
   ])
 
   useEffect(() => {
@@ -874,6 +877,7 @@ export default function Editor() {
             progressSize={progressSize}
             progressFont={progressFont}
             progressStyle={progressStyle}
+            progressPrecision={progressPrecision}
             setProgressType={setProgressType}
             setProgressBackground={setProgressBackground}
             setProgressThickness={setProgressThickness}
@@ -884,6 +888,7 @@ export default function Editor() {
             setProgressSize={setProgressSize}
             setProgressFont={setProgressFont}
             setProgressStyle={setProgressStyle}
+            setProgressPrecision={setProgressPrecision}
             onAccept={onProgressAccept}
             onCancel={onProgressCancel}
           />

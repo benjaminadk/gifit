@@ -13,7 +13,8 @@ const editor = {
   styleOptions: ['Normal', 'Italic', 'Bold'],
   verticalOptions: ['Top', 'Center', 'Bottom'],
   horizontalOptions: ['Left', 'Center', 'Right'],
-  orientationOptions: ['Horizontal', 'Vertical']
+  orientationOptions: ['Horizontal', 'Vertical'],
+  precisionOptions: ['Minutes', 'Seconds', 'Milliseconds']
 }
 
 const defaultOptions = {

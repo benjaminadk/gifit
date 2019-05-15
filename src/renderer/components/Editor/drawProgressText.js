@@ -10,21 +10,33 @@ export default (
   progressFont,
   progressSize,
   progressStyle,
-  progressColor
+  progressColor,
+  progressPrecision
 ) => {
-  var x1, y1, x2, y2
+  const ctx = canvas.getContext('2d')
   const paddingX = 20
   const paddingY = progressSize < 30 ? 5 : 10
-  const fmt1 = 's.SS'
-  const fmt2 = 'm:ss'
-  const text = `${format(new Date(currentTime), fmt2)}/${format(new Date(totalDuration), fmt2)} s`
-  const ctx = canvas.getContext('2d')
-  ctx.textBaseline = 'middle'
+
+  var fmt, label
+  if (progressPrecision === 'Seconds') {
+    fmt = 's.SS'
+    label = ' s'
+  } else if (progressPrecision === 'Minutes') {
+    fmt = 'm:ss'
+    label = ''
+  } else if (progressPrecision === 'Milliseconds') {
+    fmt = 'T'
+    label = ' ms'
+  }
 
   ctx.font = `${progressStyle} ${progressSize}px ${progressFont}`
+  const text = `${format(new Date(currentTime), fmt)}/${format(
+    new Date(totalDuration),
+    fmt
+  )} ${label}`
   const progressWidth = Math.round((ctx.measureText(text).width + paddingX) / 10) * 10
 
-  ctx.fillStyle = progressBackground
+  var x1, y1, x2, y2
 
   if (progressHorizontal === 'Left') {
     x1 = 0
@@ -48,8 +60,10 @@ export default (
     y2 = canvas.height - progressSize / 2
   }
 
+  ctx.fillStyle = progressBackground
   ctx.fillRect(x1, y1, progressWidth, progressSize + paddingY)
 
+  ctx.textBaseline = 'middle'
   ctx.fillStyle = progressColor
   ctx.fillText(text, x2, y2)
 }

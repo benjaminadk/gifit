@@ -11,7 +11,7 @@ import { Choices, Choice } from './styles'
 import config from 'common/config'
 
 const {
-  editor: { styleOptions, verticalOptions, horizontalOptions, orientationOptions }
+  editor: { styleOptions, verticalOptions, horizontalOptions, orientationOptions, precisionOptions }
 } = config
 
 export default function Progress({
@@ -27,6 +27,7 @@ export default function Progress({
   progressSize,
   progressFont,
   progressStyle,
+  progressPrecision,
   setProgressType,
   setProgressBackground,
   setProgressThickness,
@@ -37,6 +38,7 @@ export default function Progress({
   setProgressSize,
   setProgressFont,
   setProgressStyle,
+  setProgressPrecision,
   onAccept,
   onCancel
 }) {
@@ -239,6 +241,15 @@ export default function Progress({
                     width={100}
                     color={progressBackground}
                     onChange={setProgressBackground}
+                  />
+                </Property>
+                <Property>
+                  <Label width={70}>Precision:</Label>
+                  <Select
+                    width={100}
+                    value={progressPrecision}
+                    options={precisionOptions}
+                    onClick={setProgressPrecision}
                   />
                 </Property>
               </div>
