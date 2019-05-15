@@ -2,7 +2,7 @@ import { format } from 'date-fns'
 
 export default (
   canvas,
-  time,
+  currentTime,
   totalDuration,
   progressBackground,
   progressHorizontal,
@@ -15,12 +15,15 @@ export default (
   var x1, y1, x2, y2
   const paddingX = 20
   const paddingY = progressSize < 30 ? 5 : 10
-  const text = `${time}/${format(new Date(totalDuration), 's.SS')} s`
+  const text = `${format(new Date(currentTime), 's.SS')}/${format(
+    new Date(totalDuration),
+    's.SS'
+  )} s`
   const ctx = canvas.getContext('2d')
   ctx.textBaseline = 'middle'
 
   ctx.font = `${progressStyle} ${progressSize}px ${progressFont}`
-  const progressWidth = ctx.measureText(text).width + paddingX
+  const progressWidth = Math.round((ctx.measureText(text).width + paddingX) / 10) * 10
 
   ctx.fillStyle = progressBackground
 
@@ -45,7 +48,7 @@ export default (
     y1 = canvas.height - progressSize - paddingY
     y2 = canvas.height - progressSize / 2
   }
-  console.log(progressSize, paddingY)
+
   ctx.fillRect(x1, y1, progressWidth, progressSize + paddingY)
 
   ctx.fillStyle = progressColor

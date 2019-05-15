@@ -640,6 +640,17 @@ export default function Editor() {
   async function onProgressAccept() {
     async function draw() {
       return new Promise(resolve => {
+        const times = []
+        var t = 0
+        for (let i = 0; i < images.length; i++) {
+          t += images[i].time
+          if (i > 0) {
+            times.push(t)
+          } else {
+            times.push(0)
+          }
+        }
+
         for (let i = 0; i < images.length; i++) {
           const reader = new FileReader()
 
@@ -659,19 +670,33 @@ export default function Editor() {
           canvas.height = gifData.height
           const ctx = canvas.getContext('2d')
           const image = new Image()
-          const progress = progressType === 'bar' ? Math.round((i / (images.length - 1)) * 100) : 1
           image.onload = () => {
             ctx.drawImage(image, 0, 0)
-            drawProgress(
-              canvas,
-              progress,
-              progressType,
-              progressBackground,
-              progressHorizontal,
-              progressVertical,
-              progressOrientation,
-              progressThickness
-            )
+            if (progressType === 'bar') {
+              drawProgress(
+                canvas,
+                Math.round((i / (images.length - 1)) * 100),
+                progressType,
+                progressBackground,
+                progressHorizontal,
+                progressVertical,
+                progressOrientation,
+                progressThickness
+              )
+            } else if (progressType === 'text') {
+              drawProgressText(
+                canvas,
+                times[i],
+                totalDuration,
+                progressBackground,
+                progressHorizontal,
+                progressVertical,
+                progressFont,
+                progressSize,
+                progressStyle,
+                progressColor
+              )
+            }
             canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
           }
           image.src = images[i].path
