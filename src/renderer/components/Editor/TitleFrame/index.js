@@ -15,6 +15,7 @@ const {
 
 export default function TitleFrame({
   drawerHeight,
+  fontOptions,
   titleText,
   titleDelay,
   titleSize,
@@ -184,7 +185,7 @@ export default function TitleFrame({
                 width={200}
                 type='family'
                 value={titleFont}
-                options={fontFamilies}
+                options={fontOptions}
                 onClick={onTitleFontSelect}
               />
             </Property>

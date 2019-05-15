@@ -284,6 +284,12 @@ export default function Editor() {
     progressColor
   ])
 
+  useEffect(() => {
+    if (!showDrawer) {
+      setDrawerMode('')
+    }
+  }, [showDrawer])
+
   // when imageIndex change is automated scroll to it
   useEffect(() => {
     if (thumbnail.current) {
@@ -570,14 +576,12 @@ export default function Editor() {
       // re-initialize editor to include new title frame and close drawer
       initialize(imageIndex)
       setShowDrawer(false)
-      setDrawerMode('')
     })
   }
 
   // cancel title frame creation
   function onTitleCancel() {
     setShowDrawer(false)
-    setDrawerMode('')
     setTitleText('Title Frame')
   }
 
@@ -625,20 +629,23 @@ export default function Editor() {
     await draw()
     setLoading(false)
     setShowDrawer(false)
-    setDrawerMode('')
     setScale(zoomToFit)
   }
 
   // cancel adding border
   function onBorderCancel() {
     setShowDrawer(false)
-    setDrawerMode('')
     setScale(zoomToFit)
   }
 
   // add configured progress to all frames
   async function onProgressAccept() {
     async function draw() {
+      await new Promise(resolve => {
+        setTimeout(() => {
+          resolve()
+        }, 1000)
+      })
       return new Promise(resolve => {
         const times = []
         var t = 0
@@ -702,18 +709,16 @@ export default function Editor() {
         }
       })
     }
-    await setLoading(true)
+    setShowDrawer(false)
+    setLoading(true)
     await draw()
     setLoading(false)
-    setShowDrawer(false)
-    setDrawerMode('')
     setScale(zoomToFit)
   }
 
   // cancel adding progress bar
   function onProgressCancel() {
     setShowDrawer(false)
-    setDrawerMode('')
     setScale(zoomToFit)
   }
 

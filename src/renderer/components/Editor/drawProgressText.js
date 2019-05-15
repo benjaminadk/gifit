@@ -15,10 +15,9 @@ export default (
   var x1, y1, x2, y2
   const paddingX = 20
   const paddingY = progressSize < 30 ? 5 : 10
-  const text = `${format(new Date(currentTime), 's.SS')}/${format(
-    new Date(totalDuration),
-    's.SS'
-  )} s`
+  const fmt1 = 's.SS'
+  const fmt2 = 'm:ss'
+  const text = `${format(new Date(currentTime), fmt2)}/${format(new Date(totalDuration), fmt2)} s`
   const ctx = canvas.getContext('2d')
   ctx.textBaseline = 'middle'
 
