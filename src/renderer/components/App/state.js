@@ -39,7 +39,7 @@ const initialState = {
   fontOptions: null,
   sources: null,
   mode: 1,
-  gifFolder: null
+  gifFolder: '2019-05-14@09-46-40'
 }
 
 export { reducer, initialState }

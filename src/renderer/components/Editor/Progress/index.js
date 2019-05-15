@@ -80,6 +80,21 @@ export default function Progress({
     setProgressThickness(newValue)
   }
 
+  function onProgressSizeChange({ target: { value } }) {
+    const isDigit = /^\d*$/
+    var newValue
+    if (isDigit.test(value)) {
+      if (Number(value) > 200) {
+        newValue = 200
+      } else {
+        newValue = value
+      }
+    } else {
+      newValue = 40
+    }
+    setProgressSize(Number(newValue))
+  }
+
   return (
     <>
       <Header>
@@ -177,7 +192,7 @@ export default function Progress({
           </>
         ) : (
           <>
-            <Section height={200}>
+            <Section height={170}>
               <div className='title'>
                 <div className='text'>Font</div>
                 <div className='divider' />
@@ -204,7 +219,7 @@ export default function Progress({
                 </Property>
                 <Property>
                   <Label width={70}>Size:</Label>
-                  <NumberInput width={80} value={progressSize} />
+                  <NumberInput width={80} value={progressSize} onChange={onProgressSizeChange} />
                 </Property>
                 <Property>
                   <Label width={70}>Color:</Label>

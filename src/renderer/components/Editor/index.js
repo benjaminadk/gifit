@@ -9,7 +9,8 @@ import createHashPath from '../../lib/createHashPath'
 import createTFName from '../../lib/createTFName'
 import initializeOptions from '../Options/initializeOptions'
 import drawBorder from './drawBorder'
-import drawProgress from './drawProgress'
+import drawProgressBar from './drawProgressBar'
+import drawProgressText from './drawProgressText'
 import createGIF from './createGIF'
 import getTextXY from './getTextXY'
 import { AppContext } from '../App'
@@ -48,6 +49,8 @@ export default function Editor() {
   const [imageIndex, setImageIndex] = useState(null)
   const [gifData, setGifData] = useState(null)
   const [originalPaths, setOriginalPaths] = useState(null)
+  const [totalDuration, setTotalDuration] = useState(null)
+  const [averageDuration, setAverageDuration] = useState(null)
 
   const [scale, setScale] = useState(null)
   const [zoomToFit, setZoomToFit] = useState(null)
@@ -124,6 +127,9 @@ export default function Editor() {
           initialIndex,
           true
         )
+        // add time of all frames to determine total duration and average frame duration
+        const totalDuration = project.frames.reduce((acc, val) => (acc += val.time), 0)
+        const averageDuration = Math.round((totalDuration / project.frames.length) * 10) / 10
         // set state
         setSelected(initialSelected)
         setScale(initialScale)
@@ -138,6 +144,8 @@ export default function Editor() {
           frameRate: project.frameRate
         })
         setOriginalPaths(project.frames.map(el => el.path))
+        setTotalDuration(totalDuration)
+        setAverageDuration(averageDuration)
         // store all other projects as recent projects
       } else {
         projects.push(project)
@@ -226,16 +234,30 @@ export default function Editor() {
     } else if (drawerMode === 'progress') {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
-      drawProgress(
-        canvas2.current,
-        50,
-        progressType,
-        progressBackground,
-        progressHorizontal,
-        progressVertical,
-        progressOrientation,
-        progressThickness
-      )
+      if (progressType === 'bar') {
+        drawProgressBar(
+          canvas2.current,
+          50,
+          progressBackground,
+          progressHorizontal,
+          progressVertical,
+          progressOrientation,
+          progressThickness
+        )
+      } else if (progressType === 'text') {
+        drawProgressText(
+          canvas2.current,
+          0,
+          totalDuration,
+          progressBackground,
+          progressHorizontal,
+          progressVertical,
+          progressFont,
+          progressSize,
+          progressStyle,
+          progressColor
+        )
+      }
       // clear canvas when drawer is closed
     } else {
       const ctx2 = canvas2.current.getContext('2d')
@@ -244,6 +266,7 @@ export default function Editor() {
   }, [
     showDrawer,
     drawerMode,
+    totalDuration,
     borderLeft,
     borderRight,
     borderTop,
@@ -254,7 +277,11 @@ export default function Editor() {
     progressThickness,
     progressVertical,
     progressHorizontal,
-    progressOrientation
+    progressOrientation,
+    progressFont,
+    progressSize,
+    progressStyle,
+    progressColor
   ])
 
   // when imageIndex change is automated scroll to it
@@ -711,7 +738,9 @@ export default function Editor() {
   return (
     <Container ref={container}>
       <Toolbar
-        images={images}
+        totalFrames={images.length}
+        totalDuration={totalDuration}
+        averageDuration={averageDuration}
         gifData={gifData}
         scale={scale}
         zoomToFit={zoomToFit}

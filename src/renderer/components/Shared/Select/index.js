@@ -24,7 +24,7 @@ export default function Select({ type, width, value, options, onClick }) {
       </Value>
       <Options width={width} show={show}>
         {options.map((el, i) => (
-          <Option key={i} fontFamily={type === 'family' ? el : null} onClick={() => onClick(el, i)}>
+          <Option key={i} fontFamily={type === 'family' ? el : null} onClick={() => onClick(el)}>
             {el}
           </Option>
         ))}

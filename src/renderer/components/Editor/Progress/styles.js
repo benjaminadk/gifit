@@ -14,7 +14,7 @@ export const Choice = styled.div`
   grid-template-columns: 25px 1fr;
   justify-items: center;
   align-items: center;
-  background: ${p => (p.selected ? lighten(0.3, p.theme.primary) : 'transparent')};
+  background: ${p => (p.selected ? lighten(0.4, p.theme.primary) : 'transparent')};
   font-size: 1.2rem;
   padding: 5px;
   &:hover {

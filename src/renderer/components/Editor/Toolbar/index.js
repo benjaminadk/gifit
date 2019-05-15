@@ -68,7 +68,9 @@ const playback = [
 ]
 
 export default function Toolbar({
-  images,
+  totalFrames,
+  totalDuration,
+  averageDuration,
   gifData,
   scale,
   zoomToFit,
@@ -86,9 +88,6 @@ export default function Toolbar({
   onSelectClick
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
-
-  const totalDuration = images.reduce((acc, val) => (acc += val.time), 0)
-  const averageDuration = Math.round((totalDuration / images.length) * 10) / 10
 
   return (
     <Container>
@@ -236,7 +235,7 @@ export default function Toolbar({
                   <Hashtag />
                   <div>Frame count</div>
                 </div>
-                <div className='bottom'>{images.length}</div>
+                <div className='bottom'>{totalLength}</div>
               </Statistic>
               <Statistic>
                 <div className='top'>
