@@ -12,9 +12,10 @@ export const Container = styled.textarea.attrs(p => ({
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 1.2rem;
   &:hover {
-    border: 1px solid ${p => lighten(0.3, p.theme.primary)};
+    border: 1px solid ${p => lighten(0.2, p.theme.primary)};
   }
   &:focus {
+    background: ${p => p.theme.grey[0]};
     border: 1px solid ${p => lighten(0.1, p.theme.primary)};
   }
   &::selection {
