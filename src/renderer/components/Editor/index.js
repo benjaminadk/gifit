@@ -443,17 +443,48 @@ export default function Editor() {
     }
     const callback = result => {
       if (result === 0) {
-        const oldImages = images.filter((el, i) => selected.get(i))
-        const newImages = images.filter((el, i) => !selected.get(i))
-        const newProject = {
-          ...gifData,
-          frames: newImages
-        }
+        const discardImages = images.filter((el, i) => selected.get(i))
+        const keepImages = images.filter((el, i) => !selected.get(i))
+        const newProject = { ...gifData, frames: keepImages }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           initialize(selected.findIndex(el => el))
         })
-        for (const image of oldImages) {
+        for (const image of discardImages) {
+          unlinkAsync(image.path)
+        }
+      }
+    }
+    remote.dialog.showMessageBox(win, opts, callback)
+  }
+
+  function onFrameDeleteAllClick(type) {
+    const count = type === 'prev' ? imageIndex : images.length - imageIndex + 1
+    const win = remote.getCurrentWindow()
+    const opts = {
+      type: 'question',
+      buttons: ['Delete', 'Cancel'],
+      defaultId: 0,
+      title: `Delete Frames`,
+      message: `Are you sure you want to delete?`,
+      detail: `Action will delete ${count} selected frame${count === 1 ? '' : 's'}.`
+    }
+    const callback = result => {
+      if (result === 0) {
+        var discardImages, keepImages
+        if (type === 'prev') {
+          discardImages = images.filter((el, i) => i < imageIndex)
+          keepImages = images.filter((el, i) => i >= imageIndex)
+        }
+        const newProject = {
+          ...gifData,
+          frames: keepImages
+        }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          initialize()
+        })
+        for (const image of discardImages) {
           unlinkAsync(image.path)
         }
       }
@@ -645,7 +676,9 @@ export default function Editor() {
 
   // add configured progress to all frames
   async function onProgressAccept() {
+    // use function to help time actions
     async function draw() {
+      // wait 1 second for ui updates - loading bar / message
       await new Promise(resolve => {
         setTimeout(() => {
           resolve()
@@ -655,26 +688,28 @@ export default function Editor() {
       return new Promise(resolve => {
         const times = []
         var t = 0
-
+        // get elapsed time for each image
         for (let i = 0; i < images.length; i++) {
           times.push(t)
           t += images[i].time
         }
-
+        // loop over each image and draw progress overlay
         for (let i = 0; i < images.length; i++) {
           const reader = new FileReader()
-
+          // overwrite each image file with new image
           reader.onload = () => {
             const filepath = originalPaths[i]
             const buffer = Buffer.from(reader.result)
             writeFileAsync(filepath, buffer).then(() => {
+              // hash image path to trick browser cache
               images[i].path = createHashPath(images[i].path)
+              // resolve after last image is wrote to disk
               if (i === images.length - 1) {
                 resolve()
               }
             })
           }
-
+          // draw image then progress on top of it
           const canvas = document.createElement('canvas')
           canvas.width = gifData.width
           canvas.height = gifData.height
@@ -786,6 +821,7 @@ export default function Editor() {
         onDiscardProjectClick={onDiscardProjectClick}
         onPlaybackClick={onPlaybackClick}
         onFrameDeleteClick={onFrameDeleteClick}
+        onFrameDeleteAllClick={onFrameDeleteAllClick}
         onOptionsClick={onOptionsClick}
         onSelectClick={onSelectClick}
       />

@@ -97,7 +97,7 @@ export const Playback = styled.div`
 
 export const Frames = styled.div`
   display: grid;
-  grid-template-columns: repeat(1, 75px);
+  grid-template-columns: repeat(3, 75px);
 `
 
 export const Text = styled.div`
