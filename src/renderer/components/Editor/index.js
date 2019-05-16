@@ -651,16 +651,14 @@ export default function Editor() {
           resolve()
         }, 1000)
       })
+
       return new Promise(resolve => {
         const times = []
         var t = 0
+
         for (let i = 0; i < images.length; i++) {
+          times.push(t)
           t += images[i].time
-          if (i > 0) {
-            times.push(t)
-          } else {
-            times.push(0)
-          }
         }
 
         for (let i = 0; i < images.length; i++) {
@@ -705,7 +703,8 @@ export default function Editor() {
                 progressFont,
                 progressSize,
                 progressStyle,
-                progressColor
+                progressColor,
+                progressPrecision
               )
             }
             canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)

@@ -6,12 +6,7 @@ export default function ColorSwatch({ width, color, onChange }) {
 
   return (
     <Container width={width} color={color} onClick={() => picker.current.click()}>
-      <input
-        ref={picker}
-        type='color'
-        value={color}
-        onChange={e => console.log(e.target.value) || onChange(e.target.value)}
-      />
+      <input ref={picker} type='color' value={color} onChange={e => onChange(e.target.value)} />
     </Container>
   )
 }
