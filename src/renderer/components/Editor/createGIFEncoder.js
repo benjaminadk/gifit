@@ -3,24 +3,25 @@ import { createWriteStream } from 'fs'
 
 // 39 seconds for 91 frame test 7.09 MB
 export default async (images, originalPaths, gifData, dstPath) => {
-  return new Promise(async resolve => {
+  return new Promise(async resolve1 => {
     const { width, height } = gifData
-    const encoder = new GIFEncoder(width, height)
-    const outStream = createWriteStream(dstPath)
-    outStream.on('close', () => {
-      resolve()
+    // create write stream to path where GIF will be saved
+    const ws = createWriteStream(dstPath)
+    ws.on('close', () => {
+      resolve1()
     })
-
-    encoder.createReadStream().pipe(outStream)
+    // create encoder
+    const encoder = new GIFEncoder(width, height)
+    encoder.createReadStream().pipe(ws)
     encoder.start()
     encoder.setRepeat(0)
     encoder.setQuality(10)
-
+    // create canvas and context
     const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
     const ctx = canvas.getContext('2d')
-
+    // wait for image to load before returning w/o GIF is malformed
     async function draw(index) {
       return new Promise(resolve2 => {
         const img = new Image()
@@ -33,11 +34,11 @@ export default async (images, originalPaths, gifData, dstPath) => {
         img.src = originalPaths[index]
       })
     }
-
+    // loop over each image
     for (let i = 0; i < images.length; i++) {
       await draw(i)
     }
-
+    // stop encoder
     encoder.finish()
   })
 }

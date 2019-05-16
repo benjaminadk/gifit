@@ -359,11 +359,13 @@ export default function Editor() {
       const callback = async filepath => {
         if (filepath) {
           setLoading(true)
-          const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-          console.time('createGIF')
-          const success = await createGIFFfmpeg(ffmpegPath, images, originalPaths, cwd, filepath)
-          // const success = await createGIFEncoder(images, originalPaths, gifData, filepath)
-          console.timeEnd('createGIF')
+          const gifProcessor = options.get('gifProcessor')
+          if (gifProcessor === 'ffmpeg') {
+            const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+            await createGIFFfmpeg(ffmpegPath, images, originalPaths, cwd, filepath)
+          } else if (gifProcessor === 'gifEncoder') {
+            await createGIFEncoder(images, originalPaths, gifData, filepath)
+          }
           setLoading(false)
         }
       }

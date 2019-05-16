@@ -21,6 +21,7 @@ const defaultOptions = {
   optionsPath: '',
   ffmpegPath: '',
   tempPath: '',
+  gifProcessor: 'ffmpeg',
   showCursor: true,
   useCountdown: false,
   countdownTime: 3,
