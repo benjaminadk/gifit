@@ -26,6 +26,8 @@ import { Hashtag } from 'styled-icons/fa-solid/Hashtag'
 import { PhotoSizeSelectLarge } from 'styled-icons/material/PhotoSizeSelectLarge'
 import { AccessTime } from 'styled-icons/material/AccessTime'
 import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
+import { ArrowBack } from 'styled-icons/material/ArrowBack'
+import { ArrowForward } from 'styled-icons/material/ArrowForward'
 import NumberInput from '../../Shared/NumberInput'
 import {
   Container,
@@ -177,7 +179,7 @@ export default function Toolbar({
         </Menu>
       ) : menuIndex === 2 ? (
         <Menu>
-          <Section width={250}>
+          <Section width={375}>
             <Playback>
               {playback.map((el, i) => (
                 <Action key={i} onClick={() => onPlaybackClick(i)}>
@@ -191,7 +193,7 @@ export default function Toolbar({
         </Menu>
       ) : menuIndex === 3 ? (
         <Menu>
-          <Section width={100}>
+          <Section width={75}>
             <Frames>
               <Action onClick={onFrameDeleteClick}>
                 <Delete />

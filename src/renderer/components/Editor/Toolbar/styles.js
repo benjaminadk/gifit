@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { darken } from 'polished'
+import { lighten, darken } from 'polished'
 
 export const Container = styled.div`
   height: 120px;
@@ -52,6 +52,7 @@ export const Extras = styled.div`
 
 export const Menu = styled.div`
   display: flex;
+  padding-top: 5px;
 `
 
 export const Section = styled.div`
@@ -65,7 +66,8 @@ export const Section = styled.div`
 export const SectionText = styled.div`
   align-self: center;
   justify-self: center;
-  color: ${p => p.theme.grey[5]};
+  font-size: 1rem;
+  color: ${p => p.theme.grey[7]};
 `
 
 export const New = styled.div`
@@ -73,11 +75,57 @@ export const New = styled.div`
   grid-template-columns: repeat(1, 75px);
 `
 
+export const File = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 75px);
+`
+
+export const Zoom = styled.div`
+  display: grid;
+  grid-template-columns: 75px 75px 150px;
+`
+
+export const Selection = styled.div`
+  display: grid;
+  grid-template-columns: 75px 75px 75px;
+`
+
+export const Playback = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, 75px);
+`
+
+export const Frames = styled.div`
+  display: grid;
+  grid-template-columns: repeat(1, 75px);
+`
+
+export const Text = styled.div`
+  display: grid;
+  grid-template-columns: repeat(1, 75px);
+`
+
+export const Overlay = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 75px);
+`
+
+export const General = styled.div`
+  display: grid;
+  grid-template-columns: 100px 100px 125px 125px;
+`
+
 export const Action = styled.div`
+  justify-self: center;
+  width: 90%;
+  height: 90%;
   display: grid;
   grid-template-rows: 1fr 1fr;
   justify-items: center;
   grid-gap: 5px;
+  &:hover {
+    background: ${p => lighten(0.42, p.theme.primary)};
+  }
   svg {
     align-self: flex-end;
     width: 20px;
@@ -134,44 +182,4 @@ export const Statistic = styled.div`
     color: ${p => darken(0.1, p.theme.primary)};
     margin-left: 20px;
   }
-`
-
-export const File = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 75px);
-`
-
-export const Zoom = styled.div`
-  display: grid;
-  grid-template-columns: 75px 75px 150px;
-`
-
-export const Selection = styled.div`
-  display: grid;
-  grid-template-columns: 75px 75px 75px;
-`
-
-export const Playback = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 50px);
-`
-
-export const Frames = styled.div`
-  display: grid;
-  grid-template-columns: repeat(1, 50px);
-`
-
-export const Text = styled.div`
-  display: grid;
-  grid-template-columns: repeat(1, 50px);
-`
-
-export const Overlay = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 75px);
-`
-
-export const General = styled.div`
-  display: grid;
-  grid-template-columns: 100px 100px 125px 125px;
 `
