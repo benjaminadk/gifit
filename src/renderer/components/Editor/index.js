@@ -343,36 +343,32 @@ export default function Editor() {
   // save project as a GIF
   function onSaveClick() {
     const win = remote.getCurrentWindow()
-    const ffmpegPath = options.get('ffmpegPath')
-    if (ffmpegPath) {
-      const opts = {
-        title: 'Save',
-        defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
-        buttonLabel: 'Save',
-        filters: [
-          {
-            name: 'GIF File',
-            extensions: ['gif']
-          }
-        ]
-      }
-      const callback = async filepath => {
-        if (filepath) {
-          setLoading(true)
-          const gifProcessor = options.get('gifProcessor')
-          if (gifProcessor === 'ffmpeg') {
-            const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-            await createGIFFfmpeg(ffmpegPath, images, originalPaths, cwd, filepath)
-          } else if (gifProcessor === 'gifEncoder') {
-            await createGIFEncoder(images, originalPaths, gifData, filepath)
-          }
-          setLoading(false)
+    const opts = {
+      title: 'Save',
+      defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
+      buttonLabel: 'Save',
+      filters: [
+        {
+          name: 'GIF File',
+          extensions: ['gif']
         }
-      }
-      remote.dialog.showSaveDialog(win, opts, callback)
-    } else {
-      // go to options where ffmpeg can be added
+      ]
     }
+    const callback = async filepath => {
+      if (filepath) {
+        setLoading(true)
+        const gifProcessor = options.get('gifProcessor')
+        if (gifProcessor === 'ffmpeg') {
+          const ffmpegPath = options.get('ffmpegPath')
+          const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+          await createGIFFfmpeg(ffmpegPath, images, originalPaths, cwd, filepath)
+        } else if (gifProcessor === 'gifEncoder') {
+          await createGIFEncoder(images, originalPaths, gifData, filepath)
+        }
+        setLoading(false)
+      }
+    }
+    remote.dialog.showSaveDialog(win, opts, callback)
   }
 
   // remove a project and delete all associated files

@@ -27,7 +27,7 @@ const menu = [
   'Languages',
   'Temporary Files',
   'Upload Services',
-  'FFMpeg',
+  'Extras',
   'Donate',
   'About'
 ]

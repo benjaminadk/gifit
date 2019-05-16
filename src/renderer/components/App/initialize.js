@@ -44,10 +44,12 @@ export default async () => {
       resolve(Map(options))
     } else {
       const where = spawnSync('where', ['ffmpeg'], { encoding: 'utf8' })
+      const ffmpegPath = where.stdout.replace('\r\n', '')
       const options = Map(defaultOptions)
-        .set('ffmpegPath', where.stdout.replace('\r\n', ''))
+        .set('ffmpegPath', ffmpegPath)
         .set('optionsPath', OPTIONS_PATH)
         .set('tempPath', RECORDINGS_DIRECTORY)
+        .set('gifProcessor', ffmpegPath ? 'ffmpeg' : 'gifEncoder')
       await writeFileAsync(OPTIONS_PATH, JSON.stringify(options))
       resolve(options)
     }
