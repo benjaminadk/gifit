@@ -29,6 +29,7 @@ import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
 import { ArrowBack } from 'styled-icons/material/ArrowBack'
 import { ArrowForward } from 'styled-icons/material/ArrowForward'
 import NumberInput from '../../Shared/NumberInput'
+import Svg from '../../Svg'
 import {
   Container,
   Tabs,

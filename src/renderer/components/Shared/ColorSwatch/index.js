@@ -5,15 +5,12 @@ export default function ColorSwatch({ width, color, onChange }) {
   const picker = useRef(null)
 
   return (
-    <Container
-      width={width}
-      color={color}
-      onClick={() => picker.current.click()}
-    >
+    <Container width={width} color={color} onClick={() => picker.current.click()}>
       <input
         ref={picker}
         type='color'
-        onChange={e => onChange(e.target.value)}
+        value={color}
+        onChange={e => console.log(e.target.value) || onChange(e.target.value)}
       />
     </Container>
   )
