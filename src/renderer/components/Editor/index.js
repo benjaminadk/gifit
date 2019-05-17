@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
-import { Map, List } from 'immutable'
+import { List } from 'immutable'
 import path from 'path'
 import { readFile, writeFile, readdir, rmdir, unlink } from 'fs'
 import { promisify } from 'util'
@@ -44,14 +44,17 @@ export default function Editor() {
   const { options, fontOptions, gifFolder } = state
 
   const [loading, setLoading] = useState(false)
-  const [selected, setSelected] = useState(List())
-
   const [images, setImages] = useState([])
   const [imageIndex, setImageIndex] = useState(null)
+  const [selected, setSelected] = useState(List())
+
   const [gifData, setGifData] = useState(null)
   const [originalPaths, setOriginalPaths] = useState(null)
   const [totalDuration, setTotalDuration] = useState(null)
   const [averageDuration, setAverageDuration] = useState(null)
+
+  const [thumbWidth, setThumbWidth] = useState(null)
+  const [thumbHeight, setThumbHeight] = useState(null)
 
   const [scale, setScale] = useState(null)
   const [zoomToFit, setZoomToFit] = useState(null)
@@ -104,12 +107,6 @@ export default function Editor() {
     const projects = []
     // read all project directories
     const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
-    // calculate main editor section height
-    // total height - toolbar height - thumbnails height - bottom bar height
-    const mainHeight = container.current.clientHeight - 120 - 100 - 20
-    main.current.style.height = mainHeight + 'px'
-    // calculate main drawer height - drawer header height - drawer footer height
-    setDrawerHeight(mainHeight - 40 - 50)
     // loop over all projects
     for (const dir of dirs) {
       // each project is represented by a project.json file
@@ -118,6 +115,25 @@ export default function Editor() {
       const project = JSON.parse(data)
       // isolate current project by matching gifFolder app state
       if (dir === gifFolder) {
+        // calcuate ratios for image w:h and h:w
+        const imageRatio = Math.floor((project.width / project.height) * 100) / 100
+        const inverseRatio = Math.floor((project.height / project.width) * 100) / 100
+        // set longer dimension to 100px and calculate other dimension based on ratio
+        var tWidth, tHeight
+        if (imageRatio >= 1) {
+          tWidth = 100
+          tHeight = 100 * inverseRatio
+        } else {
+          tWidth = 100 * imageRatio
+          tHeight = 100
+        }
+
+        // calculate main editor section height
+        // total height - toolbar height - thumbnails height - bottom bar height
+        const mainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
+        main.current.style.height = mainHeight + 'px'
+        // drawer height = main height - drawer header height - drawer buttons height
+        const drawerHeight = mainHeight - 40 - 50
         // ratio of available height to height of image
         const heightRatio = Math.floor((mainHeight / project.height) * 100) / 100
         // if ratio less than 1 image is taller than editor and height ratio is intial scale 0 - 1
@@ -129,8 +145,9 @@ export default function Editor() {
           initialIndex,
           true
         )
-        // add time of all frames to determine total duration and average frame duration
+        // add time of all frames to determine total duration
         const totalDuration = project.frames.reduce((acc, val) => (acc += val.time), 0)
+        // divide total by number of frames to get average duration
         const averageDuration = Math.round((totalDuration / project.frames.length) * 10) / 10
         // set state
         setSelected(initialSelected)
@@ -148,6 +165,9 @@ export default function Editor() {
         setOriginalPaths(project.frames.map(el => el.path))
         setTotalDuration(totalDuration)
         setAverageDuration(averageDuration)
+        setDrawerHeight(drawerHeight)
+        setThumbWidth(tWidth)
+        setThumbHeight(tHeight)
         // store all other projects as recent projects
       } else {
         projects.push(project)
@@ -827,6 +847,8 @@ export default function Editor() {
       </Main>
       <Thumbnails
         thumbnail={thumbnail}
+        thumbWidth={thumbWidth}
+        thumbHeight={thumbHeight}
         selected={selected}
         images={images}
         imageIndex={imageIndex}
