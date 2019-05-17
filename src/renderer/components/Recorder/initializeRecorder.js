@@ -5,8 +5,8 @@ import config from 'common/config'
 const {
   inDev,
   mainWindow,
-  ipcActions: { GIFIT_STOP, GIFIT_CLOSE },
-  appActions: { SET_APP_MODE, SET_GIF_FOLDER }
+  ipcActions: { RECORDER_STOP, RECORDER_CLOSE },
+  appActions: { SET_APP_MODE, SET_PROJECT_FOLDER }
 } = config
 
 export default (state, dispatch) => {
@@ -14,29 +14,29 @@ export default (state, dispatch) => {
   const sourceIndex = options.get('sourceIndex')
   const source = sources[sourceIndex]
 
-  function onGifitStop(e, data) {
-    dispatch({ type: SET_GIF_FOLDER, payload: data })
+  function onRecorderStop(e, data) {
+    dispatch({ type: SET_PROJECT_FOLDER, payload: data })
     dispatch({ type: SET_APP_MODE, payload: 1 })
     remote.BrowserWindow.fromId(1).maximize()
     remote.BrowserWindow.fromId(1).focus()
   }
 
-  function onGifitClose() {
+  function onRecorderClose() {
     remote.BrowserWindow.fromId(1).setSize(mainWindow.width, mainWindow.height)
     remote.BrowserWindow.fromId(1).center()
     remote.BrowserWindow.fromId(1).show()
     remote.BrowserWindow.fromId(1).focus()
   }
 
-  ipcRenderer.once(GIFIT_STOP, onGifitStop)
-  ipcRenderer.once(GIFIT_CLOSE, onGifitClose)
+  ipcRenderer.once(RECORDER_STOP, onRecorderStop)
+  ipcRenderer.once(RECORDER_CLOSE, onRecorderClose)
 
   const { width, height, x, y } = source.display.bounds
 
-  let gifferWindow
+  let recorderWindow
 
-  gifferWindow = new remote.BrowserWindow({
-    title: 'Recorder',
+  recorderWindow = new remote.BrowserWindow({
+    title: 'GifIt - Recorder',
     width,
     height,
     x,
@@ -47,14 +47,14 @@ export default (state, dispatch) => {
     webPreferences: { nodeIntegration: true }
   })
 
-  gifferWindow.loadURL(getURL(inDev))
+  recorderWindow.loadURL(getURL(inDev))
 
-  inDev && gifferWindow.webContents.openDevTools({ mode: 'detach' })
+  inDev && recorderWindow.webContents.openDevTools({ mode: 'detach' })
 
-  gifferWindow.on('close', () => {
-    ipcRenderer.removeListener(GIFIT_STOP, onGifitStop)
-    ipcRenderer.removeListener(GIFIT_CLOSE, onGifitClose)
-    gifferWindow = null
+  recorderWindow.on('close', () => {
+    ipcRenderer.removeListener(RECORDER_STOP, onRecorderStop)
+    ipcRenderer.removeListener(RECORDER_CLOSE, onRecorderClose)
+    recorderWindow = null
   })
 
   remote.getCurrentWindow().hide()

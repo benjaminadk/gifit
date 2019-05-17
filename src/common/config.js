@@ -27,6 +27,7 @@ const defaultOptions = {
   countdownTime: 3,
   alwaysOnTop: false,
   sourceIndex: 0,
+  videoInputIndex: 0,
   frameRate: 10,
   checkerColor: '#F0F0F0',
   checkerSize: 20
@@ -62,13 +63,15 @@ const appActions = {
   LOADING_START: 'LOADING_START',
   LOADING_END: 'LOADING_END',
   SET_APP_MODE: 'SET_APP_MODE',
-  SET_GIF_FOLDER: 'SET_GIF_FOLDER',
+  SET_PROJECT_FOLDER: 'SET_PROJECT_FOLDER',
   SET_OPTIONS: 'SET_OPTIONS'
 }
 
 const ipcActions = {
-  GIFIT_STOP: 'GIFIT_STOP',
-  GIFIT_CLOSE: 'GIFIT_CLOSE',
+  RECORDER_STOP: 'RECORDER_STOP',
+  RECORDER_CLOSE: 'RECORDER_CLOSE',
+  WEBCAM_STOP: 'WEBCAM_STOP',
+  WEBCAM_CLOSE: 'WEBCAM_CLOSE',
   OPTIONS_UPDATE: 'OPTIONS_UPDATE'
 }
 

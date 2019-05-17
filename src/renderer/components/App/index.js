@@ -3,8 +3,9 @@ import { reducer, initialState } from './state'
 import dispatchAsync from './dispatchAsync'
 import initialize from './initialize'
 import Landing from '../Landing'
+import Recorder from '../Recorder'
+import Webcam from '../Webcam'
 import Editor from '../Editor'
-import Gifit from '../Gifit'
 import Options from '../Options'
 import config from 'common/config'
 
@@ -44,10 +45,16 @@ export default function App() {
       return <div>options</div>
     }
   } else {
-    if (windowTitle === 'Recorder') {
+    if (windowTitle === 'GifIt - Recorder') {
       return (
         <AppContext.Provider value={{ state, dispatch }}>
-          <Gifit />
+          <Recorder />
+        </AppContext.Provider>
+      )
+    } else if (windowTitle === 'GifIt - Webcam') {
+      return (
+        <AppContext.Provider value={{ state, dispatch }}>
+          <Webcam />
         </AppContext.Provider>
       )
     } else if (windowTitle === 'Options') {

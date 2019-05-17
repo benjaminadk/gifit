@@ -22,8 +22,6 @@ export default function Thumbnails({
     menu.popup()
   }
 
-  console.log(thumbWidth, thumbHeight)
-
   return (
     <Container thumbWidth={thumbWidth} thumbHeight={thumbHeight} columns={images.length}>
       {thumbWidth

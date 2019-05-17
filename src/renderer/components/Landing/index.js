@@ -2,9 +2,11 @@ import React, { useEffect, useContext } from 'react'
 import { remote } from 'electron'
 import { Settings } from 'styled-icons/material/Settings'
 import { MediaRecord } from 'styled-icons/typicons/MediaRecord'
+import { Camera } from 'styled-icons/fa-solid/Camera'
 import { Image as ImageIcon } from 'styled-icons/material/Image'
 import { AppContext } from '../App'
-import initializeGifit from '../Gifit/initializeGifit'
+import initializeRecorder from '../Recorder/initializeRecorder'
+import initializeWebcam from '../Webcam/initializeWebcam'
 import initializeOptions from '../Options/initializeOptions'
 import { Container, Action } from './styles'
 import config from 'common/config'
@@ -30,7 +32,11 @@ export default function Landing() {
   }
 
   function onRecordingClick() {
-    initializeGifit(state, dispatch)
+    initializeRecorder(state, dispatch)
+  }
+
+  function onWebcamClick() {
+    initializeWebcam(state, dispatch)
   }
 
   function onEditorClick() {
@@ -50,6 +56,10 @@ export default function Landing() {
         <Action onClick={onRecordingClick}>
           <MediaRecord />
           <div>Recording</div>
+        </Action>
+        <Action onClick={onWebcamClick}>
+          <Camera />
+          <div>Webcam</div>
         </Action>
         <Action onClick={onEditorClick}>
           <ImageIcon />

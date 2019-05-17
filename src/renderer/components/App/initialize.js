@@ -61,5 +61,11 @@ export default async () => {
     resolve(fonts)
   })
 
-  return Promise.all([p1, p2, p3, p4, p5])
+  const p6 = new Promise(async resolve => {
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    const videoInputs = devices.filter(el => el.kind === 'videoinput')
+    resolve(videoInputs)
+  })
+
+  return Promise.all([p1, p2, p3, p4, p5, p6])
 }

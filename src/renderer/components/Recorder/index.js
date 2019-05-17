@@ -14,14 +14,14 @@ import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
 import config from 'common/config'
 
 const {
-  ipcActions: { GIFIT_CLOSE, GIFIT_STOP },
+  ipcActions: { RECORDER_CLOSE, RECORDER_STOP },
   constants: { VIDEO_CSS, IMAGE_TYPE, IMAGE_REGEX, MAX_LENGTH }
 } = config
 
 const mkdirAsync = promisify(mkdir)
 const writeFileAsync = promisify(writeFile)
 
-export default function Gifit() {
+export default function Recorder() {
   const { state, dispatch } = useContext(AppContext)
   const { options, sources } = state
 
@@ -30,6 +30,7 @@ export default function Gifit() {
   const countdownTime = options.get('countdownTime')
   const frameRate = options.get('frameRate')
   const sourceIndex = options.get('sourceIndex')
+
   const source = sources[sourceIndex]
 
   const [mode, setMode] = useState(0)
@@ -183,13 +184,13 @@ export default function Gifit() {
       }
       await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
       // send message to main process and close window
-      remote.BrowserWindow.fromId(1).webContents.send(GIFIT_STOP, folder)
+      remote.BrowserWindow.fromId(1).webContents.send(RECORDER_STOP, folder)
       remote.getCurrentWindow().close()
     }
   }
   // exit out without recording
   function onCloseClick() {
-    remote.BrowserWindow.fromId(1).webContents.send(GIFIT_CLOSE, null)
+    remote.BrowserWindow.fromId(1).webContents.send(RECORDER_CLOSE, null)
     remote.getCurrentWindow().close()
   }
   // start selection drawing

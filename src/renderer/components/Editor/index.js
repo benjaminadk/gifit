@@ -30,7 +30,7 @@ import config from 'common/config'
 
 const {
   mainWindow,
-  appActions: { SET_APP_MODE, SET_GIF_FOLDER },
+  appActions: { SET_APP_MODE, SET_PROJECT_FOLDER },
   constants: { IMAGE_TYPE }
 } = config
 
@@ -42,7 +42,7 @@ const unlinkAsync = promisify(unlink)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, fontOptions, gifFolder } = state
+  const { options, fontOptions, projectFolder } = state
 
   const [loading, setLoading] = useState(false)
   const [images, setImages] = useState([])
@@ -116,8 +116,8 @@ export default function Editor() {
       const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
       const data = await readFileAsync(projectPath)
       const project = JSON.parse(data)
-      // isolate current project by matching gifFolder app state
-      if (dir === gifFolder) {
+      // isolate current project by matching projectFolder app state
+      if (dir === projectFolder) {
         // calcuate ratios for image w:h and h:w
         const imageRatio = Math.floor((project.width / project.height) * 100) / 100
         const inverseRatio = Math.floor((project.height / project.width) * 100) / 100
@@ -185,10 +185,10 @@ export default function Editor() {
     remote.getCurrentWindow().maximize()
   }, [])
 
-  // call initialize onload and when gifFolder changes
+  // call initialize onload and when projectFolder changes
   useEffect(() => {
     initialize()
-  }, [gifFolder])
+  }, [projectFolder])
 
   // manage main canvas
   useEffect(() => {
@@ -579,7 +579,7 @@ export default function Editor() {
 
   // open a recent project
   function onRecentAccept(folder) {
-    dispatch({ type: SET_GIF_FOLDER, payload: folder })
+    dispatch({ type: SET_PROJECT_FOLDER, payload: folder })
   }
 
   // close recent project drawer
