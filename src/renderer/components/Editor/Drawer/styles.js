@@ -83,6 +83,13 @@ export const Section = styled.div`
   }
 `
 
+export const ChoiceRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-items: center;
+  align-items: center;
+`
+
 export const Property = styled.div`
   display: flex;
   align-items: center;

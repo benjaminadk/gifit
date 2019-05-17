@@ -17,6 +17,7 @@ import getTextXY from './getTextXY'
 import { AppContext } from '../App'
 import Drawer from './Drawer'
 import TitleFrame from './TitleFrame'
+import FreeDrawing from './FreeDrawing'
 import Border from './Border'
 import Progress from './Progress'
 import RecentProjects from './RecentProjects'
@@ -65,6 +66,8 @@ export default function Editor() {
   const [showDrawer, setShowDrawer] = useState(false)
   const [drawerMode, setDrawerMode] = useState('')
   const [drawerHeight, setDrawerHeight] = useState(null)
+
+  const [drawType, setDrawType] = useState('pen')
 
   const [borderLeft, setBorderLeft] = useState(0)
   const [borderRight, setBorderRight] = useState(0)
@@ -894,6 +897,8 @@ export default function Editor() {
             onAccept={onTitleAccept}
             onCancel={onTitleCancel}
           />
+        ) : drawerMode === 'drawing' ? (
+          <FreeDrawing drawerHeight={drawerHeight} drawType={drawType} setDrawType={setDrawType} />
         ) : drawerMode === 'border' ? (
           <Border
             drawerHeight={drawerHeight}

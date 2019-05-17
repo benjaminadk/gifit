@@ -6,8 +6,8 @@ import { TextFields } from 'styled-icons/material/TextFields'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import Select from '../../Shared/Select'
-import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
-import { Choices, Choice } from './styles'
+import Choice from '../../Shared/Choice'
+import { Header, Main, Section, ChoiceRow, Property, Label, Footer, Button } from '../Drawer/styles'
 import config from 'common/config'
 
 const {
@@ -115,16 +115,20 @@ export default function Progress({
             <div className='divider' />
           </div>
           <div>
-            <Choices>
-              <Choice selected={progressType === 'bar'} onClick={() => setProgressType('bar')}>
-                <RemoveFromQueue />
-                <div>Bar</div>
-              </Choice>
-              <Choice selected={progressType === 'text'} onClick={() => setProgressType('text')}>
-                <TextFields />
-                <div>Text</div>
-              </Choice>
-            </Choices>
+            <ChoiceRow>
+              <Choice
+                selected={progressType === 'bar'}
+                icon={<RemoveFromQueue />}
+                label='Bar'
+                onClick={() => setProgressType('bar')}
+              />
+              <Choice
+                selected={progressType === 'text'}
+                icon={<TextFields />}
+                label='Text'
+                onClick={() => setProgressType('text')}
+              />
+            </ChoiceRow>
           </div>
         </Section>
         {progressType === 'bar' ? (

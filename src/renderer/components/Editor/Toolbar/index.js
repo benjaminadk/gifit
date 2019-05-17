@@ -28,6 +28,7 @@ import { AccessTime } from 'styled-icons/material/AccessTime'
 import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
 import { ArrowBack } from 'styled-icons/material/ArrowBack'
 import { ArrowForward } from 'styled-icons/material/ArrowForward'
+import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
 import {
@@ -223,8 +224,12 @@ export default function Toolbar({
             </Text>
             <SectionText>Text</SectionText>
           </Section>
-          <Section width={150}>
+          <Section width={225}>
             <Overlay>
+              <Action onClick={() => onOpenDrawer('drawing')}>
+                <PenFancy />
+                <div className='text'>Free Drawing</div>
+              </Action>
               <Action onClick={() => onOpenDrawer('border')}>
                 <BorderOuter />
                 <div className='text'>Border</div>

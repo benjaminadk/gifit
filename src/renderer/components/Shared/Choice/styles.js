@@ -1,15 +1,8 @@
 import styled from 'styled-components'
 import { lighten } from 'polished'
 
-export const Choices = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  justify-items: center;
-  align-items: center;
-`
-
-export const Choice = styled.div`
-  width: 80%;
+export const Container = styled.div`
+  width: 95%;
   display: grid;
   grid-template-columns: 25px 1fr;
   justify-items: center;
