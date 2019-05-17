@@ -87,7 +87,6 @@ export default function Toolbar({
   onDiscardProjectClick,
   onPlaybackClick,
   onFrameDeleteClick,
-  onFrameDeleteAllClick,
   onOptionsClick,
   onSelectClick
 }) {
@@ -197,15 +196,15 @@ export default function Toolbar({
         <Menu>
           <Section width={225}>
             <Frames>
-              <Action onClick={onFrameDeleteClick}>
+              <Action onClick={() => onFrameDeleteClick('selection')}>
                 <Delete />
                 <div className='text'>Delete</div>
               </Action>
-              <Action onClick={() => onFrameDeleteAllClick('prev')}>
+              <Action onClick={() => onFrameDeleteClick('previous')}>
                 <Svg name='delete-next' />
                 <div className='text'>Delete All Previous</div>
               </Action>
-              <Action onClick={() => onFrameDeleteAllClick('next')}>
+              <Action onClick={() => onFrameDeleteClick('next')}>
                 <Svg name='delete-next' />
                 <div className='text'>Delete All Next</div>
               </Action>

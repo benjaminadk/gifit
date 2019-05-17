@@ -427,12 +427,23 @@ export default function Editor() {
   }
 
   // delete selected frames from project
-  function onFrameDeleteClick() {
-    const count = selected.count(el => el)
+  function onFrameDeleteClick(type) {
+    // number of frames to delete
+    var count
+    if (type === 'selection') {
+      count = selected.count(el => el)
+    } else if (type === 'previous') {
+      count = imageIndex
+    } else {
+      count = images.length - imageIndex - 1
+    }
+    // if not deleting any frames delete
     if (count === 0) {
       return
     }
+    // parent window
     const win = remote.getCurrentWindow()
+    // dialog options
     const opts = {
       type: 'question',
       buttons: ['Delete', 'Cancel'],
@@ -441,50 +452,29 @@ export default function Editor() {
       message: `Are you sure you want to delete?`,
       detail: `Action will delete ${count} selected frame${count === 1 ? '' : 's'}.`
     }
+    // callback after user clicks button
     const callback = result => {
+      // if user clicks Delete
       if (result === 0) {
-        const discardImages = images.filter((el, i) => selected.get(i))
-        const keepImages = images.filter((el, i) => !selected.get(i))
-        const newProject = { ...gifData, frames: keepImages }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
-          initialize(selected.findIndex(el => el))
-        })
-        for (const image of discardImages) {
-          unlinkAsync(image.path)
-        }
-      }
-    }
-    remote.dialog.showMessageBox(win, opts, callback)
-  }
-
-  function onFrameDeleteAllClick(type) {
-    const count = type === 'prev' ? imageIndex : images.length - imageIndex + 1
-    const win = remote.getCurrentWindow()
-    const opts = {
-      type: 'question',
-      buttons: ['Delete', 'Cancel'],
-      defaultId: 0,
-      title: `Delete Frames`,
-      message: `Are you sure you want to delete?`,
-      detail: `Action will delete ${count} selected frame${count === 1 ? '' : 's'}.`
-    }
-    const callback = result => {
-      if (result === 0) {
-        var discardImages, keepImages
-        if (type === 'prev') {
-          discardImages = images.filter((el, i) => i < imageIndex)
+        var deleteImages, keepImages
+        if (type === 'selection') {
+          deleteImages = images.filter((el, i) => selected.get(i))
+          keepImages = images.filter((el, i) => !selected.get(i))
+        } else if (type === 'previous') {
+          deleteImages = images.filter((el, i) => i < imageIndex)
           keepImages = images.filter((el, i) => i >= imageIndex)
+        } else {
+          deleteImages = images.filter((el, i) => i > imageIndex)
+          keepImages = images.filter((el, i) => i <= imageIndex)
         }
-        const newProject = {
-          ...gifData,
-          frames: keepImages
-        }
+        // overwrite project.json with new images
+        const newProject = { ...gifData, frames: keepImages }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           initialize()
         })
-        for (const image of discardImages) {
+        // delete old images
+        for (const image of deleteImages) {
           unlinkAsync(image.path)
         }
       }
@@ -821,7 +811,6 @@ export default function Editor() {
         onDiscardProjectClick={onDiscardProjectClick}
         onPlaybackClick={onPlaybackClick}
         onFrameDeleteClick={onFrameDeleteClick}
-        onFrameDeleteAllClick={onFrameDeleteAllClick}
         onOptionsClick={onOptionsClick}
         onSelectClick={onSelectClick}
       />
