@@ -1,7 +1,7 @@
 {
   "name": "gifit",
   "version": "1.0.0",
-  "description": "A screen recording application",
+  "description": "Record GIFs from your screen",
   "keywords": [
     "gif",
     "electron",
@@ -18,7 +18,9 @@
   },
   "license": "ISC",
   "scripts": {
-    "dev": "electron-webpack dev"
+    "dev": "electron-webpack dev",
+    "compile": "electron-webpack",
+    "release": "electron-builder -p always"
   },
   "dependencies": {
     "date-fns": "2.0.0-alpha.27",
@@ -34,7 +36,25 @@
   "devDependencies": {
     "@babel/preset-react": "7.0.0",
     "electron": "5.0.0",
+    "electron-builder": "20.40.2",
     "electron-webpack": "2.6.2",
     "webpack": "4.30.0"
+  },
+  "build": {
+    "appId": "Benjaminadk.Gifit",
+    "productName": "GifIt",
+    "win": {
+      "icon": "static/icon.ico",
+      "publish": {
+        "provider": "github",
+        "owner": "benjaminadk"
+      },
+      "target": [
+        "nsis"
+      ]
+    },
+    "directories": {
+      "output": "release"
+    }
   }
 }

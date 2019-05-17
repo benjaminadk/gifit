@@ -1,0 +1,17 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+configuration: Release
+platform: x64
+environment:
+  matrix:
+    - GH_TOKEN:
+        secure: LjGGdheEB7RyoYryXfORkvvwS5bRaoNeg/xw3MqBn7rcZHX4GrKZKC/cYIkk/sQE
+cache:
+  - node_modules
+install:
+  - ps: Install-Product node 10 x64
+  - cmd: npm install
+build_script:
+  - cmd: npm run compile
+deploy_script:
+  - cmd: npm run release

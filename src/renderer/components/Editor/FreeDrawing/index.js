@@ -4,7 +4,6 @@ import { Close } from 'styled-icons/material/Close'
 import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
 import { PenNib } from 'styled-icons/fa-solid/PenNib'
 import { Eraser } from 'styled-icons/boxicons-solid/Eraser'
-import styled from 'styled-components'
 import Choice from '../../Shared/Choice'
 import { Header, Main, Section, ChoiceRow, Property, Label, Footer, Button } from '../Drawer/styles'
 
