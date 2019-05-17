@@ -1,42 +1,41 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
 import { remote } from 'electron'
-import styled from 'styled-components'
+import { MediaRecord } from 'styled-icons/typicons/MediaRecord'
+import { Stop } from 'styled-icons/material/Stop'
+import path from 'path'
+import { writeFile, mkdir } from 'fs'
+import { promisify } from 'util'
+import createFolderName from '../../lib/createFolderName'
+import { Container, Video, Controls, Action } from './styles'
 import { AppContext } from '../App'
+import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
 const {
   ipcActions: { WEBCAM_CLOSE, WEBCAM_STOP },
-  constants: { VIDEO_CSS, IMAGE_TYPE, IMAGE_REGEX, MAX_LENGTH }
+  constants: { IMAGE_TYPE, IMAGE_REGEX, MAX_LENGTH }
 } = config
 
-export const Container = styled.div.attrs(p => ({}))`
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: 1fr 50px;
-`
-
-export const Video = styled.video.attrs(p => ({
-  width: p.width,
-  height: p.height
-}))`
-  object-fit: contain;
-`
+const mkdirAsync = promisify(mkdir)
+const writeFileAsync = promisify(writeFile)
 
 export default function Webcam() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, videoInputs, sources } = state
+  const { options, videoInputs } = state
 
   const videoInputIndex = options.get('videoInputIndex')
-  const sourceIndex = options.get('sourceIndex')
+  const frameRate = options.get('frameRate')
 
   const videoInput = videoInputs[videoInputIndex]
-  const source = sources[sourceIndex]
 
   const [scale, setScale] = useState(0.5)
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
+  const [recording, setRecording] = useState(false)
 
+  const videoStream = useRef(null)
   const video = useRef(null)
+  const stop = useRef(null)
 
   useEffect(() => {
     async function initialize() {
@@ -48,15 +47,16 @@ export default function Webcam() {
           }
         }
       })
-
+      videoStream.current = stream
       video.current.srcObject = stream
       video.current.onloadedmetadata = () => {
         const w = Math.floor(video.current.videoWidth * scale)
         const h = Math.floor(video.current.videoHeight * scale)
         setWidth(w)
         setHeight(h)
+        remote.getCurrentWindow().show()
         remote.getCurrentWindow().setSize(w + 10, h + 100)
-        remove.getCurrentWindow().center()
+        remote.getCurrentWindow().center()
       }
     }
 
@@ -75,6 +75,71 @@ export default function Webcam() {
     setScale(value)
   }
 
+  async function onRecordClick() {
+    if (recording) {
+      return
+    }
+
+    setRecording(true)
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    canvas.width = width
+    canvas.height = height
+    ctx.scale(scale, scale)
+    const frames = []
+    const times = []
+    var t1 = performance.now()
+
+    const captureFrame = setInterval(() => {
+      ctx.clearRect(0, 0, width, height)
+      ctx.drawImage(video.current, 0, 0)
+      const frame = canvas.toDataURL(IMAGE_TYPE)
+      frames.push(frame)
+
+      const t2 = performance.now()
+      const diff = Math.round(t2 - t1)
+      t1 = t2
+      times.push(diff)
+    }, Math.round(1000 / frameRate))
+
+    stop.current.addEventListener('click', () => onStopClick())
+
+    async function onStopClick() {
+      setRecording(false)
+      clearInterval(captureFrame)
+      videoStream.current.getTracks().forEach(el => el.stop())
+
+      const folder = createFolderName()
+      const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
+      await mkdirAsync(folderPath)
+      const data = []
+
+      for (const [i, frame] of frames.entries()) {
+        const filepath = path.join(folderPath, `${i}.png`)
+        data.push({
+          path: filepath,
+          time: times[i]
+        })
+        const base64Data = frame.replace(IMAGE_REGEX, '')
+        await writeFileAsync(filepath, base64Data, {
+          encoding: 'base64'
+        })
+      }
+
+      const project = {
+        relative: folder,
+        date: new Date().getTime(),
+        width,
+        height,
+        frameRate,
+        frames: data
+      }
+      await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
+      remote.BrowserWindow.fromId(1).webContents.send(WEBCAM_STOP, folder)
+      remote.getCurrentWindow().close()
+    }
+  }
+
   function onCloseClick() {
     remote.BrowserWindow.fromId(1).webContents.send(WEBCAM_CLOSE, null)
     remote.getCurrentWindow().close()
@@ -83,17 +148,25 @@ export default function Webcam() {
   return (
     <Container width={width} height={height + 50}>
       <Video ref={video} width={width} height={height} autoPlay={true} />
-      <div>
+      <Controls>
         <input
           type='range'
-          min={0.25}
+          min={0.4}
           max={1.5}
           step={0.01}
           value={scale}
           onChange={onScaleChange}
         />
-        <button onClick={onCloseClick}>Close</button>
-      </div>
+        <button onClick={onCloseClick}>x</button>
+        <Action onClick={onRecordClick}>
+          <MediaRecord color={recording ? 'red' : 'black'} />
+          <div className='text'>Record</div>
+        </Action>
+        <Action ref={stop}>
+          <Stop />
+          <div className='text'>Stop</div>
+        </Action>
+      </Controls>
     </Container>
   )
 }

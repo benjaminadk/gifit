@@ -151,7 +151,7 @@ export default function Recorder() {
       clearTimeout(stopCapture)
       tray.destroy()
       remote.globalShortcut.unregister('Esc')
-      stream.getTracks().forEach(track => track.stop())
+      stream.getTracks().forEach(el => el.stop())
       // create directory for project
       const folder = createFolderName()
       const folderPath = path.join(RECORDINGS_DIRECTORY, folder)

@@ -10,6 +10,13 @@ const {
 } = config
 
 export default (state, dispatch) => {
+  function onWebcamStop(e, data) {
+    dispatch({ type: SET_PROJECT_FOLDER, payload: data })
+    dispatch({ type: SET_APP_MODE, payload: 1 })
+    remote.BrowserWindow.fromId(1).maximize()
+    remote.BrowserWindow.fromId(1).focus()
+  }
+
   function onWebcamClose() {
     remote.BrowserWindow.fromId(1).setSize(mainWindow.width, mainWindow.height)
     remote.BrowserWindow.fromId(1).center()
@@ -17,15 +24,17 @@ export default (state, dispatch) => {
     remote.BrowserWindow.fromId(1).focus()
   }
 
+  ipcRenderer.once(WEBCAM_STOP, onWebcamStop)
   ipcRenderer.once(WEBCAM_CLOSE, onWebcamClose)
 
   let webcamWindow
 
   webcamWindow = new remote.BrowserWindow({
     title: 'GifIt - Webcam',
-    width: 400,
-    height: 450,
+    width: 0,
+    height: 0,
     center: true,
+    show: false,
     webPreferences: { nodeIntegration: true }
   })
 
@@ -36,6 +45,7 @@ export default (state, dispatch) => {
   inDev && webcamWindow.webContents.openDevTools({ mode: 'detach' })
 
   webcamWindow.on('close', () => {
+    ipcRenderer.removeListener(WEBCAM_STOP, onWebcamStop)
     ipcRenderer.removeListener(WEBCAM_CLOSE, onWebcamClose)
     webcamWindow = null
   })
