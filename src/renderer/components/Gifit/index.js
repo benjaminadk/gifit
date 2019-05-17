@@ -1,6 +1,5 @@
 import React, { useState, useContext, useRef } from 'react'
 import { remote } from 'electron'
-import jimp from 'jimp'
 import { CropFree } from 'styled-icons/material/CropFree'
 import { Crop } from 'styled-icons/material/Crop'
 import { Close } from 'styled-icons/material/Close'
@@ -25,6 +24,7 @@ const writeFileAsync = promisify(writeFile)
 export default function Gifit() {
   const { state, dispatch } = useContext(AppContext)
   const { options, sources } = state
+
   const showCursor = options.get('showCursor')
   const useCountdown = options.get('useCountdown')
   const countdownTime = options.get('countdownTime')
@@ -49,15 +49,13 @@ export default function Gifit() {
 
   async function onRecordStart(cropped) {
     setMode(2)
-
+    // if useCountdown display countdown in ui
     await new Promise(resolve => {
       if (useCountdown) {
-        console.log('start countdown')
         const countdown = setInterval(() => {
           setTime(x => x - 1)
         }, 1000)
         setTimeout(() => {
-          console.log('start recording')
           clearInterval(countdown)
           setMode(3)
           resolve()
@@ -67,13 +65,12 @@ export default function Gifit() {
         resolve()
       }
     })
-
+    // if showCursor forward all mouse events through transparent window
     if (showCursor) {
       remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
     }
-
+    // capture full screen stream
     const { width: w, height: h } = source.display.bounds
-
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
@@ -87,60 +84,80 @@ export default function Gifit() {
         }
       }
     })
-
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    canvas.width = w
-    canvas.height = h
-
+    // create full screen size canvas
+    const canvas1 = document.createElement('canvas')
+    const ctx1 = canvas1.getContext('2d')
+    canvas1.width = w
+    canvas1.height = h
+    // create selection size canvas
+    const canvas2 = document.createElement('canvas')
+    const ctx2 = canvas2.getContext('2d')
+    canvas2.width = width
+    canvas2.height = height
+    // create video element to play stream on
     const video = document.createElement('video')
     video.style.cssText = VIDEO_CSS
     video.srcObject = stream
     document.body.appendChild(video)
     video.onloadedmetadata = e => video.play()
-
+    // create data structures for frame, time and mouse data
     const frames = []
     const times = []
     const xPos = []
     const yPos = []
     const isClicked = []
+    // record time and recording start
     var t1 = performance.now()
+    // capture individual frames at configured frame rate per second
     const captureFrame = setInterval(() => {
-      ctx.clearRect(0, 0, w, h)
-      ctx.drawImage(video, 0, 0, w, h)
-      const frame = canvas.toDataURL(IMAGE_TYPE)
+      var frame
+      // draw full screen image
+      ctx1.clearRect(0, 0, w, h)
+      ctx1.drawImage(video, 0, 0, w, h)
+      // if cropped redraw selection on second canvas
+      if (cropped) {
+        ctx2.clearRect(0, 0, width, height)
+        ctx2.drawImage(canvas1, startX, startY, width, height, 0, 0, width, height)
+        // get raw data from canvas2
+        frame = canvas2.toDataURL(IMAGE_TYPE)
+      } else {
+        // or get raw data from full screen canvas
+        frame = canvas1.toDataURL(IMAGE_TYPE)
+      }
       frames.push(frame)
-
+      // calculate elapsed time between frames
       const t2 = performance.now()
       const diff = Math.round(t2 - t1)
       t1 = t2
       times.push(diff)
-
+      // get x and y coordinates of mouse
       const { x, y } = remote.screen.getCursorScreenPoint()
       xPos.push(x)
       yPos.push(y)
       isClicked.push(clicked.current)
     }, Math.round(1000 / frameRate))
-
+    // automatically stop recording after max recording length
     const stopCapture = setTimeout(() => onStopGifit(), MAX_LENGTH)
-
+    // register escape key as a way to stop recording
     remote.globalShortcut.register('Esc', () => onStopGifit())
-
+    // create tray icon that can also be used to stop recording
     const tray = new remote.Tray(RECORDING_ICON)
     tray.on('click', () => onStopGifit())
-
+    // called to stop recording
     async function onStopGifit() {
+      // clean up
       clearInterval(captureFrame)
       clearTimeout(stopCapture)
       tray.destroy()
       remote.globalShortcut.unregister('Esc')
       stream.getTracks().forEach(track => track.stop())
-
+      // create directory for project
       const folder = createFolderName()
       const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
       await mkdirAsync(folderPath)
       const data = []
-
+      // create data object for each frame
+      // save each frame as a png file
       for (const [i, frame] of frames.entries()) {
         const filepath = path.join(folderPath, `${i}.png`)
         data.push({
@@ -150,24 +167,12 @@ export default function Gifit() {
           cursorY: yPos[i],
           clicked: isClicked[i]
         })
-        if (cropped) {
-          const imageData = frame.replace(IMAGE_REGEX, '')
-          const buffer = Buffer.from(imageData, 'base64')
-          const image = await jimp.read(buffer)
-          const imageCropped = await image.crop(left, top, width, height)
-          const croppedData = await imageCropped.getBase64Async(IMAGE_TYPE)
-          const base64Data = croppedData.replace(IMAGE_REGEX, '')
-          await writeFileAsync(filepath, base64Data, {
-            encoding: 'base64'
-          })
-        } else {
-          const base64Data = frame.replace(IMAGE_REGEX, '')
-          await writeFileAsync(filepath, base64Data, {
-            encoding: 'base64'
-          })
-        }
+        const base64Data = frame.replace(IMAGE_REGEX, '')
+        await writeFileAsync(filepath, base64Data, {
+          encoding: 'base64'
+        })
       }
-
+      // create project.json file with all relevant data
       const project = {
         relative: folder,
         date: new Date().getTime(),
@@ -177,17 +182,17 @@ export default function Gifit() {
         frames: data
       }
       await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
-
+      // send message to main process and close window
       remote.BrowserWindow.fromId(1).webContents.send(GIFIT_STOP, folder)
       remote.getCurrentWindow().close()
     }
   }
-
+  // exit out without recording
   function onCloseClick() {
     remote.BrowserWindow.fromId(1).webContents.send(GIFIT_CLOSE, null)
     remote.getCurrentWindow().close()
   }
-
+  // start selection drawing
   function onMouseDown(e) {
     if (!done && mode === 1) {
       setDrawing(true)
@@ -197,14 +202,14 @@ export default function Gifit() {
       setLeft(e.pageY)
     }
   }
-
+  // end selection drawing
   function onMouseUp(e) {
     if (mode === 1 && drawing) {
       setDone(true)
       setDrawing(false)
     }
   }
-
+  // selection drawing
   function onMouseMove(e) {
     if (!done && drawing) {
       setTop(e.pageY - startY < 0 ? e.pageY : startY)
@@ -213,7 +218,7 @@ export default function Gifit() {
       setHeight(Math.abs(e.pageY - startY))
     }
   }
-
+  // reset state
   function onRedoClick() {
     setDone(false)
     setDrawing(false)
@@ -224,7 +229,7 @@ export default function Gifit() {
     setWidth(0)
     setHeight(0)
   }
-
+  // cancel selection
   function onCancelClick() {
     onRedoClick()
     setMode(0)

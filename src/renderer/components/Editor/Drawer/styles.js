@@ -9,7 +9,7 @@ const {
 export const Container = styled.div.attrs(p => ({
   style: {
     right: p.show ? '0' : `-${drawerWidth}px`,
-    bottom: p.thumbHeight + 40 + 20 + 'px'
+    bottom: p.thumbHeight ? p.thumbHeight + 40 + 20 + 'px' : '120px'
   }
 }))`
   position: absolute;
