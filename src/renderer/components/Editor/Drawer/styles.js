@@ -8,12 +8,12 @@ const {
 
 export const Container = styled.div.attrs(p => ({
   style: {
-    right: p.show ? '0' : `-${drawerWidth}px`
+    right: p.show ? '0' : `-${drawerWidth}px`,
+    bottom: p.thumbHeight + 40 + 20 + 'px'
   }
 }))`
   position: absolute;
   top: 120px;
-  bottom: 120px;
   width: ${drawerWidth}px;
   background: ${p => p.theme.grey[0]};
   border-left: ${p => p.theme.border};

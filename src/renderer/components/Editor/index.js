@@ -127,7 +127,6 @@ export default function Editor() {
           tWidth = 100 * imageRatio
           tHeight = 100
         }
-
         // calculate main editor section height
         // total height - toolbar height - thumbnails height - bottom bar height
         const mainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
@@ -862,7 +861,7 @@ export default function Editor() {
         index={imageIndex + 1}
         onPlaybackClick={onPlaybackClick}
       />
-      <Drawer show={showDrawer}>
+      <Drawer show={showDrawer} thumbHeight={thumbHeight}>
         {drawerMode === 'recent' ? (
           <RecentProjects
             drawerHeight={drawerHeight}
