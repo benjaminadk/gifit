@@ -57,7 +57,7 @@ export default function Webcam() {
         setWidth(w)
         setHeight(h)
         remote.getCurrentWindow().show()
-        remote.getCurrentWindow().setSize(w + 10, h + 100)
+        remote.getCurrentWindow().setSize(w, h + 100)
         remote.getCurrentWindow().center()
       }
     }
@@ -70,11 +70,11 @@ export default function Webcam() {
     const h = Math.floor(video.current.videoHeight * scale)
     setWidth(w)
     setHeight(h)
-    remote.getCurrentWindow().setSize(w + 10, h + 100)
+    remote.getCurrentWindow().setSize(w, h + 100)
   }, [scale])
 
   function onShowScale() {
-    initializeScale(setScale)
+    initializeScale(scale, setScale)
   }
 
   async function onRecordClick() {

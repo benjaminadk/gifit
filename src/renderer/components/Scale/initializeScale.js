@@ -7,7 +7,7 @@ const {
   ipcActions: { WEBCAM_SCALE }
 } = config
 
-export default setScale => {
+export default (scale, setScale) => {
   let scaleWindow
   scaleWindow = new remote.BrowserWindow({
     title: 'Scale',

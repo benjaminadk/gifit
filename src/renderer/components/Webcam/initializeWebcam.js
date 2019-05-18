@@ -33,8 +33,6 @@ export default (state, dispatch) => {
     width: 0,
     height: 0,
     center: true,
-    resizable: false,
-    maximizable: false,
     show: false,
     webPreferences: { nodeIntegration: true }
   })
