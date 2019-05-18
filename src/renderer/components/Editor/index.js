@@ -67,6 +67,8 @@ export default function Editor() {
   const [drawerMode, setDrawerMode] = useState('')
   const [drawerHeight, setDrawerHeight] = useState(null)
 
+  const [optionsOpen, setOptionsOpen] = useState(false)
+
   const [drawType, setDrawType] = useState('pen')
 
   const [borderLeft, setBorderLeft] = useState(0)
@@ -365,6 +367,7 @@ export default function Editor() {
   // save project as a GIF
   function onSaveClick() {
     const win = remote.getCurrentWindow()
+    // default to downloads directory with random filename.gif
     const opts = {
       title: 'Save',
       defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
@@ -775,7 +778,11 @@ export default function Editor() {
 
   // open options window
   function onOptionsClick() {
-    initializeOptions(remote.getCurrentWindow(), dispatch)
+    console.log(optionsOpen)
+    if (!optionsOpen) {
+      setOptionsOpen(true)
+      initializeOptions(remote.getCurrentWindow(), dispatch, setOptionsOpen)
+    }
   }
 
   // handle clicking a thumbail with modifier keys

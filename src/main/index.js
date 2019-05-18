@@ -17,11 +17,10 @@ function createMainWindow() {
     icon: path.join(__static, 'icon.ico'),
     width,
     height,
-    minWidth: width,
-    minHeight: height,
+    // minWidth: width,
+    // minHeight: height,
     center: true,
-    maximizable: false,
-    resizable: false,
+    // resizable: false,
     webPreferences: {
       nodeIntegration: true,
       webSecurity: !inDev

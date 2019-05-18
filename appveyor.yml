@@ -9,7 +9,7 @@ environment:
 cache:
   - node_modules
 install:
-  - ps: Install-Product node 10 x64
+  - ps: Install-Product node 12 x64
   - cmd: npm install
 build_script:
   - cmd: npm run compile

@@ -10,7 +10,7 @@ const {
   optionsWindow: { width, height }
 } = config
 
-export default (parent, dispatch) => {
+export default (parent, dispatch, setOptionsOpen) => {
   function onOptionsUpdate(e, options) {
     dispatch({ type: SET_OPTIONS, payload: Map(options) })
   }
@@ -38,6 +38,7 @@ export default (parent, dispatch) => {
   ipcRenderer.on(OPTIONS_UPDATE, onOptionsUpdate)
 
   optionsWindow.on('close', () => {
+    setOptionsOpen(false)
     ipcRenderer.removeListener(OPTIONS_UPDATE, onOptionsUpdate)
     optionsWindow = null
   })

@@ -1,4 +1,4 @@
-import GIFEncoder from 'gifencoder'
+import GIFEncoder from '../../lib/gifencoder/GIFEncoder'
 import { createWriteStream } from 'fs'
 
 // 39 seconds for 91 frame test 7.09 MB
