@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
 import { remote } from 'electron'
+import { Shrink } from 'styled-icons/icomoon/Shrink'
 import { MediaRecord } from 'styled-icons/typicons/MediaRecord'
 import { Stop } from 'styled-icons/material/Stop'
 import path from 'path'
@@ -8,6 +9,7 @@ import { promisify } from 'util'
 import createFolderName from '../../lib/createFolderName'
 import { Container, Video, Controls, Action } from './styles'
 import { AppContext } from '../App'
+import initializeScale from '../Scale/initializeScale'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
@@ -71,8 +73,8 @@ export default function Webcam() {
     remote.getCurrentWindow().setSize(w + 10, h + 100)
   }, [scale])
 
-  function onScaleChange({ target: { value } }) {
-    setScale(value)
+  function onShowScale() {
+    initializeScale(setScale)
   }
 
   async function onRecordClick() {
@@ -149,14 +151,8 @@ export default function Webcam() {
     <Container width={width} height={height + 50}>
       <Video ref={video} width={width} height={height} autoPlay={true} />
       <Controls>
-        <input
-          type='range'
-          min={0.4}
-          max={1.5}
-          step={0.01}
-          value={scale}
-          onChange={onScaleChange}
-        />
+        <div />
+        <Shrink size={20} onClick={onShowScale} />
         <button onClick={onCloseClick}>x</button>
         <Action onClick={onRecordClick}>
           <MediaRecord color={recording ? 'red' : 'black'} />

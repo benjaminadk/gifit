@@ -6,6 +6,7 @@ import Landing from '../Landing'
 import Recorder from '../Recorder'
 import Webcam from '../Webcam'
 import Editor from '../Editor'
+import Scale from '../Scale'
 import Options from '../Options'
 import config from 'common/config'
 
@@ -61,6 +62,12 @@ export default function App() {
       return (
         <AppContext.Provider value={{ state, dispatch }}>
           <Options />
+        </AppContext.Provider>
+      )
+    } else if (windowTitle === 'Scale') {
+      return (
+        <AppContext.Provider value={{ state, dispatch }}>
+          <Scale />
         </AppContext.Provider>
       )
     }

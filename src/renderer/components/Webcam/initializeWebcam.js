@@ -20,7 +20,6 @@ export default (state, dispatch) => {
   function onWebcamClose() {
     remote.BrowserWindow.fromId(1).setSize(mainWindow.width, mainWindow.height)
     remote.BrowserWindow.fromId(1).center()
-    remote.BrowserWindow.fromId(1).show()
     remote.BrowserWindow.fromId(1).focus()
   }
 
@@ -34,6 +33,7 @@ export default (state, dispatch) => {
     width: 0,
     height: 0,
     center: true,
+    resizeable: false,
     show: false,
     webPreferences: { nodeIntegration: true }
   })
@@ -48,6 +48,7 @@ export default (state, dispatch) => {
     ipcRenderer.removeListener(WEBCAM_STOP, onWebcamStop)
     ipcRenderer.removeListener(WEBCAM_CLOSE, onWebcamClose)
     webcamWindow = null
+    remote.BrowserWindow.fromId(1).show()
   })
 
   remote.getCurrentWindow().hide()

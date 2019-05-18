@@ -15,7 +15,8 @@ export const Video = styled.video.attrs(p => ({
 
 export const Controls = styled.div`
   display: grid;
-  grid-template-columns: 1fr 30px 60px 60px;
+  grid-template-columns: 1fr 30px 30px 60px 60px;
+  align-items: center;
 `
 
 export const Action = styled.div`
