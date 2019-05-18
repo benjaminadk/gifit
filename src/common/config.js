@@ -1,6 +1,6 @@
 const mainWindow = {
-  width: 600,
-  height: 300
+  width: 500,
+  height: 220
 }
 
 const optionsWindow = {
@@ -51,11 +51,11 @@ const grey = [
 ]
 
 const theme = {
-  primary: 'hsla(162, 89%, 53%, 1)',
+  primary: '#407FBF',
   secondary: 'hsla(192, 89%, 53%, 1)',
   black: '#333333',
   grey,
-  border: '1px solid #E0E0E0'
+  border: '1px solid #B0B0B0'
 }
 
 const appActions = {

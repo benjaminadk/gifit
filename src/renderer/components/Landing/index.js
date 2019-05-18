@@ -55,11 +55,15 @@ export default function Landing() {
       <div className='bottom'>
         <Action onClick={onRecordingClick}>
           <MediaRecord />
-          <div>Recording</div>
+          <div>Recorder</div>
         </Action>
         <Action onClick={onWebcamClick}>
           <Camera />
           <div>Webcam</div>
+        </Action>
+        <Action>
+          <ImageIcon />
+          <div>Board</div>
         </Action>
         <Action onClick={onEditorClick}>
           <ImageIcon />

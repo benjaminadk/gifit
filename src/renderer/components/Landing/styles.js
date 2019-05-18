@@ -10,10 +10,10 @@ export const Container = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
     .title {
-      font-size: 2.4rem;
+      font-size: 2rem;
     }
     .options {
       justify-self: flex-end;
@@ -33,7 +33,7 @@ export const Container = styled.div`
   }
   .bottom {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     justify-items: center;
     align-items: center;
   }
@@ -41,20 +41,21 @@ export const Container = styled.div`
 
 export const Action = styled.div`
   width: 90%;
-  height: 90%;
+  height: 95%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background: ${p => p.theme.grey[0]};
   border: ${p => p.theme.border};
-  font-size: 2rem;
+  font-size: 1.3rem;
   &:hover {
     background: ${p => lighten(0.4, p.theme.primary)};
-    border: 1px solid ${p => p.theme.primary};
+    border: 1px solid ${p => lighten(0.1, p.theme.primary)};
   }
   svg {
     width: 30px;
     height: 30px;
+    margin-bottom: 5px;
   }
 `
