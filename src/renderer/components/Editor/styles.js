@@ -47,3 +47,12 @@ export const Canvas2 = styled.canvas`
   left: 0;
   z-index: 2;
 `
+
+export const Canvas3 = styled.canvas`
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  display: ${p => (p.show ? 'block' : 'none')};
+  cursor: none;
+`

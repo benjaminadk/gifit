@@ -20,14 +20,13 @@ function createMainWindow() {
     minWidth: width,
     minHeight: height,
     center: true,
-    // resizable: false,
     webPreferences: {
       nodeIntegration: true,
       webSecurity: !inDev
     }
   })
 
-  mainWindow.setMenu(null)
+  // mainWindow.setMenu(null)
 
   mainWindow.loadURL(getURL(inDev))
 

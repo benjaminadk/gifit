@@ -24,7 +24,7 @@ import RecentProjects from './RecentProjects'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
 import BottomBar from './BottomBar'
-import { Container, Main, Wrapper, Canvas1, Canvas2 } from './styles'
+import { Container, Main, Wrapper, Canvas1, Canvas2, Canvas3 } from './styles'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
@@ -69,7 +69,11 @@ export default function Editor() {
 
   const [optionsOpen, setOptionsOpen] = useState(false)
 
+  const [drawing, setDrawing] = useState(false)
   const [drawType, setDrawType] = useState('pen')
+  const [drawPenWidth, setDrawPenWidth] = useState(50)
+  const [drawPenHeight, setDrawPenHeight] = useState(50)
+  const [drawPenColor, setDrawPenColor] = useState('#FFFF00')
 
   const [borderLeft, setBorderLeft] = useState(0)
   const [borderRight, setBorderRight] = useState(0)
@@ -104,6 +108,7 @@ export default function Editor() {
   const wrapper = useRef(null)
   const canvas1 = useRef(null)
   const canvas2 = useRef(null)
+  const canvas3 = useRef(null)
   const thumbnail = useRef(null)
 
   // initialize editor
@@ -203,6 +208,8 @@ export default function Editor() {
       canvas1.current.height = gifData.height * scale
       canvas2.current.width = gifData.width * scale
       canvas2.current.height = gifData.height * scale
+      canvas3.current.width = gifData.width * scale
+      canvas3.current.height = gifData.height * scale
       const ctx1 = canvas1.current.getContext('2d')
       // title frame replaces image when in title drawerMode
       if (drawerMode === 'title') {
@@ -285,7 +292,6 @@ export default function Editor() {
           progressPrecision
         )
       }
-      // clear canvas when drawer is closed
     } else {
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
@@ -317,6 +323,54 @@ export default function Editor() {
       setDrawerMode('')
     }
   }, [showDrawer])
+
+  useEffect(() => {
+    const ctx2 = canvas2.current.getContext('2d')
+    const ctx3 = canvas3.current.getContext('2d')
+
+    function onMouseMove(e) {
+      const x = e.offsetX
+      const y = e.offsetY
+      ctx3.clearRect(0, 0, canvas3.current.width, canvas3.current.height)
+      ctx3.fillStyle = drawPenColor
+      ctx3.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+      if (drawing) {
+        // use points here instead
+        ctx2.fillStyle = drawPenColor
+        ctx2.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+      }
+    }
+
+    function onMouseLeave() {
+      ctx3.clearRect(0, 0, canvas3.current.width, canvas3.current.height)
+    }
+
+    function onMouseDown() {
+      setDrawing(true)
+    }
+
+    function onMouseUp() {
+      setDrawing(false)
+    }
+
+    if (drawerMode === 'drawing') {
+      canvas3.current.addEventListener('mousedown', onMouseDown)
+      canvas3.current.addEventListener('mouseup', onMouseUp)
+      canvas3.current.addEventListener('mousemove', onMouseMove)
+      canvas3.current.addEventListener('mouseleave', onMouseLeave)
+    } else {
+      canvas3.current.removeEventListener('mousedown', onMouseDown)
+      canvas3.current.removeEventListener('mouseup', onMouseUp)
+      canvas3.current.removeEventListener('mousemove', onMouseMove)
+      canvas3.current.removeEventListener('mouseleave', onMouseLeave)
+    }
+    return () => {
+      canvas3.current.removeEventListener('mousedown', onMouseDown)
+      canvas3.current.removeEventListener('mouseup', onMouseUp)
+      canvas3.current.removeEventListener('mousemove', onMouseMove)
+      canvas3.current.removeEventListener('mouseleave', onMouseLeave)
+    }
+  }, [drawerMode, drawing, drawPenWidth, drawPenHeight, drawPenColor])
 
   // when imageIndex change is automated scroll to it
   useEffect(() => {
@@ -575,6 +629,8 @@ export default function Editor() {
         }
         main.current.scrollTop = height
       }, 500)
+    } else if (drawer === 'drawing') {
+      setScale(1)
     }
     setDrawerMode(drawer)
     setShowDrawer(true)
@@ -634,6 +690,14 @@ export default function Editor() {
   function onTitleCancel() {
     setShowDrawer(false)
     setTitleText('Title Frame')
+  }
+
+  function onDrawAccept() {
+    setShowDrawer(false)
+  }
+
+  function onDrawCancel() {
+    setShowDrawer(false)
   }
 
   // add configured border to selected frames
@@ -852,6 +916,7 @@ export default function Editor() {
         <Wrapper ref={wrapper}>
           <Canvas1 ref={canvas1} />
           <Canvas2 ref={canvas2} />
+          <Canvas3 ref={canvas3} show={drawerMode === 'drawing'} />
         </Wrapper>
       </Main>
       <Thumbnails
@@ -905,7 +970,19 @@ export default function Editor() {
             onCancel={onTitleCancel}
           />
         ) : drawerMode === 'drawing' ? (
-          <FreeDrawing drawerHeight={drawerHeight} drawType={drawType} setDrawType={setDrawType} />
+          <FreeDrawing
+            drawerHeight={drawerHeight}
+            drawType={drawType}
+            drawPenWidth={drawPenWidth}
+            drawPenHeight={drawPenHeight}
+            drawPenColor={drawPenColor}
+            setDrawType={setDrawType}
+            setDrawPenWidth={setDrawPenWidth}
+            setDrawPenHeight={setDrawPenHeight}
+            setDrawPenColor={setDrawPenColor}
+            onAccept={onDrawAccept}
+            onCancel={onDrawCancel}
+          />
         ) : drawerMode === 'border' ? (
           <Border
             drawerHeight={drawerHeight}

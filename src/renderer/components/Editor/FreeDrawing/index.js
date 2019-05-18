@@ -5,9 +5,42 @@ import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
 import { PenNib } from 'styled-icons/fa-solid/PenNib'
 import { Eraser } from 'styled-icons/boxicons-solid/Eraser'
 import Choice from '../../Shared/Choice'
+import NumberInput from '../../Shared/NumberInput'
+import ColorSwatch from '../../Shared/ColorSwatch'
 import { Header, Main, Section, ChoiceRow, Property, Label, Footer, Button } from '../Drawer/styles'
 
-export default function FreeDrawing({ drawerHeight, drawType, setDrawType, onAccept, onCancel }) {
+export default function FreeDrawing({
+  drawerHeight,
+  drawType,
+  drawPenWidth,
+  drawPenHeight,
+  drawPenColor,
+  setDrawType,
+  setDrawPenWidth,
+  setDrawPenHeight,
+  setDrawPenColor,
+  onAccept,
+  onCancel
+}) {
+  function onDrawPenDimensionChange({ target: { value } }, dimension) {
+    const isDigit = /^\d*$/
+    var newValue
+    if (isDigit.test(value)) {
+      if (Number(value) > 100) {
+        newValue = 100
+      } else {
+        newValue = value
+      }
+    } else {
+      newValue = 1
+    }
+    if (dimension === 'width') {
+      setDrawPenWidth(newValue)
+    } else if (dimension === 'height') {
+      setDrawPenHeight(newValue)
+    }
+  }
+
   return (
     <>
       <Header>
@@ -48,6 +81,28 @@ export default function FreeDrawing({ drawerHeight, drawType, setDrawType, onAcc
               <div className='title'>
                 <div className='text'>Pen</div>
                 <div className='divider' />
+              </div>
+              <div>
+                <Property>
+                  <Label width={70}>Width:</Label>
+                  <NumberInput
+                    width={80}
+                    value={drawPenWidth}
+                    onChange={e => onDrawPenDimensionChange(e, 'width')}
+                  />
+                </Property>
+                <Property>
+                  <Label width={70}>Height:</Label>
+                  <NumberInput
+                    width={80}
+                    value={drawPenHeight}
+                    onChange={e => onDrawPenDimensionChange(e, 'height')}
+                  />
+                </Property>
+                <Property>
+                  <Label width={70}>Color:</Label>
+                  <ColorSwatch width={100} color={drawPenColor} onChange={setDrawPenColor} />
+                </Property>
               </div>
             </Section>
           </>
