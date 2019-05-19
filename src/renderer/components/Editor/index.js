@@ -69,6 +69,7 @@ export default function Editor() {
 
   const [optionsOpen, setOptionsOpen] = useState(false)
 
+  const [drawXY, setDrawXY] = useState(null)
   const [drawing, setDrawing] = useState(false)
   const [drawType, setDrawType] = useState('pen')
   const [drawPenWidth, setDrawPenWidth] = useState(50)
@@ -190,6 +191,7 @@ export default function Editor() {
   // ensure window is maximized
   useEffect(() => {
     remote.getCurrentWindow().maximize()
+    remote.getCurrentWindow().setTitle('GifIt - Editor')
   }, [])
 
   // call initialize onload and when projectFolder changes
@@ -324,54 +326,6 @@ export default function Editor() {
     }
   }, [showDrawer])
 
-  useEffect(() => {
-    const ctx2 = canvas2.current.getContext('2d')
-    const ctx3 = canvas3.current.getContext('2d')
-
-    function onMouseMove(e) {
-      const x = e.offsetX
-      const y = e.offsetY
-      ctx3.clearRect(0, 0, canvas3.current.width, canvas3.current.height)
-      ctx3.fillStyle = drawPenColor
-      ctx3.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
-      if (drawing) {
-        // use points here instead
-        ctx2.fillStyle = drawPenColor
-        ctx2.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
-      }
-    }
-
-    function onMouseLeave() {
-      ctx3.clearRect(0, 0, canvas3.current.width, canvas3.current.height)
-    }
-
-    function onMouseDown() {
-      setDrawing(true)
-    }
-
-    function onMouseUp() {
-      setDrawing(false)
-    }
-
-    if (drawerMode === 'drawing') {
-      canvas3.current.addEventListener('mousedown', onMouseDown)
-      canvas3.current.addEventListener('mouseup', onMouseUp)
-      canvas3.current.addEventListener('mousemove', onMouseMove)
-      canvas3.current.addEventListener('mouseleave', onMouseLeave)
-    } else {
-      canvas3.current.removeEventListener('mousedown', onMouseDown)
-      canvas3.current.removeEventListener('mouseup', onMouseUp)
-      canvas3.current.removeEventListener('mousemove', onMouseMove)
-      canvas3.current.removeEventListener('mouseleave', onMouseLeave)
-    }
-    return () => {
-      canvas3.current.removeEventListener('mousedown', onMouseDown)
-      canvas3.current.removeEventListener('mouseup', onMouseUp)
-      canvas3.current.removeEventListener('mousemove', onMouseMove)
-      canvas3.current.removeEventListener('mouseleave', onMouseLeave)
-    }
-  }, [drawerMode, drawing, drawPenWidth, drawPenHeight, drawPenColor])
-
   // when imageIndex change is automated scroll to it
   useEffect(() => {
     if (thumbnail.current) {
@@ -416,6 +370,7 @@ export default function Editor() {
     })
     remote.getCurrentWindow().setSize(mainWindow.width, mainWindow.height)
     remote.getCurrentWindow().center()
+    remote.getCurrentWindow().setTitle('GifIt - Start Page')
   }
 
   // save project as a GIF
@@ -700,6 +655,53 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  function onDrawMouseDown(e) {
+    const x = e.nativeEvent.offsetX
+    const y = e.nativeEvent.offsetY
+    setDrawing(true)
+    setDrawXY([x, y])
+  }
+
+  function onDrawMouseUp() {
+    setDrawing(false)
+  }
+
+  function distanceBetween(p1, p2) {
+    return Math.sqrt(Math.pow(p2[0] - p1[0], 2) + Math.pow(p2[1] - p1[1], 2))
+  }
+  function angleBetween(p1, p2) {
+    return Math.atan2(p2[0] - p1[0], p2[1] - p1[1])
+  }
+
+  function onDrawMouseMove(e) {
+    const x = e.nativeEvent.offsetX
+    const y = e.nativeEvent.offsetY
+    const ctx3 = canvas3.current.getContext('2d')
+    ctx3.clearRect(0, 0, canvas3.current.width, canvas3.current.height)
+    ctx3.fillStyle = drawPenColor
+    ctx3.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+    if (drawing) {
+      const ctx2 = canvas2.current.getContext('2d')
+      const dist = distanceBetween(drawXY, [x, y])
+      const angle = angleBetween(drawXY, [x, y])
+
+      for (var i = 0; i < dist; i += 5) {
+        let x1 = drawXY[0] + Math.sin(angle) * i
+        let y1 = drawXY[1] + Math.cos(angle) * i
+
+        ctx2.fillStyle = drawPenColor
+        ctx2.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+      }
+      setDrawXY([x, y])
+    }
+  }
+
+  function onDrawMouseLeave() {
+    setDrawing(false)
+    const ctx3 = canvas3.current.getContext('2d')
+    ctx3.clearRect(0, 0, canvas3.current.width, canvas3.current.height)
+  }
+
   // add configured border to selected frames
   async function onBorderAccept() {
     // draw function returns promise to make sure all borders are created
@@ -916,7 +918,14 @@ export default function Editor() {
         <Wrapper ref={wrapper}>
           <Canvas1 ref={canvas1} />
           <Canvas2 ref={canvas2} />
-          <Canvas3 ref={canvas3} show={drawerMode === 'drawing'} />
+          <Canvas3
+            ref={canvas3}
+            show={drawerMode === 'drawing'}
+            onMouseDown={onDrawMouseDown}
+            onMouseUp={onDrawMouseUp}
+            onMouseMove={onDrawMouseMove}
+            onMouseLeave={onDrawMouseLeave}
+          />
         </Wrapper>
       </Main>
       <Thumbnails

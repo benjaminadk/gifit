@@ -58,7 +58,7 @@ export default function App() {
           <Webcam />
         </AppContext.Provider>
       )
-    } else if (windowTitle === 'Options') {
+    } else if (windowTitle === 'GifIt - Options') {
       return (
         <AppContext.Provider value={{ state, dispatch }}>
           <Options />

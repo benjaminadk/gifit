@@ -1,5 +1,6 @@
 import { remote, ipcRenderer } from 'electron'
 import { Map } from 'immutable'
+import path from 'path'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
@@ -19,7 +20,8 @@ export default (parent, dispatch, setOptionsOpen) => {
 
   optionsWindow = new remote.BrowserWindow({
     parent,
-    title: 'Options',
+    title: 'GifIt - Options',
+    icon: path.join(__static, 'icon.ico'),
     width,
     height,
     center: true,
