@@ -7,15 +7,18 @@ import { Eraser } from 'styled-icons/boxicons-solid/Eraser'
 import Choice from '../../Shared/Choice'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'
+import Checkbox from '../../Shared/Checkbox'
 import { Header, Main, Section, ChoiceRow, Property, Label, Footer, Button } from '../Drawer/styles'
 
 export default function FreeDrawing({
   drawerHeight,
   drawType,
+  drawHighlight,
   drawPenWidth,
   drawPenHeight,
   drawPenColor,
   setDrawType,
+  setDrawHighlight,
   setDrawPenWidth,
   setDrawPenHeight,
   setDrawPenColor,
@@ -102,6 +105,15 @@ export default function FreeDrawing({
                 <Property>
                   <Label width={70}>Color:</Label>
                   <ColorSwatch width={100} color={drawPenColor} onChange={setDrawPenColor} />
+                </Property>
+                <Property>
+                  <Label width={70}>Other:</Label>
+                  <Checkbox
+                    style={{ marginTop: '10px' }}
+                    primary='Highlighter.'
+                    value={drawHighlight}
+                    onClick={() => setDrawHighlight(!drawHighlight)}
+                  />
                 </Property>
               </div>
             </Section>

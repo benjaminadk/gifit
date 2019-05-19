@@ -3,9 +3,9 @@ import { CheckBox } from 'styled-icons/material/CheckBox'
 import { CheckBoxOutlineBlank } from 'styled-icons/material/CheckBoxOutlineBlank'
 import { Container } from './styles'
 
-export default function Checkbox({ value, primary, secondary = '', onClick }) {
+export default function Checkbox({ value, primary, secondary = '', style, onClick }) {
   return (
-    <Container onClick={onClick}>
+    <Container style={style} onClick={onClick}>
       {value ? <CheckBox /> : <CheckBoxOutlineBlank />}
       <div className='text'>
         <div className='primary'>{primary}</div>

@@ -46,6 +46,7 @@ export const Canvas2 = styled.canvas`
   top: 0;
   left: 0;
   z-index: 2;
+  opacity: ${p => p.opacity};
 `
 
 export const Canvas3 = styled.canvas`
@@ -53,6 +54,22 @@ export const Canvas3 = styled.canvas`
   top: 0;
   left: 0;
   z-index: 3;
+  opacity: 0.2;
+`
+
+export const Canvas4 = styled.canvas`
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+`
+
+export const Canvas5 = styled.canvas`
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
   display: ${p => (p.show ? 'block' : 'none')};
+  opacity: ${p => p.opacity};
   cursor: none;
 `

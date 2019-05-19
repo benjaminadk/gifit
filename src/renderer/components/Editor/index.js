@@ -24,7 +24,7 @@ import RecentProjects from './RecentProjects'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
 import BottomBar from './BottomBar'
-import { Container, Main, Wrapper, Canvas1, Canvas2, Canvas3 } from './styles'
+import { Container, Main, Wrapper, Canvas1, Canvas2, Canvas3, Canvas4, Canvas5 } from './styles'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
@@ -72,6 +72,7 @@ export default function Editor() {
   const [drawXY, setDrawXY] = useState(null)
   const [drawing, setDrawing] = useState(false)
   const [drawType, setDrawType] = useState('pen')
+  const [drawHighlight, setDrawHighlight] = useState(false)
   const [drawPenWidth, setDrawPenWidth] = useState(50)
   const [drawPenHeight, setDrawPenHeight] = useState(50)
   const [drawPenColor, setDrawPenColor] = useState('#FFFF00')
@@ -110,6 +111,8 @@ export default function Editor() {
   const canvas1 = useRef(null)
   const canvas2 = useRef(null)
   const canvas3 = useRef(null)
+  const canvas4 = useRef(null)
+  const canvas5 = useRef(null)
   const thumbnail = useRef(null)
 
   // initialize editor
@@ -212,6 +215,10 @@ export default function Editor() {
       canvas2.current.height = gifData.height * scale
       canvas3.current.width = gifData.width * scale
       canvas3.current.height = gifData.height * scale
+      canvas4.current.width = gifData.width * scale
+      canvas4.current.height = gifData.height * scale
+      canvas5.current.width = gifData.width * scale
+      canvas5.current.height = gifData.height * scale
       const ctx1 = canvas1.current.getContext('2d')
       // title frame replaces image when in title drawerMode
       if (drawerMode === 'title') {
@@ -647,14 +654,79 @@ export default function Editor() {
     setTitleText('Title Frame')
   }
 
-  function onDrawAccept() {
+  // add free drawing to selected frames
+  async function onDrawAccept() {
+    // handle highlighter effect
+    // capture imageData from highlight layer
+    const ctx3 = canvas3.current.getContext('2d')
+    const data = ctx3.getImageData(0, 0, gifData.width, gifData.height).data
+    const length = data.length
+    // if alpha has a value change it to 52 aka .2 opacity
+    for (let i = 3; i < length; i += 4) {
+      if (data[i] !== 0) {
+        data[i] = 52
+      }
+    }
+    // create a new image data object and put it on a canvas
+    const imageData = new ImageData(data, gifData.width, gifData.height)
+    const canvas1 = document.createElement('canvas')
+    canvas1.width = gifData.width
+    canvas1.height = gifData.height
+    const cxt1 = canvas1.getContext('2d')
+    cxt1.putImageData(imageData, 0, 0)
+    // draw function returns promise to ensure all selected frames are drawn to
+    async function draw() {
+      return new Promise(resolve => {
+        // last selected index
+        const lastIndex = selected.findLastIndex(el => el)
+        // loop over array entries to get index and value in for of loop
+        for (const [i, bool] of selected.toArray().entries()) {
+          if (bool) {
+            const reader = new FileReader()
+            // read file and hash path to force ui update
+            reader.onload = () => {
+              const filepath = originalPaths[i]
+              const buffer = Buffer.from(reader.result)
+              writeFileAsync(filepath, buffer).then(() => {
+                images[i].path = createHashPath(images[i].path)
+                // wait for last selection to be saved to resolve
+                if (i === lastIndex) {
+                  resolve()
+                }
+              })
+            }
+            // create new canvas draw image and then draw on top of it
+            const canvas2 = document.createElement('canvas')
+            canvas2.width = gifData.width
+            canvas2.height = gifData.height
+            const ctx2 = canvas2.getContext('2d')
+            const image = new Image()
+            image.onload = () => {
+              ctx2.drawImage(image, 0, 0)
+              ctx2.drawImage(canvas1, 0, 0)
+              ctx2.drawImage(canvas4.current, 0, 0)
+              canvas2.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            }
+            image.src = images[i].path
+          }
+        }
+      })
+    }
+    // wait for draw to resolve to close drawer and reset zoom
+    setLoading(true)
+    await draw()
+    setLoading(false)
     setShowDrawer(false)
+    setScale(zoomToFit)
   }
 
+  // close drawer and restore scale when exit drawing mode
   function onDrawCancel() {
     setShowDrawer(false)
+    setScale(zoomToFit)
   }
 
+  // initialize drawing mode and set start point
   function onDrawMouseDown(e) {
     const x = e.nativeEvent.offsetX
     const y = e.nativeEvent.offsetY
@@ -662,44 +734,60 @@ export default function Editor() {
     setDrawXY([x, y])
   }
 
+  // stop drawing when mouse is released
   function onDrawMouseUp() {
     setDrawing(false)
   }
 
+  // helper functions to fill in extra points
+  // calculate the distance between two points
   function distanceBetween(p1, p2) {
     return Math.sqrt(Math.pow(p2[0] - p1[0], 2) + Math.pow(p2[1] - p1[1], 2))
   }
+  // calculate the angle in radians between two points
   function angleBetween(p1, p2) {
     return Math.atan2(p2[0] - p1[0], p2[1] - p1[1])
   }
 
+  // handle mouse movement over canvas in drawing mode
   function onDrawMouseMove(e) {
     const x = e.nativeEvent.offsetX
     const y = e.nativeEvent.offsetY
-    const ctx3 = canvas3.current.getContext('2d')
-    ctx3.clearRect(0, 0, canvas3.current.width, canvas3.current.height)
-    ctx3.fillStyle = drawPenColor
-    ctx3.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+    // make the cursor match the size and color of pen
+    const ctx5 = canvas5.current.getContext('2d')
+    ctx5.clearRect(0, 0, canvas5.current.width, canvas5.current.height)
+    ctx5.fillStyle = drawPenColor
+    ctx5.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+    // if in drawing mode draw to canvas
     if (drawing) {
-      const ctx2 = canvas2.current.getContext('2d')
       const dist = distanceBetween(drawXY, [x, y])
       const angle = angleBetween(drawXY, [x, y])
-
-      for (var i = 0; i < dist; i += 5) {
-        let x1 = drawXY[0] + Math.sin(angle) * i
-        let y1 = drawXY[1] + Math.cos(angle) * i
-
-        ctx2.fillStyle = drawPenColor
-        ctx2.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+      if (drawHighlight) {
+        const ctx3 = canvas3.current.getContext('2d')
+        for (var i = 0; i < dist; i += 5) {
+          let x1 = drawXY[0] + Math.sin(angle) * i
+          let y1 = drawXY[1] + Math.cos(angle) * i
+          ctx3.fillStyle = drawPenColor
+          ctx3.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+        }
+      } else {
+        const ctx4 = canvas4.current.getContext('2d')
+        for (var i = 0; i < dist; i += 5) {
+          let x1 = drawXY[0] + Math.sin(angle) * i
+          let y1 = drawXY[1] + Math.cos(angle) * i
+          ctx4.fillStyle = drawPenColor
+          ctx4.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+        }
       }
       setDrawXY([x, y])
     }
   }
 
+  // when mouse leaves canvas clear cursor layer
   function onDrawMouseLeave() {
     setDrawing(false)
-    const ctx3 = canvas3.current.getContext('2d')
-    ctx3.clearRect(0, 0, canvas3.current.width, canvas3.current.height)
+    const ctx5 = canvas5.current.getContext('2d')
+    ctx5.clearRect(0, 0, canvas5.current.width, canvas5.current.height)
   }
 
   // add configured border to selected frames
@@ -844,7 +932,6 @@ export default function Editor() {
 
   // open options window
   function onOptionsClick() {
-    console.log(optionsOpen)
     if (!optionsOpen) {
       setOptionsOpen(true)
       initializeOptions(remote.getCurrentWindow(), dispatch, setOptionsOpen)
@@ -918,9 +1005,12 @@ export default function Editor() {
         <Wrapper ref={wrapper}>
           <Canvas1 ref={canvas1} />
           <Canvas2 ref={canvas2} />
-          <Canvas3
-            ref={canvas3}
+          <Canvas3 ref={canvas3} />
+          <Canvas4 ref={canvas4} />
+          <Canvas5
+            ref={canvas5}
             show={drawerMode === 'drawing'}
+            opacity={drawHighlight ? 0.2 : 1}
             onMouseDown={onDrawMouseDown}
             onMouseUp={onDrawMouseUp}
             onMouseMove={onDrawMouseMove}
@@ -982,10 +1072,12 @@ export default function Editor() {
           <FreeDrawing
             drawerHeight={drawerHeight}
             drawType={drawType}
+            drawHighlight={drawHighlight}
             drawPenWidth={drawPenWidth}
             drawPenHeight={drawPenHeight}
             drawPenColor={drawPenColor}
             setDrawType={setDrawType}
+            setDrawHighlight={setDrawHighlight}
             setDrawPenWidth={setDrawPenWidth}
             setDrawPenHeight={setDrawPenHeight}
             setDrawPenColor={setDrawPenColor}
