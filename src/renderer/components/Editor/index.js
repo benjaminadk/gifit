@@ -34,6 +34,7 @@ const {
   constants: { IMAGE_TYPE }
 } = config
 
+// make node fs methods asynchronous
 const readFileAsync = promisify(readFile)
 const writeFileAsync = promisify(writeFile)
 const readdirAsync = promisify(readdir)
@@ -72,10 +73,11 @@ export default function Editor() {
   const [drawXY, setDrawXY] = useState(null)
   const [drawing, setDrawing] = useState(false)
   const [drawType, setDrawType] = useState('pen')
-  const [drawHighlight, setDrawHighlight] = useState(false)
   const [drawPenWidth, setDrawPenWidth] = useState(50)
   const [drawPenHeight, setDrawPenHeight] = useState(50)
   const [drawPenColor, setDrawPenColor] = useState('#FFFF00')
+  const [drawShape, setDrawShape] = useState('rectangle')
+  const [drawHighlight, setDrawHighlight] = useState(false)
 
   const [borderLeft, setBorderLeft] = useState(0)
   const [borderRight, setBorderRight] = useState(0)
@@ -399,6 +401,7 @@ export default function Editor() {
       if (filepath) {
         setLoading(true)
         const gifProcessor = options.get('gifProcessor')
+        // user can chose encoder or ffmpeg to create GIF
         if (gifProcessor === 'ffmpeg') {
           const ffmpegPath = options.get('ffmpegPath')
           const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
@@ -425,21 +428,22 @@ export default function Editor() {
     }
     const callback = async result => {
       if (result === 0) {
+        // clear the image canvas layer
         const ctx1 = canvas1.current.getContext('2d')
         ctx1.clearRect(0, 0, gifData.width, gifData.height)
-
+        // read all files from project directory
         const projectDir = path.join(RECORDINGS_DIRECTORY, gifData.relative)
         const files = await readdirAsync(projectDir)
-
+        // loop through and delete all files
         for (const file of files) {
           await unlinkAsync(path.join(projectDir, file))
         }
-
+        // delete empty directory and re-initialize editor
         rmdirAsync(projectDir).then(() => {
-          initialize(null)
           setSelected(List())
           setImages([])
           setGifData(null)
+          initialize(null)
         })
       }
     }
@@ -757,26 +761,74 @@ export default function Editor() {
     const ctx5 = canvas5.current.getContext('2d')
     ctx5.clearRect(0, 0, canvas5.current.width, canvas5.current.height)
     ctx5.fillStyle = drawPenColor
-    ctx5.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+    if (drawShape === 'rectangle') {
+      ctx5.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+    } else if (drawShape === 'ellipsis') {
+      ctx5.beginPath()
+      ctx5.ellipse(
+        x - drawPenWidth / 2,
+        y - drawPenHeight / 2,
+        drawPenWidth / 2,
+        drawPenHeight / 2,
+        0,
+        0,
+        Math.PI * 2
+      )
+      ctx5.fill()
+    }
     // if in drawing mode draw to canvas
     if (drawing) {
       const dist = distanceBetween(drawXY, [x, y])
       const angle = angleBetween(drawXY, [x, y])
-      if (drawHighlight) {
-        const ctx3 = canvas3.current.getContext('2d')
-        for (var i = 0; i < dist; i += 5) {
-          let x1 = drawXY[0] + Math.sin(angle) * i
-          let y1 = drawXY[1] + Math.cos(angle) * i
+      const ctx3 = canvas3.current.getContext('2d')
+      const ctx4 = canvas4.current.getContext('2d')
+      for (var i = 0; i < dist; i += 5) {
+        let x1 = drawXY[0] + Math.sin(angle) * i
+        let y1 = drawXY[1] + Math.cos(angle) * i
+        if (drawHighlight) {
           ctx3.fillStyle = drawPenColor
-          ctx3.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
-        }
-      } else {
-        const ctx4 = canvas4.current.getContext('2d')
-        for (var i = 0; i < dist; i += 5) {
-          let x1 = drawXY[0] + Math.sin(angle) * i
-          let y1 = drawXY[1] + Math.cos(angle) * i
+          if (drawShape === 'rectangle') {
+            ctx3.fillRect(
+              x1 - drawPenWidth / 2,
+              y1 - drawPenHeight / 2,
+              drawPenWidth,
+              drawPenHeight
+            )
+          } else if (drawShape === 'ellipsis') {
+            ctx3.beginPath()
+            ctx3.ellipse(
+              x1 - drawPenWidth / 2,
+              y1 - drawPenHeight / 2,
+              drawPenWidth / 2,
+              drawPenHeight / 2,
+              0,
+              0,
+              Math.PI * 2
+            )
+            ctx3.fill()
+          }
+        } else {
           ctx4.fillStyle = drawPenColor
-          ctx4.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+          if (drawShape === 'rectangle') {
+            ctx4.fillRect(
+              x1 - drawPenWidth / 2,
+              y1 - drawPenHeight / 2,
+              drawPenWidth,
+              drawPenHeight
+            )
+          } else if (drawShape === 'ellipsis') {
+            ctx4.beginPath()
+            ctx4.ellipse(
+              x1 - drawPenWidth / 2,
+              y1 - drawPenHeight / 2,
+              drawPenWidth / 2,
+              drawPenHeight / 2,
+              0,
+              0,
+              Math.PI * 2
+            )
+            ctx4.fill()
+          }
         }
       }
       setDrawXY([x, y])
@@ -1072,15 +1124,17 @@ export default function Editor() {
           <FreeDrawing
             drawerHeight={drawerHeight}
             drawType={drawType}
-            drawHighlight={drawHighlight}
             drawPenWidth={drawPenWidth}
             drawPenHeight={drawPenHeight}
             drawPenColor={drawPenColor}
+            drawHighlight={drawHighlight}
+            drawShape={drawShape}
             setDrawType={setDrawType}
-            setDrawHighlight={setDrawHighlight}
             setDrawPenWidth={setDrawPenWidth}
             setDrawPenHeight={setDrawPenHeight}
             setDrawPenColor={setDrawPenColor}
+            setDrawHighlight={setDrawHighlight}
+            setDrawShape={setDrawShape}
             onAccept={onDrawAccept}
             onCancel={onDrawCancel}
           />

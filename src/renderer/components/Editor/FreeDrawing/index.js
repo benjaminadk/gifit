@@ -4,6 +4,8 @@ import { Close } from 'styled-icons/material/Close'
 import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
 import { PenNib } from 'styled-icons/fa-solid/PenNib'
 import { Eraser } from 'styled-icons/boxicons-solid/Eraser'
+import { Square } from 'styled-icons/fa-regular/Square'
+import { Circle } from 'styled-icons/boxicons-regular/Circle'
 import Choice from '../../Shared/Choice'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'
@@ -13,15 +15,17 @@ import { Header, Main, Section, ChoiceRow, Property, Label, Footer, Button } fro
 export default function FreeDrawing({
   drawerHeight,
   drawType,
-  drawHighlight,
   drawPenWidth,
   drawPenHeight,
   drawPenColor,
+  drawHighlight,
+  drawShape,
   setDrawType,
-  setDrawHighlight,
   setDrawPenWidth,
   setDrawPenHeight,
   setDrawPenColor,
+  setDrawHighlight,
+  setDrawShape,
   onAccept,
   onCancel
 }) {
@@ -105,6 +109,23 @@ export default function FreeDrawing({
                 <Property>
                   <Label width={70}>Color:</Label>
                   <ColorSwatch width={100} color={drawPenColor} onChange={setDrawPenColor} />
+                </Property>
+                <Property>
+                  <Label width={70}>Tip:</Label>
+                  <ChoiceRow>
+                    <Choice
+                      selected={drawShape === 'rectangle'}
+                      icon={<Square />}
+                      label='Rectangle'
+                      onClick={() => setDrawShape('rectangle')}
+                    />
+                    <Choice
+                      selected={drawShape === 'ellipsis'}
+                      icon={<Circle />}
+                      label='Ellipsis'
+                      onClick={() => setDrawShape('ellipsis')}
+                    />
+                  </ChoiceRow>
                 </Property>
                 <Property>
                   <Label width={70}>Other:</Label>

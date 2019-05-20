@@ -84,6 +84,7 @@ export const Section = styled.div`
 `
 
 export const ChoiceRow = styled.div`
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
   justify-items: center;
