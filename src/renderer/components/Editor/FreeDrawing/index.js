@@ -20,16 +20,20 @@ export default function FreeDrawing({
   drawPenColor,
   drawHighlight,
   drawShape,
+  drawEraserWidth,
+  drawEraserHeight,
   setDrawType,
   setDrawPenWidth,
   setDrawPenHeight,
   setDrawPenColor,
   setDrawHighlight,
   setDrawShape,
+  setDrawEraserWidth,
+  setDrawEraserHeight,
   onAccept,
   onCancel
 }) {
-  function onDrawPenDimensionChange({ target: { value } }, dimension) {
+  function onDrawDimensionChange({ target: { value } }, type, dimension) {
     const isDigit = /^\d*$/
     var newValue
     if (isDigit.test(value)) {
@@ -41,11 +45,57 @@ export default function FreeDrawing({
     } else {
       newValue = 1
     }
-    if (dimension === 'width') {
-      setDrawPenWidth(newValue)
-    } else if (dimension === 'height') {
-      setDrawPenHeight(newValue)
+    if (type === 'pen') {
+      if (dimension === 'width') {
+        setDrawPenWidth(newValue)
+      } else if (dimension === 'height') {
+        setDrawPenHeight(newValue)
+      }
+    } else if (type === 'eraser') {
+      if (dimension === 'width') {
+        setDrawEraserWidth(newValue)
+      } else if (dimension === 'height') {
+        setDrawEraserHeight(newValue)
+      }
     }
+  }
+
+  function onDrawDimensionArrowClick(type, dimension, inc) {
+    var currentValue
+    var newValue
+    var setter
+
+    if (type === 'pen') {
+      if (dimension === 'width') {
+        currentValue = drawPenWidth
+        setter = setDrawPenWidth
+      } else if (dimension === 'height') {
+        currentValue = drawPenHeight
+        setter = setDrawPenHeight
+      }
+    } else if (type === 'eraser') {
+      if (dimension === 'width') {
+        currentValue = drawEraserWidth
+        setter = setDrawEraserWidth
+      } else if (dimension === 'height') {
+        currentValue = drawEraserHeight
+        setter = setDrawEraserHeight
+      }
+    }
+    if (inc) {
+      if (currentValue < 100) {
+        newValue = currentValue + 1
+      } else {
+        newValue = 100
+      }
+    } else {
+      if (currentValue > 1) {
+        newValue = currentValue - 1
+      } else {
+        newValue = 1
+      }
+    }
+    setter(newValue)
   }
 
   return (
@@ -95,7 +145,9 @@ export default function FreeDrawing({
                   <NumberInput
                     width={80}
                     value={drawPenWidth}
-                    onChange={e => onDrawPenDimensionChange(e, 'width')}
+                    onChange={e => onDrawDimensionChange(e, 'pen', 'width')}
+                    onArrowUpClick={() => onDrawDimensionArrowClick('pen', 'width', true)}
+                    onArrowDownClick={() => onDrawDimensionArrowClick('pen', 'width', false)}
                   />
                 </Property>
                 <Property>
@@ -103,7 +155,9 @@ export default function FreeDrawing({
                   <NumberInput
                     width={80}
                     value={drawPenHeight}
-                    onChange={e => onDrawPenDimensionChange(e, 'height')}
+                    onChange={e => onDrawDimensionChange(e, 'pen', 'height')}
+                    onArrowUpClick={() => onDrawDimensionArrowClick('pen', 'height', true)}
+                    onArrowDownClick={() => onDrawDimensionArrowClick('pen', 'height', false)}
                   />
                 </Property>
                 <Property>
@@ -145,6 +199,28 @@ export default function FreeDrawing({
               <div className='title'>
                 <div className='text'>Eraser</div>
                 <div className='divider' />
+              </div>
+              <div>
+                <Property>
+                  <Label width={70}>Width:</Label>
+                  <NumberInput
+                    width={80}
+                    value={drawEraserWidth}
+                    onChange={e => onDrawDimensionChange(e, 'eraser', 'width')}
+                    onArrowUpClick={() => onDrawDimensionArrowClick('eraser', 'width', true)}
+                    onArrowDownClick={() => onDrawDimensionArrowClick('eraser', 'width', false)}
+                  />
+                </Property>
+                <Property>
+                  <Label width={70}>Height:</Label>
+                  <NumberInput
+                    width={80}
+                    value={drawEraserHeight}
+                    onChange={e => onDrawDimensionChange(e, 'eraser', 'height')}
+                    onArrowUpClick={() => onDrawDimensionArrowClick('eraser', 'height', true)}
+                    onArrowDownClick={() => onDrawDimensionArrowClick('eraser', 'height', false)}
+                  />
+                </Property>
               </div>
             </Section>
           </>

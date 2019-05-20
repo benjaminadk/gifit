@@ -12,7 +12,9 @@ import drawBorder from './drawBorder'
 import drawProgressBar from './drawProgressBar'
 import drawProgressText from './drawProgressText'
 import drawFree from './drawFree'
+import drawErase from './drawErase'
 import drawBrush from './drawBrush'
+import drawEraser from './drawEraser'
 import createGIFFfmpeg from './createGIFFfmpeg'
 import createGIFEncoder from './createGIFEncoder'
 import getTextXY from './getTextXY'
@@ -80,6 +82,8 @@ export default function Editor() {
   const [drawPenColor, setDrawPenColor] = useState('#FFFF00')
   const [drawShape, setDrawShape] = useState('rectangle')
   const [drawHighlight, setDrawHighlight] = useState(false)
+  const [drawEraserWidth, setDrawEraserWidth] = useState(10)
+  const [drawEraserHeight, setDrawEraserHeight] = useState(10)
 
   const [borderLeft, setBorderLeft] = useState(0)
   const [borderRight, setBorderRight] = useState(0)
@@ -750,23 +754,32 @@ export default function Editor() {
     const x = e.nativeEvent.offsetX
     const y = e.nativeEvent.offsetY
     // make the cursor match the size and color of pen
-    drawBrush(canvas5.current, x, y, drawShape, drawPenColor, drawPenWidth, drawPenHeight)
+    if (drawType === 'pen') {
+      drawBrush(canvas5.current, x, y, drawShape, drawPenColor, drawPenWidth, drawPenHeight)
+    } else if (drawType === 'eraser') {
+      drawEraser(canvas5.current, x, y, drawEraserWidth, drawEraserHeight)
+    }
     // if in drawing mode draw to canvas
     if (drawing) {
-      drawFree(
-        canvas3.current,
-        canvas4.current,
-        drawXY,
-        x,
-        y,
-        drawHighlight,
-        drawShape,
-        drawPenColor,
-        drawPenWidth,
-        drawPenHeight
-      )
-      setDrawXY([x, y])
+      if (drawType === 'pen') {
+        drawFree(
+          canvas3.current,
+          canvas4.current,
+          drawXY,
+          x,
+          y,
+          drawHighlight,
+          drawShape,
+          drawPenColor,
+          drawPenWidth,
+          drawPenHeight
+        )
+      } else if (drawType === 'eraser') {
+        drawErase(canvas3.current, canvas4.current, drawXY, x, y, drawEraserWidth, drawEraserHeight)
+      }
     }
+
+    setDrawXY([x, y])
   }
 
   // when mouse leaves canvas clear cursor layer
@@ -996,7 +1009,7 @@ export default function Editor() {
           <Canvas5
             ref={canvas5}
             show={drawerMode === 'drawing'}
-            opacity={drawHighlight ? 0.2 : 1}
+            opacity={drawType === 'pen' && drawHighlight ? 0.2 : 1}
             onMouseDown={onDrawMouseDown}
             onMouseUp={onDrawMouseUp}
             onMouseMove={onDrawMouseMove}
@@ -1063,12 +1076,16 @@ export default function Editor() {
             drawPenColor={drawPenColor}
             drawHighlight={drawHighlight}
             drawShape={drawShape}
+            drawEraserWidth={drawEraserWidth}
+            drawEraserHeight={drawEraserHeight}
             setDrawType={setDrawType}
             setDrawPenWidth={setDrawPenWidth}
             setDrawPenHeight={setDrawPenHeight}
             setDrawPenColor={setDrawPenColor}
             setDrawHighlight={setDrawHighlight}
             setDrawShape={setDrawShape}
+            setDrawEraserWidth={setDrawEraserWidth}
+            setDrawEraserHeight={setDrawEraserHeight}
             onAccept={onDrawAccept}
             onCancel={onDrawCancel}
           />
