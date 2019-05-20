@@ -11,6 +11,8 @@ import initializeOptions from '../Options/initializeOptions'
 import drawBorder from './drawBorder'
 import drawProgressBar from './drawProgressBar'
 import drawProgressText from './drawProgressText'
+import drawFree from './drawFree'
+import drawBrush from './drawBrush'
 import createGIFFfmpeg from './createGIFFfmpeg'
 import createGIFEncoder from './createGIFEncoder'
 import getTextXY from './getTextXY'
@@ -743,94 +745,26 @@ export default function Editor() {
     setDrawing(false)
   }
 
-  // helper functions to fill in extra points
-  // calculate the distance between two points
-  function distanceBetween(p1, p2) {
-    return Math.sqrt(Math.pow(p2[0] - p1[0], 2) + Math.pow(p2[1] - p1[1], 2))
-  }
-  // calculate the angle in radians between two points
-  function angleBetween(p1, p2) {
-    return Math.atan2(p2[0] - p1[0], p2[1] - p1[1])
-  }
-
   // handle mouse movement over canvas in drawing mode
   function onDrawMouseMove(e) {
     const x = e.nativeEvent.offsetX
     const y = e.nativeEvent.offsetY
     // make the cursor match the size and color of pen
-    const ctx5 = canvas5.current.getContext('2d')
-    ctx5.clearRect(0, 0, canvas5.current.width, canvas5.current.height)
-    ctx5.fillStyle = drawPenColor
-    if (drawShape === 'rectangle') {
-      ctx5.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
-    } else if (drawShape === 'ellipsis') {
-      ctx5.beginPath()
-      ctx5.ellipse(
-        x - drawPenWidth / 2,
-        y - drawPenHeight / 2,
-        drawPenWidth / 2,
-        drawPenHeight / 2,
-        0,
-        0,
-        Math.PI * 2
-      )
-      ctx5.fill()
-    }
+    drawBrush(canvas5.current, x, y, drawShape, drawPenColor, drawPenWidth, drawPenHeight)
     // if in drawing mode draw to canvas
     if (drawing) {
-      const dist = distanceBetween(drawXY, [x, y])
-      const angle = angleBetween(drawXY, [x, y])
-      const ctx3 = canvas3.current.getContext('2d')
-      const ctx4 = canvas4.current.getContext('2d')
-      for (var i = 0; i < dist; i += 5) {
-        let x1 = drawXY[0] + Math.sin(angle) * i
-        let y1 = drawXY[1] + Math.cos(angle) * i
-        if (drawHighlight) {
-          ctx3.fillStyle = drawPenColor
-          if (drawShape === 'rectangle') {
-            ctx3.fillRect(
-              x1 - drawPenWidth / 2,
-              y1 - drawPenHeight / 2,
-              drawPenWidth,
-              drawPenHeight
-            )
-          } else if (drawShape === 'ellipsis') {
-            ctx3.beginPath()
-            ctx3.ellipse(
-              x1 - drawPenWidth / 2,
-              y1 - drawPenHeight / 2,
-              drawPenWidth / 2,
-              drawPenHeight / 2,
-              0,
-              0,
-              Math.PI * 2
-            )
-            ctx3.fill()
-          }
-        } else {
-          ctx4.fillStyle = drawPenColor
-          if (drawShape === 'rectangle') {
-            ctx4.fillRect(
-              x1 - drawPenWidth / 2,
-              y1 - drawPenHeight / 2,
-              drawPenWidth,
-              drawPenHeight
-            )
-          } else if (drawShape === 'ellipsis') {
-            ctx4.beginPath()
-            ctx4.ellipse(
-              x1 - drawPenWidth / 2,
-              y1 - drawPenHeight / 2,
-              drawPenWidth / 2,
-              drawPenHeight / 2,
-              0,
-              0,
-              Math.PI * 2
-            )
-            ctx4.fill()
-          }
-        }
-      }
+      drawFree(
+        canvas3.current,
+        canvas4.current,
+        drawXY,
+        x,
+        y,
+        drawHighlight,
+        drawShape,
+        drawPenColor,
+        drawPenWidth,
+        drawPenHeight
+      )
       setDrawXY([x, y])
     }
   }
