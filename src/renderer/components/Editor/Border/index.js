@@ -8,15 +8,7 @@ import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'
-import {
-  Header,
-  Main,
-  Section,
-  Property,
-  Label,
-  Footer,
-  Button
-} from '../Drawer/styles'
+import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
 import { BorderInputs, BorderInput } from './styles'
 
 export default function Border({
@@ -79,18 +71,23 @@ export default function Border({
 
   function onArrowClick(inc, dimension) {
     var currentValue
+    var setter
     switch (dimension) {
       case 'left':
         currentValue = borderLeft
+        setter = setBorderLeft
         break
       case 'right':
         currentValue = borderRight
+        setter = setBorderRight
         break
       case 'top':
         currentValue = borderTop
+        setter = setBorderTop
         break
       case 'bottom':
         currentValue = borderBottom
+        setter = setBorderBottom
         break
       default:
         throw Error()
@@ -109,18 +106,7 @@ export default function Border({
         newValue = 0
       }
     }
-    switch (dimension) {
-      case 'left':
-        return setBorderLeft(newValue)
-      case 'right':
-        return setBorderRight(newValue)
-      case 'top':
-        return setBorderTop(newValue)
-      case 'bottom':
-        return setBorderBottom(newValue)
-      default:
-        throw Error()
-    }
+    setter(newValue)
   }
 
   return (
@@ -143,11 +129,7 @@ export default function Border({
           <div>
             <Property>
               <Label width={60}>Color:</Label>
-              <ColorSwatch
-                width={160}
-                color={borderColor}
-                onChange={setBorderColor}
-              />
+              <ColorSwatch width={160} color={borderColor} onChange={setBorderColor} />
             </Property>
             <Property>
               <Label width={60}>Thickness:</Label>

@@ -63,6 +63,7 @@ export const Main = styled.main`
 `
 
 export const Section = styled.div`
+  position: relative;
   height: ${p => p.height}px;
   display: grid;
   grid-template-rows: 20px 1fr;

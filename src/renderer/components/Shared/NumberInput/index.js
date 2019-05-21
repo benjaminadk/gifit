@@ -25,13 +25,7 @@ export default function NumberInput({
 
   return (
     <Container width={width} focused={focused}>
-      <input
-        ref={input}
-        value={value}
-        onChange={onChange}
-        onFocus={onFocus}
-        onBlur={_onBlur}
-      />
+      <input ref={input} value={value} onChange={onChange} onFocus={onFocus} onBlur={_onBlur} />
       <div className='divider1' />
       <div className='arrows'>
         <div className='arrow up' onClick={onArrowUpClick}>

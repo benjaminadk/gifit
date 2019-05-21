@@ -53,6 +53,7 @@ export const Extras = styled.div`
 export const Menu = styled.div`
   display: flex;
   padding-top: 5px;
+  padding-bottom: 5px;
 `
 
 export const Section = styled.div`
@@ -60,13 +61,14 @@ export const Section = styled.div`
   height: 100%;
   display: grid;
   grid-template-rows: 1fr 15px;
-  border-right: ${p => p.theme.border};
+  border-right: 1px solid ${p => p.theme.grey[2]};
 `
 
 export const SectionText = styled.div`
-  align-self: center;
+  align-self: flex-end;
   justify-self: center;
-  font-size: 1rem;
+  margin-bottom: -3px;
+  font-size: 1.2rem;
   color: ${p => p.theme.grey[7]};
 `
 
@@ -100,6 +102,11 @@ export const Frames = styled.div`
   grid-template-columns: repeat(3, 75px);
 `
 
+export const Rotation = styled.div`
+  display: grid;
+  grid-template-columns: repeat(1, 75px);
+`
+
 export const Text = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 75px);
@@ -118,7 +125,7 @@ export const General = styled.div`
 export const Action = styled.div`
   justify-self: center;
   width: 90%;
-  height: 90%;
+  height: 105%;
   display: grid;
   grid-template-rows: 1fr 1fr;
   justify-items: center;

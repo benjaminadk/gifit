@@ -26,8 +26,6 @@ import { Hashtag } from 'styled-icons/fa-solid/Hashtag'
 import { PhotoSizeSelectLarge } from 'styled-icons/material/PhotoSizeSelectLarge'
 import { AccessTime } from 'styled-icons/material/AccessTime'
 import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
-import { ArrowBack } from 'styled-icons/material/ArrowBack'
-import { ArrowForward } from 'styled-icons/material/ArrowForward'
 import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
@@ -48,6 +46,7 @@ import {
   Playback,
   Frames,
   Text,
+  Rotation,
   Overlay,
   General,
   Statistic
@@ -215,7 +214,16 @@ export default function Toolbar({
         </Menu>
       ) : menuIndex === 4 ? (
         <Menu>
-          <Section width={200}>
+          <Section width={150}>
+            <Rotation>
+              <Action onClick={() => onOpenDrawer('resize')}>
+                <Expand />
+                <div className='text'>Resize</div>
+              </Action>
+            </Rotation>
+            <SectionText>Size and Rotation</SectionText>
+          </Section>
+          <Section width={150}>
             <Text>
               <Action onClick={() => onOpenDrawer('title')}>
                 <Title />

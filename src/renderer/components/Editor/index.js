@@ -20,6 +20,7 @@ import createGIFEncoder from './createGIFEncoder'
 import getTextXY from './getTextXY'
 import { AppContext } from '../App'
 import Drawer from './Drawer'
+import Resize from './Resize'
 import TitleFrame from './TitleFrame'
 import FreeDrawing from './FreeDrawing'
 import Border from './Border'
@@ -585,8 +586,7 @@ export default function Editor() {
 
   // open drawer
   function onOpenDrawer(drawer) {
-    if (drawer === 'recent') {
-    } else if (drawer === 'title') {
+    if (drawer === 'title') {
       setScale(zoomToFit)
     } else if (drawer === 'border') {
       setScale(1)
@@ -615,6 +615,12 @@ export default function Editor() {
 
   // close recent project drawer
   function onRecentCancel() {
+    setShowDrawer(false)
+  }
+
+  function onResizeAccept() {}
+
+  function onResizeCancel() {
     setShowDrawer(false)
   }
 
@@ -1041,6 +1047,13 @@ export default function Editor() {
             recentProjects={recentProjects}
             onAccept={onRecentAccept}
             onCancel={onRecentCancel}
+          />
+        ) : drawerMode === 'resize' ? (
+          <Resize
+            drawerHeight={drawerHeight}
+            gifData={gifData}
+            onAccept={onResizeAccept}
+            onCancel={onResizeCancel}
           />
         ) : drawerMode === 'title' ? (
           <TitleFrame
