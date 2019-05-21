@@ -33,71 +33,6 @@ export default function FreeDrawing({
   onAccept,
   onCancel
 }) {
-  function onDrawDimensionChange({ target: { value } }, type, dimension) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 100) {
-        newValue = 100
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 1
-    }
-    if (type === 'pen') {
-      if (dimension === 'width') {
-        setDrawPenWidth(newValue)
-      } else if (dimension === 'height') {
-        setDrawPenHeight(newValue)
-      }
-    } else if (type === 'eraser') {
-      if (dimension === 'width') {
-        setDrawEraserWidth(newValue)
-      } else if (dimension === 'height') {
-        setDrawEraserHeight(newValue)
-      }
-    }
-  }
-
-  function onDrawDimensionArrowClick(type, dimension, inc) {
-    var currentValue
-    var newValue
-    var setter
-
-    if (type === 'pen') {
-      if (dimension === 'width') {
-        currentValue = drawPenWidth
-        setter = setDrawPenWidth
-      } else if (dimension === 'height') {
-        currentValue = drawPenHeight
-        setter = setDrawPenHeight
-      }
-    } else if (type === 'eraser') {
-      if (dimension === 'width') {
-        currentValue = drawEraserWidth
-        setter = setDrawEraserWidth
-      } else if (dimension === 'height') {
-        currentValue = drawEraserHeight
-        setter = setDrawEraserHeight
-      }
-    }
-    if (inc) {
-      if (currentValue < 100) {
-        newValue = currentValue + 1
-      } else {
-        newValue = 100
-      }
-    } else {
-      if (currentValue > 1) {
-        newValue = currentValue - 1
-      } else {
-        newValue = 1
-      }
-    }
-    setter(newValue)
-  }
-
   return (
     <>
       <Header>
@@ -145,9 +80,10 @@ export default function FreeDrawing({
                   <NumberInput
                     width={80}
                     value={drawPenWidth}
-                    onChange={e => onDrawDimensionChange(e, 'pen', 'width')}
-                    onArrowUpClick={() => onDrawDimensionArrowClick('pen', 'width', true)}
-                    onArrowDownClick={() => onDrawDimensionArrowClick('pen', 'width', false)}
+                    min={1}
+                    max={100}
+                    fallback={50}
+                    setter={setDrawPenWidth}
                   />
                 </Property>
                 <Property>
@@ -155,9 +91,10 @@ export default function FreeDrawing({
                   <NumberInput
                     width={80}
                     value={drawPenHeight}
-                    onChange={e => onDrawDimensionChange(e, 'pen', 'height')}
-                    onArrowUpClick={() => onDrawDimensionArrowClick('pen', 'height', true)}
-                    onArrowDownClick={() => onDrawDimensionArrowClick('pen', 'height', false)}
+                    min={1}
+                    max={100}
+                    fallback={50}
+                    setter={setDrawPenHeight}
                   />
                 </Property>
                 <Property>
@@ -206,9 +143,10 @@ export default function FreeDrawing({
                   <NumberInput
                     width={80}
                     value={drawEraserWidth}
-                    onChange={e => onDrawDimensionChange(e, 'eraser', 'width')}
-                    onArrowUpClick={() => onDrawDimensionArrowClick('eraser', 'width', true)}
-                    onArrowDownClick={() => onDrawDimensionArrowClick('eraser', 'width', false)}
+                    min={5}
+                    max={100}
+                    fallback={10}
+                    setter={setDrawEraserWidth}
                   />
                 </Property>
                 <Property>
@@ -216,9 +154,10 @@ export default function FreeDrawing({
                   <NumberInput
                     width={80}
                     value={drawEraserHeight}
-                    onChange={e => onDrawDimensionChange(e, 'eraser', 'height')}
-                    onArrowUpClick={() => onDrawDimensionArrowClick('eraser', 'height', true)}
-                    onArrowDownClick={() => onDrawDimensionArrowClick('eraser', 'height', false)}
+                    min={5}
+                    max={100}
+                    fallback={10}
+                    setter={setDrawEraserHeight}
                   />
                 </Property>
               </div>

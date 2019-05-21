@@ -51,94 +51,6 @@ export default function TitleFrame({
     setTitleStyle(style)
   }
 
-  function onTitleSizeChange({ target: { value } }) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 200) {
-        newValue = 200
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 40
-    }
-    setTitleSize(newValue)
-  }
-
-  function onTitleSizeBlur({ target: { value } }) {
-    var newValue
-    if (Number(value) < 10) {
-      newValue = 10
-    } else {
-      newValue = value
-    }
-    setTitleSize(newValue)
-  }
-
-  function onTitleSizeArrowClick(inc) {
-    const currentValue = titleSize
-    var newValue
-    if (inc) {
-      if (currentValue < 200) {
-        newValue = currentValue + 1
-      } else {
-        newValue = 200
-      }
-    } else {
-      if (currentValue > 10) {
-        newValue = currentValue - 1
-      } else {
-        newValue = 10
-      }
-    }
-    setTitleSize(newValue)
-  }
-
-  function onTitleDelayChange({ target: { value } }) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 10000) {
-        newValue = 10000
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 500
-    }
-    setTitleDelay(newValue)
-  }
-
-  function onTitleDelayBlur({ target: { value } }) {
-    var newValue
-    if (Number(value) < 100) {
-      newValue = 100
-    } else {
-      newValue = value
-    }
-    setTitleDelay(newValue)
-  }
-
-  function onTitleDelayArrowClick(inc) {
-    const currentValue = titleDelay
-    var newValue
-    if (inc) {
-      if (currentValue < 10000) {
-        newValue = currentValue + 1
-      } else {
-        newValue = 10000
-      }
-    } else {
-      if (currentValue > 100) {
-        newValue = currentValue - 1
-      } else {
-        newValue = 100
-      }
-    }
-    setTitleDelay(newValue)
-  }
-
   function onTitleVerticalSelect(vertical) {
     setTitleVertical(vertical)
   }
@@ -203,10 +115,10 @@ export default function TitleFrame({
               <NumberInput
                 width={60}
                 value={titleSize}
-                onChange={onTitleSizeChange}
-                onBlur={onTitleSizeBlur}
-                onArrowUpClick={() => onTitleSizeArrowClick(true)}
-                onArrowDownClick={() => onTitleSizeArrowClick(false)}
+                min={10}
+                max={200}
+                fallback={40}
+                setter={setTitleSize}
               />
             </Property>
             <Property>
@@ -226,10 +138,10 @@ export default function TitleFrame({
               <NumberInput
                 width={80}
                 value={titleDelay}
-                onChange={onTitleDelayChange}
-                onBlur={onTitleDelayBlur}
-                onArrowUpClick={() => onTitleDelayArrowClick(true)}
-                onArrowDownClick={() => onTitleDelayArrowClick(false)}
+                min={100}
+                max={10000}
+                fallback={500}
+                setter={setTitleDelay}
               />
             </Property>
           </div>

@@ -80,8 +80,6 @@ export default function Toolbar({
   playing,
   setScale,
   onOpenDrawer,
-  onZoomChange,
-  onZoomArrowClick,
   onNewRecordingClick,
   onSaveClick,
   onDiscardProjectClick,
@@ -91,6 +89,10 @@ export default function Toolbar({
   onSelectClick
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
+
+  function onZoomChange(x) {
+    setScale(x / 100)
+  }
 
   return (
     <Container>
@@ -151,9 +153,10 @@ export default function Toolbar({
                 <NumberInput
                   width={80}
                   value={Math.round(scale * 100)}
-                  onChange={onZoomChange}
-                  onArrowUpClick={() => onZoomArrowClick(true)}
-                  onArrowDownClick={() => onZoomArrowClick(false)}
+                  min={10}
+                  max={500}
+                  fallback={100}
+                  setter={onZoomChange}
                 />
                 <div className='text'>%</div>
               </ZoomInput>

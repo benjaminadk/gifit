@@ -152,10 +152,10 @@ export default function Progress({
                   <NumberInput
                     width={60}
                     value={progressThickness}
-                    onChange={onProgressThicknessChange}
-                    onBlur={onProgressThicknessBlur}
-                    onArrowUpClick={() => onProgressThicknessArrowClick(true)}
-                    onArrowDownClick={() => onProgressThicknessArrowClick(false)}
+                    min={1}
+                    max={30}
+                    fallback={30}
+                    setter={setProgressThickness}
                   />
                 </Property>
               </div>
@@ -225,7 +225,14 @@ export default function Progress({
                 </Property>
                 <Property>
                   <Label width={70}>Size:</Label>
-                  <NumberInput width={80} value={progressSize} onChange={onProgressSizeChange} />
+                  <NumberInput
+                    width={80}
+                    value={progressSize}
+                    min={10}
+                    max={200}
+                    fallback={40}
+                    setter={setProgressSize}
+                  />
                 </Property>
                 <Property>
                   <Label width={70}>Color:</Label>

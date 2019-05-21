@@ -4,7 +4,7 @@ import { Close } from 'styled-icons/material/Close'
 import { Expand } from 'styled-icons/boxicons-regular/Expand'
 import { LockOutline } from 'styled-icons/material/LockOutline'
 import { LockOpen } from 'styled-icons/material/LockOpen'
-import Number from '../../Shared/Number'
+import NumberInput from '../../Shared/NumberInput'
 import Checkbox from '../../Shared/Checkbox'
 import { Dimension, LockRatio } from './styles'
 import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
@@ -72,7 +72,7 @@ export default function Resize({ drawerHeight, gifData, onAccept, onCancel }) {
           <div>
             <Property>
               <Label width={70}>Width:</Label>
-              <Number
+              <NumberInput
                 width={100}
                 value={width}
                 max={2000}
@@ -83,7 +83,7 @@ export default function Resize({ drawerHeight, gifData, onAccept, onCancel }) {
             </Property>
             <Property>
               <Label width={70}>Height:</Label>
-              <Number
+              <NumberInput
                 width={100}
                 value={height}
                 max={2000}

@@ -64,38 +64,8 @@ export default function Options() {
     }
   }
 
-  function onCountdownTimeChange({ target: { value } }) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 15) {
-        newValue = 15
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 2
-    }
-    dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', Number(newValue)) })
-  }
-
-  function onCountdownTimeBlur({ target: { value } }) {
-    if (Number(value) < 2 || !value) {
-      dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', 2) })
-    }
-  }
-
-  function onCountdownTimeArrowClick(inc) {
-    const currentValue = options.get('countdownTime')
-    if (inc) {
-      if (currentValue < 15) {
-        dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', currentValue + 1) })
-      }
-    } else {
-      if (currentValue > 2) {
-        dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', currentValue - 1) })
-      }
-    }
+  function onCountdownTimeChange(x) {
+    dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', Number(x)) })
   }
 
   function onFFMpegChange({ target: { value } }) {
@@ -162,10 +132,10 @@ export default function Options() {
                       <NumberInput
                         width={60}
                         value={options.get('countdownTime')}
-                        onChange={onCountdownTimeChange}
-                        onBlur={onCountdownTimeBlur}
-                        onArrowUpClick={() => onCountdownTimeArrowClick(true)}
-                        onArrowDownClick={() => onCountdownTimeArrowClick(false)}
+                        min={2}
+                        max={15}
+                        fallback={3}
+                        setter={onCountdownTimeChange}
                       />
                       <div className='text'>(In seconds, wait before start capture.)</div>
                     </CountdownSize>

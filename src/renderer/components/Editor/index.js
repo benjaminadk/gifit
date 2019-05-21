@@ -534,40 +534,6 @@ export default function Editor() {
     remote.dialog.showMessageBox(win, opts, callback)
   }
 
-  // zoom input keyboard entry
-  function onZoomChange({ target: { value } }) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 500) {
-        newValue = 500
-      } else if (Number(value) < 10) {
-        newValue = 10
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 100
-    }
-    setScale(newValue / 100)
-  }
-
-  // zoom input arrows
-  function onZoomArrowClick(inc) {
-    var currentValue = scale * 100
-    var newValue
-    if (inc) {
-      if (currentValue < 500) {
-        newValue = currentValue + 1
-      }
-    } else {
-      if (currentValue > 10) {
-        newValue = currentValue - 1
-      }
-    }
-    setScale(newValue / 100)
-  }
-
   // toolbar selection controls
   // index refers to button 0=all 1=inverse 2=deselect
   function onSelectClick(index) {
@@ -991,8 +957,6 @@ export default function Editor() {
         playing={playing}
         setScale={setScale}
         onOpenDrawer={onOpenDrawer}
-        onZoomChange={onZoomChange}
-        onZoomArrowClick={onZoomArrowClick}
         onNewRecordingClick={onNewRecordingClick}
         onSaveClick={onSaveClick}
         onDiscardProjectClick={onDiscardProjectClick}

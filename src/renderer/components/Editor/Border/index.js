@@ -26,89 +26,6 @@ export default function Border({
   onAccept,
   onCancel
 }) {
-  function onChange({ target: { value } }, dimension) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 10) {
-        newValue = 10
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 0
-    }
-    switch (dimension) {
-      case 'left':
-        return setBorderLeft(newValue)
-      case 'right':
-        return setBorderRight(newValue)
-      case 'top':
-        return setBorderTop(newValue)
-      case 'bottom':
-        return setBorderBottom(newValue)
-      default:
-        throw Error()
-    }
-  }
-
-  function onBlur({ target: { value } }, dimension) {
-    if (value === '') {
-      switch (dimension) {
-        case 'left':
-          return setBorderLeft(0)
-        case 'right':
-          return setBorderRight(0)
-        case 'top':
-          return setBorderTop(0)
-        case 'bottom':
-          return setBorderBottom(0)
-        default:
-          throw Error()
-      }
-    }
-  }
-
-  function onArrowClick(inc, dimension) {
-    var currentValue
-    var setter
-    switch (dimension) {
-      case 'left':
-        currentValue = borderLeft
-        setter = setBorderLeft
-        break
-      case 'right':
-        currentValue = borderRight
-        setter = setBorderRight
-        break
-      case 'top':
-        currentValue = borderTop
-        setter = setBorderTop
-        break
-      case 'bottom':
-        currentValue = borderBottom
-        setter = setBorderBottom
-        break
-      default:
-        throw Error()
-    }
-    var newValue
-    if (inc) {
-      if (currentValue < 10) {
-        newValue = currentValue + 1
-      } else {
-        newValue = 10
-      }
-    } else {
-      if (currentValue > 0) {
-        newValue = currentValue - 1
-      } else {
-        newValue = 0
-      }
-    }
-    setter(newValue)
-  }
-
   return (
     <>
       <Header>
@@ -140,10 +57,10 @@ export default function Border({
                     <NumberInput
                       width={61}
                       value={borderTop}
-                      onChange={e => onChange(e, 'top')}
-                      onBlur={e => onBlur(e, 'top')}
-                      onArrowUpClick={() => onArrowClick(true, 'top')}
-                      onArrowDownClick={() => onArrowClick(false, 'top')}
+                      min={0}
+                      max={10}
+                      fallback={0}
+                      setter={setBorderTop}
                     />
                   </BorderInput>
                 </div>
@@ -153,20 +70,20 @@ export default function Border({
                     <NumberInput
                       width={61}
                       value={borderLeft}
-                      onChange={e => onChange(e, 'left')}
-                      onBlur={e => onBlur(e, 'left')}
-                      onArrowUpClick={() => onArrowClick(true, 'left')}
-                      onArrowDownClick={() => onArrowClick(false, 'left')}
+                      min={0}
+                      max={10}
+                      fallback={0}
+                      setter={setBorderLeft}
                     />
                   </BorderInput>
                   <BorderInput>
                     <NumberInput
                       width={61}
                       value={borderRight}
-                      onChange={e => onChange(e, 'right')}
-                      onBlur={e => onBlur(e, 'right')}
-                      onArrowUpClick={() => onArrowClick(true, 'right')}
-                      onArrowDownClick={() => onArrowClick(false, 'right')}
+                      min={0}
+                      max={10}
+                      fallback={0}
+                      setter={setBorderRight}
                     />
                     <TriangleRight />
                   </BorderInput>
@@ -177,10 +94,10 @@ export default function Border({
                     <NumberInput
                       width={61}
                       value={borderBottom}
-                      onChange={e => onChange(e, 'bottom')}
-                      onBlur={e => onBlur(e, 'bottom')}
-                      onArrowUpClick={() => onArrowClick(true, 'bottom')}
-                      onArrowDownClick={() => onArrowClick(false, 'bottom')}
+                      min={0}
+                      max={10}
+                      fallback={0}
+                      setter={setBorderBottom}
                     />
                   </BorderInput>
                 </div>
