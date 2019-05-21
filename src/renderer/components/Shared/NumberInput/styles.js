@@ -20,7 +20,7 @@ export const Container = styled.div`
     text-align: center;
     font-size: 1.2rem;
     padding: 0;
-    background: ${p => (p.focused ? p.theme.grey[0] : '#FFF')};
+    background: ${p => (p.focused ? p.theme.grey[1] : '#FFF')};
     &::selection {
       background: ${p => p.theme.primary};
       color: #fff;
@@ -42,9 +42,9 @@ export const Container = styled.div`
       display: grid;
       justify-items: center;
       align-items: center;
-      background: ${p => (p.focused ? p.theme.grey[0] : '#FFF')};
+      background: ${p => (p.focused ? p.theme.grey[1] : '#FFF')};
       &:hover {
-        background: ${p => p.theme.grey[0]};
+        background: ${p => p.theme.grey[1]};
       }
     }
     .divider2 {

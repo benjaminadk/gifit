@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { darken } from 'polished'
+import { lighten, darken } from 'polished'
 
 export const Container = styled.div`
   position: absolute;
@@ -8,7 +8,7 @@ export const Container = styled.div`
   width: 100vw;
   height: 20px;
   display: grid;
-  grid-template-columns: 250px 1fr 75px 200px;
+  grid-template-columns: 250px 1fr 80px 75px 200px;
   justify-items: center;
   align-items: center;
   background: ${p => p.theme.grey[1]};
@@ -32,7 +32,51 @@ export const Bar = styled.div.attrs(p => ({
   background: ${p => p.theme.primary};
 `
 
-export const Numbers = styled.div`
+export const ZoomInput = styled.div`
+  visibility: ${p => (p.show ? 'visible' : 'hidden')};
+  display: grid;
+  grid-template-columns: 5px 15px 25px 20px 15px;
+  align-items: center;
+  .divider {
+    width: 1px;
+    height: 12px;
+    background: ${p => p.theme.grey[5]};
+  }
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+  input {
+    font-size: 1.2rem;
+    text-align: center;
+    background: ${p => p.theme.grey[1]};
+    &::selection {
+      background: ${p => p.theme.primary};
+      color: #fff;
+    }
+  }
+  .arrows {
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    .arrow {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      align-items: center;
+      justify-items: center;
+      line-height: 0.75;
+      &:hover {
+        background: ${p => p.theme.grey[2]};
+      }
+    }
+  }
+  .label {
+    font-size: 1.2rem;
+  }
+`
+
+export const Stats = styled.div`
   width: 100%;
   visibility: ${p => (p.show ? 'visible' : 'hidden')};
   display: grid;
@@ -41,7 +85,7 @@ export const Numbers = styled.div`
   border-right: ${p => p.theme.border};
 `
 
-export const Number = styled.div`
+export const Stat = styled.div`
   width: 100%;
   height: 100%;
   display: grid;
@@ -58,6 +102,9 @@ export const Playback = styled.div`
     display: grid;
     justify-items: center;
     align-items: center;
+    &:hover {
+      background: ${p => lighten(0.3, p.theme.primary)};
+    }
   }
   svg {
     width: 15px;

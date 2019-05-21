@@ -1084,6 +1084,8 @@ export default function Editor() {
         total={images.length}
         selected={selected.count(el => el)}
         index={imageIndex + 1}
+        scale={scale}
+        setScale={setScale}
         onPlaybackClick={onPlaybackClick}
       />
       <Drawer show={showDrawer} thumbHeight={thumbHeight}>
