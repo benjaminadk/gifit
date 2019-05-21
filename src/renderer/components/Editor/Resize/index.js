@@ -102,7 +102,7 @@ export default function Resize({ drawerHeight, gifData, onAccept, onCancel }) {
         </Section>
       </Main>
       <Footer>
-        <Button width={115} onClick={onAccept}>
+        <Button width={115} onClick={() => onAccept(width, height)}>
           <Check />
           <div className='text'>Accept</div>
         </Button>

@@ -369,7 +369,7 @@ export default function Editor() {
   useEffect(() => {
     function onKeyDown({ keyCode }) {
       if (keyCode === 46) {
-        onFrameDeleteClick()
+        onFrameDeleteClick('selection')
       }
     }
     window.addEventListener('keydown', onKeyDown)
@@ -551,12 +551,12 @@ export default function Editor() {
   }
 
   // open drawer
-  function onOpenDrawer(drawer) {
-    if (drawer === 'title') {
+  function onOpenDrawer(mode) {
+    if (mode === 'title') {
       setScale(zoomToFit)
-    } else if (drawer === 'border') {
+    } else if (mode === 'border') {
       setScale(1)
-    } else if (drawer === 'progress') {
+    } else if (mode === 'progress') {
       setScale(1)
       setTimeout(() => {
         var height
@@ -567,10 +567,14 @@ export default function Editor() {
         }
         main.current.scrollTop = height
       }, 500)
-    } else if (drawer === 'drawing') {
+    } else if (mode === 'drawing') {
       setScale(1)
+    } else if (mode === 'resize') {
+      if (!gifData) {
+        return
+      }
     }
-    setDrawerMode(drawer)
+    setDrawerMode(mode)
     setShowDrawer(true)
   }
 
@@ -584,7 +588,84 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
-  function onResizeAccept() {}
+  async function onResizeAccept(newWidth, newHeight) {
+    const newGifData = {
+      ...gifData,
+      width: newWidth,
+      height: newHeight
+    }
+    const newFrames = images.slice()
+
+    async function draw() {
+      return new Promise(resolve => {
+        for (const [i, img] of images.entries()) {
+          const reader = new FileReader()
+
+          reader.onload = () => {
+            const filepath = originalPaths[i]
+            const buffer = Buffer.from(reader.result)
+            writeFileAsync(filepath, buffer).then(() => {
+              images[i].path = createHashPath(images[i].path)
+              if (i === images.length - 1) {
+                resolve()
+              }
+            })
+          }
+
+          const widthScale = newWidth / gifData.width
+          const heightScale = newHeight / gifData.height
+          const canvas = document.createElement('canvas')
+          canvas.width = newWidth
+          canvas.height = newHeight
+          const ctx = canvas.getContext('2d')
+          ctx.scale(widthScale, heightScale)
+          const image = new Image()
+          image.onload = () => {
+            ctx.drawImage(image, 0, 0)
+            canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+          }
+          image.src = images[i].path
+        }
+      })
+    }
+
+    async function update() {
+      return new Promise(resolve => {
+        const newProject = { ...newGifData, frames: newFrames }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          const imageRatio = Math.floor((newWidth / newHeight) * 100) / 100
+          const inverseRatio = Math.floor((newHeight / newWidth) * 100) / 100
+          var tWidth, tHeight
+          if (imageRatio >= 1) {
+            tWidth = 100
+            tHeight = 100 * inverseRatio
+          } else {
+            tWidth = 100 * imageRatio
+            tHeight = 100
+          }
+          const mainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
+          main.current.style.height = mainHeight + 'px'
+          const drawerHeight = mainHeight - 40 - 50
+          const heightRatio = Math.floor((mainHeight / newHeight) * 100) / 100
+          const initialScale = heightRatio < 1 ? heightRatio : 1
+          setScale(initialScale)
+          setZoomToFit(initialScale)
+          setThumbWidth(tWidth)
+          setThumbHeight(tHeight)
+          setDrawerHeight(drawerHeight)
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    await update()
+    setGifData(newGifData)
+    setLoading(false)
+    setShowDrawer(false)
+  }
 
   function onResizeCancel() {
     setShowDrawer(false)
@@ -594,6 +675,7 @@ export default function Editor() {
   function onTitleAccept() {
     const reader = new FileReader()
     const filepath = path.join(RECORDINGS_DIRECTORY, gifData.relative, createTFName())
+
     reader.onload = () => {
       const buffer = Buffer.from(reader.result)
       writeFileAsync(filepath, buffer).then(() => {})
