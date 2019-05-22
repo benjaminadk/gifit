@@ -682,7 +682,81 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
-  function onCropAccept() {}
+  async function onCropAccept() {
+    const newGifData = {
+      ...gifData,
+      width: cropWidth,
+      height: cropHeight
+    }
+    const newFrames = images.slice()
+
+    async function draw() {
+      return new Promise(resolve => {
+        for (const [i, img] of images.entries()) {
+          const reader = new FileReader()
+
+          reader.onload = () => {
+            const filepath = originalPaths[i]
+            const buffer = Buffer.from(reader.result)
+            writeFileAsync(filepath, buffer).then(() => {
+              images[i].path = createHashPath(images[i].path)
+              if (i === images.length - 1) {
+                resolve()
+              }
+            })
+          }
+
+          const canvas = document.createElement('canvas')
+          canvas.width = cropWidth
+          canvas.height = cropHeight
+          const ctx = canvas.getContext('2d')
+          const image = new Image()
+          image.onload = () => {
+            ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
+            canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+          }
+          image.src = images[i].path
+        }
+      })
+    }
+
+    async function update() {
+      return new Promise(resolve => {
+        const newProject = { ...newGifData, frames: newFrames }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          const imageRatio = Math.floor((cropWidth / cropHeight) * 100) / 100
+          const inverseRatio = Math.floor((cropHeight / cropWidth) * 100) / 100
+          var tWidth, tHeight
+          if (imageRatio >= 1) {
+            tWidth = 100
+            tHeight = 100 * inverseRatio
+          } else {
+            tWidth = 100 * imageRatio
+            tHeight = 100
+          }
+          const mainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
+          main.current.style.height = mainHeight + 'px'
+          const drawerHeight = mainHeight - 40 - 50
+          const heightRatio = Math.floor((mainHeight / cropHeight) * 100) / 100
+          const initialScale = heightRatio < 1 ? heightRatio : 1
+          setScale(initialScale)
+          setZoomToFit(initialScale)
+          setThumbWidth(tWidth)
+          setThumbHeight(tHeight)
+          setDrawerHeight(drawerHeight)
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    await update()
+    setGifData(newGifData)
+    setLoading(false)
+    setShowDrawer(false)
+  }
 
   function onCropCancel() {
     setShowDrawer(false)

@@ -32,6 +32,7 @@ export const Main = styled.div.attrs(p => ({
 
 export const Wrapper = styled.div`
   position: relative;
+  overflow: hidden;
 `
 
 export const Canvas1 = styled.canvas`
