@@ -27,6 +27,7 @@ import { PhotoSizeSelectLarge } from 'styled-icons/material/PhotoSizeSelectLarge
 import { AccessTime } from 'styled-icons/material/AccessTime'
 import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
 import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
+import { Crop } from 'styled-icons/material/Crop'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
 import {
@@ -222,6 +223,10 @@ export default function Toolbar({
               <Action onClick={() => onOpenDrawer('resize')}>
                 <Expand />
                 <div className='text'>Resize</div>
+              </Action>
+              <Action onClick={() => onOpenDrawer('crop')}>
+                <Crop />
+                <div className='text'>Crop</div>
               </Action>
             </Rotation>
             <SectionText>Size and Rotation</SectionText>

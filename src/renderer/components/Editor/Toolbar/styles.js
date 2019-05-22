@@ -104,7 +104,7 @@ export const Frames = styled.div`
 
 export const Rotation = styled.div`
   display: grid;
-  grid-template-columns: repeat(1, 75px);
+  grid-template-columns: repeat(2, 75px);
 `
 
 export const Text = styled.div`

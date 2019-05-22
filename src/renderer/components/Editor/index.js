@@ -19,8 +19,10 @@ import createGIFFfmpeg from './createGIFFfmpeg'
 import createGIFEncoder from './createGIFEncoder'
 import getTextXY from './getTextXY'
 import { AppContext } from '../App'
+import CropOverlay from './Crop/CropOverlay'
 import Drawer from './Drawer'
 import Resize from './Resize'
+import Crop from './Crop'
 import TitleFrame from './TitleFrame'
 import FreeDrawing from './FreeDrawing'
 import Border from './Border'
@@ -113,6 +115,11 @@ export default function Editor() {
   const [titleVertical, setTitleVertical] = useState('Center')
   const [titleHorizontal, setTitleHorizontal] = useState('Center')
   const [titleBackground, setTitleBackground] = useState('#FFFF00')
+
+  const [cropWidth, setCropWidth] = useState(0)
+  const [cropHeight, setCropHeight] = useState(0)
+  const [cropX, setCropX] = useState(0)
+  const [cropY, setCropY] = useState(0)
 
   const container = useRef(null)
   const main = useRef(null)
@@ -552,6 +559,9 @@ export default function Editor() {
 
   // open drawer
   function onOpenDrawer(mode) {
+    if (!gifData) {
+      return
+    }
     if (mode === 'title') {
       setScale(zoomToFit)
     } else if (mode === 'border') {
@@ -570,9 +580,10 @@ export default function Editor() {
     } else if (mode === 'drawing') {
       setScale(1)
     } else if (mode === 'resize') {
-      if (!gifData) {
-        return
-      }
+    } else if (mode === 'crop') {
+      setScale(1)
+      setCropWidth(gifData.width)
+      setCropHeight(gifData.height)
     }
     setDrawerMode(mode)
     setShowDrawer(true)
@@ -668,6 +679,12 @@ export default function Editor() {
   }
 
   function onResizeCancel() {
+    setShowDrawer(false)
+  }
+
+  function onCropAccept() {}
+
+  function onCropCancel() {
     setShowDrawer(false)
   }
 
@@ -1067,6 +1084,18 @@ export default function Editor() {
             onMouseMove={onDrawMouseMove}
             onMouseLeave={onDrawMouseLeave}
           />
+          <CropOverlay
+            drawerMode={drawerMode}
+            gifData={gifData}
+            cropWidth={cropWidth}
+            cropHeight={cropHeight}
+            cropX={cropX}
+            cropY={cropY}
+            setCropWidth={setCropWidth}
+            setCropHeight={setCropHeight}
+            setCropX={setCropX}
+            setCropY={setCropY}
+          />
         </Wrapper>
       </Main>
       <Thumbnails
@@ -1102,6 +1131,22 @@ export default function Editor() {
             gifData={gifData}
             onAccept={onResizeAccept}
             onCancel={onResizeCancel}
+          />
+        ) : drawerMode === 'crop' ? (
+          <Crop
+            drawerHeight={drawerHeight}
+            gifData={gifData}
+            imagePath={images[imageIndex].path}
+            cropWidth={cropWidth}
+            cropHeight={cropHeight}
+            cropX={cropX}
+            cropY={cropY}
+            setCropWidth={setCropWidth}
+            setCropHeight={setCropHeight}
+            setCropX={setCropX}
+            setCropY={setCropY}
+            onAccept={onCropAccept}
+            onCancel={onCropCancel}
           />
         ) : drawerMode === 'title' ? (
           <TitleFrame

@@ -103,7 +103,7 @@ export const Playback = styled.div`
     justify-items: center;
     align-items: center;
     &:hover {
-      background: ${p => lighten(0.3, p.theme.primary)};
+      background: ${p => lighten(0.4, p.theme.primary)};
     }
   }
   svg {

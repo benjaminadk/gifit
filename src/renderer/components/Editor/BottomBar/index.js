@@ -98,7 +98,7 @@ export default function BottomBar({
       <ZoomInput show={scale !== null}>
         <div className='divider' />
         <Search />
-        <input value={scale * 100} onChange={onScaleChange} />
+        <input value={Math.round(scale * 100)} onChange={onScaleChange} />
         <div className='arrows'>
           <div className='arrow' onClick={() => onScaleArrowClick(true)}>
             {'\u2bc5'}
