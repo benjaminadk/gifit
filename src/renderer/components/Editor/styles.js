@@ -13,7 +13,9 @@ export const Container = styled.div`
 
 export const Main = styled.div.attrs(p => ({
   style: {
-    width: p.shift ? 'calc(100vw - 300px)' : '100vw',
+    top: p.shiftUp ? '120px' : '25px',
+    width: p.shiftLeft ? 'calc(100vw - 300px)' : '100vw',
+    height: p.height + 'px',
     backgroundImage: createCheckerboard(p.color),
     backgroundSize: `${p.size}px ${p.size}px`,
     backgroundPosition: `0 0, 0 ${p.size / 2}px, ${p.size / 2}px -${p.size / 2}px, -${p.size /
@@ -21,13 +23,12 @@ export const Main = styled.div.attrs(p => ({
   }
 }))`
   position: absolute;
-  top: 120px;
   left: 0;
   overflow: auto;
   display: grid;
   justify-items: center;
   align-items: center;
-  transition: 0.5s;
+  transition: 0.25s;
 `
 
 export const Wrapper = styled.div`

@@ -2,13 +2,15 @@ import styled from 'styled-components'
 import { lighten, darken } from 'polished'
 
 export const Container = styled.div`
-  height: 120px;
+  height: ${p => (p.show ? '120px' : '25px')};
   display: grid;
   grid-template-rows: 25px 1fr;
   border-bottom: ${p => p.theme.border};
+  transition: height 0.25s;
 `
 
 export const Tabs = styled.div`
+  height: 100%;
   display: grid;
   grid-template-columns: 80px 90px 105px 80px 85px 100px 100px 1fr 100px;
   justify-items: center;
@@ -25,8 +27,12 @@ export const Tab = styled.div`
   grid-template-columns: 30px 1fr;
   align-items: center;
   background: ${p => (p.selected ? '#FFFFFF' : 'transparent')};
+  color: ${p => (p.selected ? darken(0.2, p.theme.primary) : '#000000')};
   border: ${p => (p.selected ? p.theme.border : `1px solid ${p.theme.grey[1]}`)};
   border-bottom: 0;
+  &:hover {
+    color: ${p => darken(0.2, p.theme.primary)};
+  }
   svg {
     justify-self: flex-end;
     width: 15px;
@@ -51,9 +57,20 @@ export const Extras = styled.div`
 `
 
 export const Menu = styled.div`
-  display: flex;
+  position: relative;
+  display: ${p => (p.show ? 'flex' : 'none')};
   padding-top: 5px;
   padding-bottom: 5px;
+`
+
+export const Collapse = styled.div`
+  position: absolute;
+  right: 5px;
+  bottom: 0;
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 `
 
 export const Section = styled.div`
@@ -61,6 +78,7 @@ export const Section = styled.div`
   height: 100%;
   display: grid;
   grid-template-rows: 1fr 15px;
+  background: #ffffff;
   border-right: 1px solid ${p => p.theme.grey[2]};
 `
 
@@ -72,49 +90,14 @@ export const SectionText = styled.div`
   color: ${p => p.theme.grey[7]};
 `
 
-export const New = styled.div`
+export const GenericGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(1, 75px);
-`
-
-export const File = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 75px);
+  grid-template-columns: ${p => `repeat(${p.columns}, 75px)`};
 `
 
 export const Zoom = styled.div`
   display: grid;
   grid-template-columns: 75px 75px 150px;
-`
-
-export const Selection = styled.div`
-  display: grid;
-  grid-template-columns: 75px 75px 75px;
-`
-
-export const Playback = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 75px);
-`
-
-export const Frames = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 75px);
-`
-
-export const Rotation = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 75px);
-`
-
-export const Text = styled.div`
-  display: grid;
-  grid-template-columns: repeat(1, 75px);
-`
-
-export const Overlay = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 75px);
 `
 
 export const General = styled.div`

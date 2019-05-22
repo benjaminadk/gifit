@@ -8,16 +8,16 @@ const {
 
 export const Container = styled.div.attrs(p => ({
   style: {
+    top: p.shiftUp ? '120px' : '25px',
     right: p.show ? '0' : `-${drawerWidth}px`,
     bottom: p.thumbHeight ? p.thumbHeight + 40 + 20 + 'px' : '120px'
   }
 }))`
   position: absolute;
-  top: 120px;
   width: ${drawerWidth}px;
   background: ${p => p.theme.grey[0]};
   border-left: ${p => p.theme.border};
-  transition: right 0.5s;
+  transition: top 0.25s, right 0.25s;
 `
 
 export const Layout = styled.div`
@@ -60,6 +60,7 @@ export const Main = styled.main`
   height: ${p => p.height}px;
   overflow: auto;
   padding-top: 5px;
+  transition: 0.25s;
 `
 
 export const Section = styled.div`

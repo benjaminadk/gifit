@@ -28,6 +28,7 @@ import { AccessTime } from 'styled-icons/material/AccessTime'
 import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
 import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
 import { Crop } from 'styled-icons/material/Crop'
+import { ChevronDown } from 'styled-icons/boxicons-regular/ChevronDown'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
 import {
@@ -36,19 +37,13 @@ import {
   Tab,
   Extras,
   Menu,
+  Collapse,
   Section,
   SectionText,
+  GenericGrid,
   Action,
-  New,
-  File,
   Zoom,
   ZoomInput,
-  Selection,
-  Playback,
-  Frames,
-  Text,
-  Rotation,
-  Overlay,
   General,
   Statistic
 } from './styles'
@@ -72,6 +67,7 @@ const playback = [
 ]
 
 export default function Toolbar({
+  showToolbar,
   totalFrames,
   totalDuration,
   averageDuration,
@@ -79,6 +75,7 @@ export default function Toolbar({
   scale,
   zoomToFit,
   playing,
+  setShowToolbar,
   setScale,
   onOpenDrawer,
   onNewRecordingClick,
@@ -96,10 +93,10 @@ export default function Toolbar({
   }
 
   return (
-    <Container>
-      <Tabs>
+    <Container show={showToolbar}>
+      <Tabs onClick={() => setShowToolbar(true)}>
         {tabs.map((el, i) => (
-          <Tab key={i} selected={i === menuIndex} onClick={() => setMenuIndex(i)}>
+          <Tab key={i} selected={showToolbar && i === menuIndex} onClick={() => setMenuIndex(i)}>
             {el.icon}
             <div className='text'>{el.text}</div>
             <div className='divider' />
@@ -108,195 +105,200 @@ export default function Toolbar({
         <div />
         <Extras onClick={onOptionsClick}>Extras</Extras>
       </Tabs>
-      {menuIndex === 0 ? (
-        <Menu>
-          <Section width={75}>
-            <New>
-              <Action onClick={onNewRecordingClick}>
-                <MediaRecord />
-                <div className='text'>Recording</div>
-              </Action>
-            </New>
-            <SectionText>New</SectionText>
-          </Section>
-          <Section width={225}>
-            <File>
-              <Action onClick={onSaveClick}>
-                <Save />
-                <div className='text'>Save As</div>
-              </Action>
-              <Action onClick={() => onOpenDrawer('recent')}>
-                <FileArchive />
-                <div className='text'>Recent Projects</div>
-              </Action>
-              <Action onClick={onDiscardProjectClick}>
-                <Delete />
-                <div className='text'>Discard Project</div>
-              </Action>
-            </File>
-            <SectionText>File</SectionText>
-          </Section>
-        </Menu>
-      ) : menuIndex === 1 ? (
-        <Menu>
-          <Section width={300}>
-            <Zoom>
-              <Action onClick={() => setScale(1)}>
-                <Expand className='expand' />
-                <div className='text'>100%</div>
-              </Action>
-              <Action onClick={() => setScale(zoomToFit)}>
-                <ImageIcon className='fit' />
-                <div className='text'>Fit Image</div>
-              </Action>
-              <ZoomInput>
-                <Search />
-                <NumberInput
-                  width={80}
-                  value={Math.round(scale * 100)}
-                  min={10}
-                  max={500}
-                  fallback={100}
-                  setter={onZoomChange}
-                />
-                <div className='text'>%</div>
-              </ZoomInput>
-            </Zoom>
-            <SectionText>Zoom</SectionText>
-          </Section>
-          <Section width={300}>
-            <Selection>
-              <Action onClick={() => onSelectClick(0)}>
-                <MousePointer />
-                <div className='text'>Select All</div>
-              </Action>
-              <Action onClick={() => onSelectClick(1)}>
-                <Collections />
-                <div className='text'>Inverse</div>
-              </Action>
-              <Action onClick={() => onSelectClick(2)}>
-                <FilterNone />
-                <div className='text'>Deselect</div>
-              </Action>
-            </Selection>
-            <SectionText>Select</SectionText>
-          </Section>
-        </Menu>
-      ) : menuIndex === 2 ? (
-        <Menu>
-          <Section width={375}>
-            <Playback>
-              {playback.map((el, i) => (
-                <Action key={i} onClick={() => onPlaybackClick(i)}>
-                  {i !== 2 ? el.icon : playing ? el.icon2 : el.icon1}
-                  <div className='text'>{i !== 2 ? el.text : playing ? el.text2 : el.text1}</div>
+      <Menu show={showToolbar}>
+        <Collapse onClick={() => setShowToolbar(false)}>
+          <ChevronDown />
+        </Collapse>
+        {menuIndex === 0 ? (
+          <>
+            <Section width={75}>
+              <GenericGrid columns={1}>
+                <Action onClick={onNewRecordingClick}>
+                  <MediaRecord />
+                  <div className='text'>Recording</div>
                 </Action>
-              ))}
-            </Playback>
-            <SectionText>Playback</SectionText>
-          </Section>
-        </Menu>
-      ) : menuIndex === 3 ? (
-        <Menu>
-          <Section width={225}>
-            <Frames>
-              <Action onClick={() => onFrameDeleteClick('selection')}>
-                <Delete />
-                <div className='text'>Delete</div>
-              </Action>
-              <Action onClick={() => onFrameDeleteClick('previous')}>
-                <Svg name='delete-next' />
-                <div className='text'>Delete All Previous</div>
-              </Action>
-              <Action onClick={() => onFrameDeleteClick('next')}>
-                <Svg name='delete-next' />
-                <div className='text'>Delete All Next</div>
-              </Action>
-            </Frames>
-            <SectionText>Frames</SectionText>
-          </Section>
-        </Menu>
-      ) : menuIndex === 4 ? (
-        <Menu>
-          <Section width={150}>
-            <Rotation>
-              <Action onClick={() => onOpenDrawer('resize')}>
-                <Expand />
-                <div className='text'>Resize</div>
-              </Action>
-              <Action onClick={() => onOpenDrawer('crop')}>
-                <Crop />
-                <div className='text'>Crop</div>
-              </Action>
-            </Rotation>
-            <SectionText>Size and Rotation</SectionText>
-          </Section>
-          <Section width={150}>
-            <Text>
-              <Action onClick={() => onOpenDrawer('title')}>
-                <Title />
-                <div className='text'>Title Frame</div>
-              </Action>
-            </Text>
-            <SectionText>Text</SectionText>
-          </Section>
-          <Section width={225}>
-            <Overlay>
-              <Action onClick={() => onOpenDrawer('drawing')}>
-                <PenFancy />
-                <div className='text'>Free Drawing</div>
-              </Action>
-              <Action onClick={() => onOpenDrawer('border')}>
-                <BorderOuter />
-                <div className='text'>Border</div>
-              </Action>
-              <Action onClick={() => onOpenDrawer('progress')}>
-                <RemoveFromQueue />
-                <div className='text'>Progress</div>
-              </Action>
-            </Overlay>
-            <SectionText>Overlay</SectionText>
-          </Section>
-        </Menu>
-      ) : menuIndex === 6 ? (
-        <Menu>
-          <Section width={450}>
-            <General>
-              <Statistic>
-                <div className='top'>
-                  <Hashtag />
-                  <div>Frame count</div>
-                </div>
-                <div className='bottom'>{totalFrames}</div>
-              </Statistic>
-              <Statistic>
-                <div className='top'>
-                  <PhotoSizeSelectLarge />
-                  <div>Frame size</div>
-                </div>
-                <div className='bottom'>{gifData.width + ' x ' + gifData.height}</div>
-              </Statistic>
-              <Statistic>
-                <div className='top'>
-                  <AccessTime />
-                  <div>Total duration</div>
-                </div>
-                <div className='bottom'>{format(new Date(totalDuration), 'mm:ss.SS')} m</div>
-              </Statistic>
-              <Statistic>
-                <div className='top'>
-                  <AccessTime />
-                  <div>Average duration</div>
-                </div>
-                <div className='bottom'>{averageDuration} ms</div>
-              </Statistic>
-            </General>
-            <SectionText>General</SectionText>
-          </Section>
-        </Menu>
-      ) : (
-        <div />
-      )}
+              </GenericGrid>
+              <SectionText>New</SectionText>
+            </Section>
+            <Section width={225}>
+              <GenericGrid columns={3}>
+                <Action onClick={onSaveClick}>
+                  <Save />
+                  <div className='text'>Save As</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('recent')}>
+                  <FileArchive />
+                  <div className='text'>Recent Projects</div>
+                </Action>
+                <Action onClick={onDiscardProjectClick}>
+                  <Delete />
+                  <div className='text'>Discard Project</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>File</SectionText>
+            </Section>
+          </>
+        ) : menuIndex === 1 ? (
+          <>
+            <Section width={300}>
+              <Zoom>
+                <Action onClick={() => setScale(1)}>
+                  <Expand className='expand' />
+                  <div className='text'>100%</div>
+                </Action>
+                <Action onClick={() => setScale(zoomToFit)}>
+                  <ImageIcon className='fit' />
+                  <div className='text'>Fit Image</div>
+                </Action>
+                <ZoomInput>
+                  <Search />
+                  <NumberInput
+                    width={80}
+                    value={Math.round(scale * 100)}
+                    min={10}
+                    max={500}
+                    fallback={100}
+                    setter={onZoomChange}
+                  />
+                  <div className='text'>%</div>
+                </ZoomInput>
+              </Zoom>
+              <SectionText>Zoom</SectionText>
+            </Section>
+            <Section width={300}>
+              <GenericGrid columns={3}>
+                <Action onClick={() => onSelectClick(0)}>
+                  <MousePointer />
+                  <div className='text'>Select All</div>
+                </Action>
+                <Action onClick={() => onSelectClick(1)}>
+                  <Collections />
+                  <div className='text'>Inverse</div>
+                </Action>
+                <Action onClick={() => onSelectClick(2)}>
+                  <FilterNone />
+                  <div className='text'>Deselect</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Select</SectionText>
+            </Section>
+          </>
+        ) : menuIndex === 2 ? (
+          <>
+            <Section width={375}>
+              <GenericGrid columns={5}>
+                {playback.map((el, i) => (
+                  <Action key={i} onClick={() => onPlaybackClick(i)}>
+                    {i !== 2 ? el.icon : playing ? el.icon2 : el.icon1}
+                    <div className='text'>{i !== 2 ? el.text : playing ? el.text2 : el.text1}</div>
+                  </Action>
+                ))}
+              </GenericGrid>
+              <SectionText>Playback</SectionText>
+            </Section>
+          </>
+        ) : menuIndex === 3 ? (
+          <>
+            <Section width={225}>
+              <GenericGrid columns={3}>
+                <Action onClick={() => onFrameDeleteClick('selection')}>
+                  <Delete />
+                  <div className='text'>Delete</div>
+                </Action>
+                <Action onClick={() => onFrameDeleteClick('previous')}>
+                  <Svg name='delete-next' />
+                  <div className='text'>Delete All Previous</div>
+                </Action>
+                <Action onClick={() => onFrameDeleteClick('next')}>
+                  <Svg name='delete-next' />
+                  <div className='text'>Delete All Next</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Frames</SectionText>
+            </Section>
+          </>
+        ) : menuIndex === 4 ? (
+          <>
+            <Section width={150}>
+              <GenericGrid columns={2}>
+                <Action onClick={() => onOpenDrawer('resize')}>
+                  <Expand />
+                  <div className='text'>Resize</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('crop')}>
+                  <Crop />
+                  <div className='text'>Crop</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Size and Rotation</SectionText>
+            </Section>
+            <Section width={150}>
+              <GenericGrid columns={1}>
+                <Action onClick={() => onOpenDrawer('title')}>
+                  <Title />
+                  <div className='text'>Title Frame</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Text</SectionText>
+            </Section>
+            <Section width={225}>
+              <GenericGrid columns={3}>
+                <Action onClick={() => onOpenDrawer('drawing')}>
+                  <PenFancy />
+                  <div className='text'>Free Drawing</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('border')}>
+                  <BorderOuter />
+                  <div className='text'>Border</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('progress')}>
+                  <RemoveFromQueue />
+                  <div className='text'>Progress</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Overlay</SectionText>
+            </Section>
+          </>
+        ) : menuIndex === 6 ? (
+          <>
+            <Section width={450}>
+              <General>
+                <Statistic>
+                  <div className='top'>
+                    <Hashtag />
+                    <div>Frame count</div>
+                  </div>
+                  <div className='bottom'>{totalFrames}</div>
+                </Statistic>
+                <Statistic>
+                  <div className='top'>
+                    <PhotoSizeSelectLarge />
+                    <div>Frame size</div>
+                  </div>
+                  <div className='bottom'>{gifData.width + ' x ' + gifData.height}</div>
+                </Statistic>
+                <Statistic>
+                  <div className='top'>
+                    <AccessTime />
+                    <div>Total duration</div>
+                  </div>
+                  <div className='bottom'>{format(new Date(totalDuration), 'mm:ss.SS')} m</div>
+                </Statistic>
+                <Statistic>
+                  <div className='top'>
+                    <AccessTime />
+                    <div>Average duration</div>
+                  </div>
+                  <div className='bottom'>{averageDuration} ms</div>
+                </Statistic>
+              </General>
+              <SectionText>General</SectionText>
+            </Section>
+          </>
+        ) : (
+          <div />
+        )}
+      </Menu>
     </Container>
   )
 }

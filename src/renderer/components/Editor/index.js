@@ -71,9 +71,11 @@ export default function Editor() {
   const [recentProjects, setRecentProjects] = useState(null)
   const [playing, setPlaying] = useState(false)
 
+  const [mainHeight, setMainHeight] = useState(0)
+  const [showToolbar, setShowToolbar] = useState(true)
   const [showDrawer, setShowDrawer] = useState(false)
   const [drawerMode, setDrawerMode] = useState('')
-  const [drawerHeight, setDrawerHeight] = useState(null)
+  const [drawerHeight, setDrawerHeight] = useState(0)
 
   const [optionsOpen, setOptionsOpen] = useState(false)
 
@@ -159,12 +161,11 @@ export default function Editor() {
         }
         // calculate main editor section height
         // total height - toolbar height - thumbnails height - bottom bar height
-        const mainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
-        main.current.style.height = mainHeight + 'px'
+        const initialMainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
         // drawer height = main height - drawer header height - drawer buttons height
-        const drawerHeight = mainHeight - 40 - 50
+        const initialDrawerHeight = initialMainHeight - 40 - 50
         // ratio of available height to height of image
-        const heightRatio = Math.floor((mainHeight / project.height) * 100) / 100
+        const heightRatio = Math.floor((initialMainHeight / project.height) * 100) / 100
         // if ratio less than 1 image is taller than editor and height ratio is intial scale 0 - 1
         // if ratio greater than 1 image is shorter than editor and set scale to 1 or actual size
         const initialScale = heightRatio < 1 ? heightRatio : 1
@@ -194,7 +195,8 @@ export default function Editor() {
         setOriginalPaths(project.frames.map(el => el.path))
         setTotalDuration(totalDuration)
         setAverageDuration(averageDuration)
-        setDrawerHeight(drawerHeight)
+        setMainHeight(initialMainHeight)
+        setDrawerHeight(initialDrawerHeight)
         setThumbWidth(tWidth)
         setThumbHeight(tHeight)
         // store all other projects as recent projects
@@ -344,6 +346,20 @@ export default function Editor() {
   ])
 
   useEffect(() => {
+    var sub
+    if (showToolbar) {
+      sub = 120
+    } else {
+      sub = 25
+    }
+    const initialMainHeight = container.current.clientHeight - sub - thumbHeight - 40 - 20
+    const initialDrawerHeight = initialMainHeight - 40 - 50
+    setMainHeight(initialMainHeight)
+    setDrawerHeight(initialDrawerHeight)
+  }, [showToolbar, thumbHeight])
+
+  // when drawer is closed set mode to empty string
+  useEffect(() => {
     if (!showDrawer) {
       setDrawerMode('')
     }
@@ -374,6 +390,7 @@ export default function Editor() {
 
   // listen for keypress events
   useEffect(() => {
+    // listen for delete key
     function onKeyDown({ keyCode }) {
       if (keyCode === 46) {
         onFrameDeleteClick('selection')
@@ -415,7 +432,7 @@ export default function Editor() {
       if (filepath) {
         setLoading(true)
         const gifProcessor = options.get('gifProcessor')
-        // user can chose encoder or ffmpeg to create GIF
+        // user can chose javascript encoder or ffmpeg to create GIF
         if (gifProcessor === 'ffmpeg') {
           const ffmpegPath = options.get('ffmpegPath')
           const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
@@ -557,7 +574,7 @@ export default function Editor() {
     }
   }
 
-  // open drawer
+  // open drawer, adjust scale, side effects, and assign mode
   function onOpenDrawer(mode) {
     if (!gifData) {
       return
@@ -655,16 +672,16 @@ export default function Editor() {
             tWidth = 100 * imageRatio
             tHeight = 100
           }
-          const mainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
-          main.current.style.height = mainHeight + 'px'
-          const drawerHeight = mainHeight - 40 - 50
-          const heightRatio = Math.floor((mainHeight / newHeight) * 100) / 100
+          const initialMainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
+          const initialDrawerHeight = initialMainHeight - 40 - 50
+          const heightRatio = Math.floor((initialMainHeight / newHeight) * 100) / 100
           const initialScale = heightRatio < 1 ? heightRatio : 1
           setScale(initialScale)
           setZoomToFit(initialScale)
           setThumbWidth(tWidth)
           setThumbHeight(tHeight)
-          setDrawerHeight(drawerHeight)
+          setMainHeight(initialMainHeight)
+          setDrawerHeight(initialDrawerHeight)
           resolve()
         })
       })
@@ -735,16 +752,16 @@ export default function Editor() {
             tWidth = 100 * imageRatio
             tHeight = 100
           }
-          const mainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
-          main.current.style.height = mainHeight + 'px'
-          const drawerHeight = mainHeight - 40 - 50
-          const heightRatio = Math.floor((mainHeight / cropHeight) * 100) / 100
+          const initialMainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
+          const initialDrawerHeight = initialMainHeight - 40 - 50
+          const heightRatio = Math.floor((initialMainHeight / cropHeight) * 100) / 100
           const initialScale = heightRatio < 1 ? heightRatio : 1
           setScale(initialScale)
           setZoomToFit(initialScale)
           setThumbWidth(tWidth)
           setThumbHeight(tHeight)
-          setDrawerHeight(drawerHeight)
+          setMainHeight(initialMainHeight)
+          setDrawerHeight(initialDrawerHeight)
           resolve()
         })
       })
@@ -1121,6 +1138,7 @@ export default function Editor() {
   return (
     <Container ref={container}>
       <Toolbar
+        showToolbar={showToolbar}
         totalFrames={images.length}
         totalDuration={totalDuration}
         averageDuration={averageDuration}
@@ -1128,6 +1146,7 @@ export default function Editor() {
         scale={scale}
         zoomToFit={zoomToFit}
         playing={playing}
+        setShowToolbar={setShowToolbar}
         setScale={setScale}
         onOpenDrawer={onOpenDrawer}
         onNewRecordingClick={onNewRecordingClick}
@@ -1140,7 +1159,9 @@ export default function Editor() {
       />
       <Main
         ref={main}
-        shift={showDrawer}
+        height={mainHeight}
+        shiftUp={showToolbar}
+        shiftLeft={showDrawer}
         color={options.get('checkerColor')}
         size={options.get('checkerSize')}
       >
@@ -1191,7 +1212,7 @@ export default function Editor() {
         setScale={setScale}
         onPlaybackClick={onPlaybackClick}
       />
-      <Drawer show={showDrawer} thumbHeight={thumbHeight}>
+      <Drawer show={showDrawer} shiftUp={showToolbar} thumbHeight={thumbHeight}>
         {drawerMode === 'recent' ? (
           <RecentProjects
             drawerHeight={drawerHeight}
