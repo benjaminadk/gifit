@@ -10,7 +10,7 @@ import { promisify } from 'util'
 import createFolderName from '../../lib/createFolderName'
 import { AppContext } from '../App'
 import SelectOverlay from './SelectOverlay'
-import { Container, Toolbar, Option, Rectangle, Confirm, Countdown } from './styles'
+import { Container, Toolbar, Option, Confirm, Countdown } from './styles'
 import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
 import config from 'common/config'
 

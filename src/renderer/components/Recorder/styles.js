@@ -17,7 +17,6 @@ export const Container = styled.div`
   display: grid;
   justify-items: center;
   align-items: flex-start;
-  /* background: ${p => (p.transparent ? 'transparent' : 'rgba(0, 0, 0, 0.25)')}; */
   cursor: ${p => (p.crosshair ? 'crosshair' : p.noCursor ? 'none' : 'normal')};
 `
 
@@ -50,20 +49,6 @@ export const Option = styled.div`
     width: 20px;
     height: 20px;
   }
-`
-
-export const Rectangle = styled.div.attrs(p => ({
-  style: {
-    top: p.top + 'px',
-    left: p.left + 'px',
-    width: p.width + 'px',
-    height: p.height + 'px',
-    display: p.show ? 'block' : 'none',
-    border: p.width || p.height ? `2px solid ${p.theme.primary}` : 0
-  }
-}))`
-  position: absolute;
-  background: rgba(255, 255, 255, 0.1);
 `
 
 export const Confirm = styled.div.attrs(p => ({
