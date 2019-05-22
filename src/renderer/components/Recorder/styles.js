@@ -17,7 +17,7 @@ export const Container = styled.div`
   display: grid;
   justify-items: center;
   align-items: flex-start;
-  background: ${p => (p.transparent ? 'transparent' : 'rgba(0, 0, 0, 0.25)')};
+  /* background: ${p => (p.transparent ? 'transparent' : 'rgba(0, 0, 0, 0.25)')}; */
   cursor: ${p => (p.crosshair ? 'crosshair' : p.noCursor ? 'none' : 'normal')};
 `
 
@@ -74,6 +74,7 @@ export const Confirm = styled.div.attrs(p => ({
   }
 }))`
   position: absolute;
+  z-index: 3;
   width: 150px;
   height: 50px;
   grid-template-columns: repeat(3, 50px);

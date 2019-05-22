@@ -9,6 +9,7 @@ import { writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
 import createFolderName from '../../lib/createFolderName'
 import { AppContext } from '../App'
+import SelectOverlay from './SelectOverlay'
 import { Container, Toolbar, Option, Rectangle, Confirm, Countdown } from './styles'
 import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
 import config from 'common/config'
@@ -32,18 +33,15 @@ export default function Recorder() {
   const sourceIndex = options.get('sourceIndex')
 
   const source = sources[sourceIndex]
+  const { width: screenWidth, height: screenHeight } = source.display.bounds
 
   const [mode, setMode] = useState(0)
-
   const [done, setDone] = useState(false)
   const [drawing, setDrawing] = useState(false)
-  const [startX, setStartX] = useState(null)
-  const [startY, setStartY] = useState(null)
-  const [top, setTop] = useState(null)
-  const [left, setLeft] = useState(null)
-  const [width, setWidth] = useState(0)
-  const [height, setHeight] = useState(0)
-
+  const [selectWidth, setSelectWidth] = useState(0)
+  const [selectHeight, setSelectHeight] = useState(0)
+  const [selectX, setSelectX] = useState(0)
+  const [selectY, setSelectY] = useState(0)
   const [time, setTime] = useState(countdownTime)
 
   const clicked = useRef(false)
@@ -71,30 +69,30 @@ export default function Recorder() {
       remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
     }
     // capture full screen stream
-    const { width: w, height: h } = source.display.bounds
+
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
         mandatory: {
           chromeMediaSource: 'desktop',
           chromeMediaSourceId: source.id,
-          minWidth: w,
-          maxWidth: w,
-          minHeight: h,
-          maxHeight: h
+          minWidth: screenWidth,
+          maxWidth: screenWidth,
+          minHeight: screenHeight,
+          maxHeight: screenHeight
         }
       }
     })
     // create full screen size canvas
     const canvas1 = document.createElement('canvas')
     const ctx1 = canvas1.getContext('2d')
-    canvas1.width = w
-    canvas1.height = h
+    canvas1.width = screenWidth
+    canvas1.height = screenHeight
     // create selection size canvas
     const canvas2 = document.createElement('canvas')
     const ctx2 = canvas2.getContext('2d')
-    canvas2.width = width
-    canvas2.height = height
+    canvas2.width = selectWidth
+    canvas2.height = selectHeight
     // create video element to play stream on
     const video = document.createElement('video')
     video.style.cssText = VIDEO_CSS
@@ -113,12 +111,22 @@ export default function Recorder() {
     const captureFrame = setInterval(() => {
       var frame
       // draw full screen image
-      ctx1.clearRect(0, 0, w, h)
-      ctx1.drawImage(video, 0, 0, w, h)
+      ctx1.clearRect(0, 0, screenWidth, screenHeight)
+      ctx1.drawImage(video, 0, 0, screenWidth, screenHeight)
       // if cropped redraw selection on second canvas
       if (cropped) {
-        ctx2.clearRect(0, 0, width, height)
-        ctx2.drawImage(canvas1, startX, startY, width, height, 0, 0, width, height)
+        ctx2.clearRect(0, 0, selectWidth, selectHeight)
+        ctx2.drawImage(
+          canvas1,
+          selectX,
+          selectY,
+          selectWidth,
+          selectHeight,
+          0,
+          0,
+          selectWidth,
+          selectHeight
+        )
         // get raw data from canvas2
         frame = canvas2.toDataURL(IMAGE_TYPE)
       } else {
@@ -177,8 +185,8 @@ export default function Recorder() {
       const project = {
         relative: folder,
         date: new Date().getTime(),
-        width: cropped ? width : w,
-        height: cropped ? height : h,
+        width: cropped ? selectWidth : screenWidth,
+        height: cropped ? selectHeight : screenHeight,
         frameRate,
         frames: data
       }
@@ -197,10 +205,8 @@ export default function Recorder() {
   function onMouseDown(e) {
     if (!done && mode === 1) {
       setDrawing(true)
-      setStartX(e.pageX)
-      setStartY(e.pageY)
-      setTop(e.pageX)
-      setLeft(e.pageY)
+      setSelectX(e.pageX)
+      setSelectY(e.pageY)
     }
   }
   // end selection drawing
@@ -213,22 +219,20 @@ export default function Recorder() {
   // selection drawing
   function onMouseMove(e) {
     if (!done && drawing) {
-      setTop(e.pageY - startY < 0 ? e.pageY : startY)
-      setLeft(e.pageX - startX < 0 ? e.pageX : startX)
-      setWidth(Math.abs(e.pageX - startX))
-      setHeight(Math.abs(e.pageY - startY))
+      setSelectY(e.pageY - selectY < 0 ? e.pageY : selectY)
+      setSelectX(e.pageX - selectX < 0 ? e.pageX : selectX)
+      setSelectWidth(Math.abs(e.pageX - selectX))
+      setSelectHeight(Math.abs(e.pageY - selectY))
     }
   }
   // reset state
   function onRedoClick() {
     setDone(false)
     setDrawing(false)
-    setStartX(null)
-    setStartY(null)
-    setTop(null)
-    setLeft(null)
-    setWidth(0)
-    setHeight(0)
+    setSelectWidth(0)
+    setSelectHeight(0)
+    setSelectX(0)
+    setSelectY(0)
   }
   // cancel selection
   function onCancelClick() {
@@ -256,8 +260,25 @@ export default function Recorder() {
           <Close />
         </Option>
       </Toolbar>
-      <Rectangle show={mode === 1} top={top} left={left} width={width} height={height} />
-      <Confirm show={mode === 1 && done} top={top + height + 5} left={left + width / 2 - 50}>
+      <SelectOverlay
+        show={mode === 1}
+        showHandles={mode === 1 && done}
+        screenWidth={screenWidth}
+        screenHeight={screenHeight}
+        selectWidth={selectWidth}
+        selectHeight={selectHeight}
+        selectX={selectX}
+        selectY={selectY}
+        setSelectWidth={setSelectWidth}
+        setSelectHeight={setSelectHeight}
+        setSelectX={setSelectX}
+        setSelectY={setSelectY}
+      />
+      <Confirm
+        show={mode === 1 && done}
+        top={selectHeight + selectY + 5}
+        left={selectWidth + selectX / 2 - 50}
+      >
         <Option onClick={() => onRecordStart(true)}>
           <Check />
         </Option>

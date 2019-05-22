@@ -47,7 +47,7 @@ const initialState = {
   fontOptions: null,
   sources: null,
   videoInputs: null,
-  mode: 1,
+  mode: 0,
   projectFolder: '2019-05-21@13-01-16'
 }
 
