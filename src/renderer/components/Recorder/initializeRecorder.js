@@ -43,13 +43,13 @@ export default (state, dispatch) => {
     y,
     transparent: true,
     frame: false,
-    // alwaysOnTop: true,
+    alwaysOnTop: true,
     webPreferences: { nodeIntegration: true }
   })
 
   recorderWindow.loadURL(getURL(inDev))
 
-  inDev && recorderWindow.webContents.openDevTools({ mode: 'detach' })
+  // inDev && recorderWindow.webContents.openDevTools({ mode: 'detach' })
 
   recorderWindow.on('close', () => {
     ipcRenderer.removeListener(RECORDER_STOP, onRecorderStop)

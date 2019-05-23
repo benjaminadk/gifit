@@ -13,11 +13,12 @@ import config from 'common/config'
 
 const {
   mainWindow,
-  appActions: { SET_APP_MODE }
+  appActions: { SET_APP_MODE, SET_OPTIONS_OPEN }
 } = config
 
 export default function Landing() {
   const { state, dispatch } = useContext(AppContext)
+  const { optionsOpen } = state
 
   useEffect(() => {
     const [width, height] = remote.getCurrentWindow().getSize()
@@ -28,7 +29,10 @@ export default function Landing() {
   }, [])
 
   function onOptionsClick() {
-    initializeOptions(remote.getCurrentWindow(), dispatch)
+    if (!optionsOpen) {
+      dispatch({ type: SET_OPTIONS_OPEN, payload: true })
+      initializeOptions(remote.getCurrentWindow(), dispatch)
+    }
   }
 
   function onRecordingClick() {

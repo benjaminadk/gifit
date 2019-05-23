@@ -22,6 +22,7 @@ export const Container = styled.div`
   display: grid;
   justify-items: center;
   align-items: flex-start;
+  background: ${p => (p.darken ? 'rgba(0, 0, 0, .5)' : 'transparent')};
   cursor: ${p => (p.crosshair ? 'crosshair' : p.noCursor ? 'none' : 'normal')};
 `
 
@@ -75,8 +76,11 @@ export const Countdown = styled.div`
   justify-self: center;
   align-self: center;
   display: ${p => (p.show ? 'block' : 'none')};
-  font-size: 4rem;
-  color: #fff;
+  font-size: 6rem;
+  font-weight: bold;
+  -webkit-text-fill-color: rgba(0, 0, 0, 0.5);
+  -webkit-text-stroke-width: 0.25px;
+  -webkit-text-stroke-color: #ffffff;
 `
 
 export const ZoomOverlay = styled.div.attrs(p => ({

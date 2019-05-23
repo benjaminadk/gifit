@@ -7,11 +7,11 @@ import config from 'common/config'
 const {
   inDev,
   ipcActions: { OPTIONS_UPDATE },
-  appActions: { SET_OPTIONS },
+  appActions: { SET_OPTIONS, SET_OPTIONS_OPEN },
   optionsWindow: { width, height }
 } = config
 
-export default (parent, dispatch, setOptionsOpen) => {
+export default (parent, dispatch) => {
   function onOptionsUpdate(e, options) {
     dispatch({ type: SET_OPTIONS, payload: Map(options) })
   }
@@ -40,8 +40,9 @@ export default (parent, dispatch, setOptionsOpen) => {
   ipcRenderer.on(OPTIONS_UPDATE, onOptionsUpdate)
 
   optionsWindow.on('close', () => {
-    setOptionsOpen(false)
+    dispatch({ type: SET_OPTIONS_OPEN, payload: false })
     ipcRenderer.removeListener(OPTIONS_UPDATE, onOptionsUpdate)
     optionsWindow = null
+    parent.focus()
   })
 }

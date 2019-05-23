@@ -50,7 +50,7 @@ const unlinkAsync = promisify(unlink)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, fontOptions, projectFolder } = state
+  const { options, optionsOpen, fontOptions, projectFolder } = state
 
   const [loading, setLoading] = useState(false)
   const [images, setImages] = useState([])
@@ -76,8 +76,6 @@ export default function Editor() {
   const [showDrawer, setShowDrawer] = useState(false)
   const [drawerMode, setDrawerMode] = useState('')
   const [drawerHeight, setDrawerHeight] = useState(0)
-
-  const [optionsOpen, setOptionsOpen] = useState(false)
 
   const [drawXY, setDrawXY] = useState(null)
   const [drawing, setDrawing] = useState(false)
@@ -1094,8 +1092,8 @@ export default function Editor() {
   // open options window
   function onOptionsClick() {
     if (!optionsOpen) {
-      setOptionsOpen(true)
-      initializeOptions(remote.getCurrentWindow(), dispatch, setOptionsOpen)
+      dispatch({ type: SET_OPTIONS_OPEN, payload: true })
+      initializeOptions(remote.getCurrentWindow(), dispatch)
     }
   }
 

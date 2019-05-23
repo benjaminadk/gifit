@@ -8,7 +8,8 @@ const {
     LOADING_END,
     SET_APP_MODE,
     SET_PROJECT_FOLDER,
-    SET_OPTIONS
+    SET_OPTIONS,
+    SET_OPTIONS_OPEN
   }
 } = config
 
@@ -34,6 +35,8 @@ function reducer(state, action) {
       return { ...state, projectFolder: action.payload }
     case SET_OPTIONS:
       return { ...state, options: action.payload }
+    case SET_OPTIONS_OPEN:
+      return { ...state, optionsOpen: action.payload }
     default:
       throw new Error()
   }
@@ -44,6 +47,7 @@ const initialState = {
   windowID: null,
   windowTitle: null,
   options: Map(),
+  optionsOpen: false,
   fontOptions: null,
   sources: null,
   videoInputs: null,

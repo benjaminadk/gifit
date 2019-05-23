@@ -153,20 +153,6 @@ export default function Recorder() {
     if (showCursor) {
       remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
     }
-    // capture full screen stream
-    // const stream = await navigator.mediaDevices.getUserMedia({
-    //   audio: false,
-    //   video: {
-    //     mandatory: {
-    //       chromeMediaSource: 'desktop',
-    //       chromeMediaSourceId: source.id,
-    //       minWidth: screenWidth,
-    //       maxWidth: screenWidth,
-    //       minHeight: screenHeight,
-    //       maxHeight: screenHeight
-    //     }
-    //   }
-    // })
     // create full screen size canvas
     const canvas1 = document.createElement('canvas')
     const ctx1 = canvas1.getContext('2d')
@@ -329,7 +315,7 @@ export default function Recorder() {
 
   return (
     <Container
-      transparent={[1, 3].includes(mode)}
+      darken={mode === 2}
       crosshair={mode === 1 && !done}
       noCursor={mode === 3 && !showCursor}
       onMouseDown={onMouseDown}
