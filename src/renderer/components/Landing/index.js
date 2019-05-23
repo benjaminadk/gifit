@@ -1,7 +1,5 @@
 import React, { useEffect, useContext } from 'react'
 import { remote } from 'electron'
-import { Camera } from 'styled-icons/fa-solid/Camera'
-import { Image as ImageIcon } from 'styled-icons/material/Image'
 import { AppContext } from '../App'
 import initializeRecorder from '../Recorder/initializeRecorder'
 import initializeWebcam from '../Webcam/initializeWebcam'
@@ -61,15 +59,15 @@ export default function Landing() {
           <div>Recorder</div>
         </Action>
         <Action onClick={onWebcamClick}>
-          <Camera />
+          <Svg name='camera-new' />
           <div>Webcam</div>
         </Action>
         <Action>
-          <ImageIcon />
+          <Svg name='board-new' />
           <div>Board</div>
         </Action>
         <Action onClick={onEditorClick}>
-          <ImageIcon />
+          <Svg name='editor' />
           <div>Editor</div>
         </Action>
       </div>

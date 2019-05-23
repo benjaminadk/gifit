@@ -26,6 +26,7 @@ export const Bottom = styled.div`
   display: grid;
   grid-template-columns: 30px 60px 1fr 30px 30px;
   align-items: center;
+  cursor: auto !important;
   svg {
     justify-self: center;
     width: 25px;
@@ -57,7 +58,7 @@ export default function Controls({ show, controlsX, controlsY, setControlsX, set
       enableResizing={false}
     >
       <Top>
-        <div className='text'>GifIt Screen Recorder</div>
+        <div className='text'>GifIt</div>
         <Close />
       </Top>
       <Bottom>
