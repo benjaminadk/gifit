@@ -9,6 +9,7 @@ import { writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
 import createFolderName from '../../lib/createFolderName'
 import { AppContext } from '../App'
+import Controls from './Controls'
 import SelectOverlay from './SelectOverlay'
 import { Container, Toolbar, Option, Confirm, Countdown, ZoomOverlay } from './styles'
 import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
@@ -39,6 +40,9 @@ export default function Recorder() {
   const [mode, setMode] = useState(0)
   const [stream, setStream] = useState(null)
 
+  const [controlsX, setControlsX] = useState(screenWidth / 2)
+  const [controlsY, setControlsY] = useState(screenHeight / 2)
+
   const [done, setDone] = useState(false)
   const [drawing, setDrawing] = useState(false)
   const [selectWidth, setSelectWidth] = useState(0)
@@ -62,6 +66,7 @@ export default function Recorder() {
 
   useEffect(() => {
     async function initialize() {
+      // capture desktop stream
       const desktopStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
@@ -75,32 +80,34 @@ export default function Recorder() {
           }
         }
       })
-
+      // create helper elements
       const canvas1 = document.createElement('canvas')
       const canvas2 = document.createElement('canvas')
       const ctx1 = canvas1.getContext('2d')
       const ctx2 = canvas2.getContext('2d')
       canvas1.width = screenWidth
       canvas1.height = screenHeight
-
       const video = document.createElement('video')
       video.style.cssText = VIDEO_CSS
-
+      // triggers zoom overlay config
       video.onloadedmetadata = async () => {
         video.play()
-
+        // pause .5s before taking snapshot
         await new Promise(resolve => {
-          setTimeout(() => resolve(), 1000)
+          setTimeout(() => resolve(), 500)
         })
-
+        // draw desktop to full screen canvas
         ctx1.drawImage(video, 0, 0, screenWidth, screenHeight)
         zoomCanvas1.current = canvas1
         zoomCtx1.current = ctx1
+        // intermediate canvas to help with zoom effect
         zoomCanvas2.current = canvas2
         zoomCtx2.current = ctx2
+        // actual zoom overlay magnified 10x
         zoomCtx3.current = zoomCanvas3.current.getContext('2d')
         zoomCtx3.current.scale(10, 10)
         zoomCtx3.current.imageSmoothingEnabled = false
+        // draw green crosshair on zoom canvas
         const zoomCtx4 = zoomCanvas4.current.getContext('2d')
         zoomCtx4.strokeStyle = '#00FF0080'
         zoomCtx4.beginPath()
@@ -117,8 +124,12 @@ export default function Recorder() {
       setStream(desktopStream)
     }
     initialize()
-  }, [])
 
+    return () => {
+      desktopStream.getTracks().forEach(el => el.stop())
+    }
+  }, [])
+  // when cursor position changes redraw zoom overlay
   useEffect(() => {
     if (mode === 1 && zoomCanvas3.current) {
       const x = zoomX - zoomSize / 20
@@ -128,7 +139,7 @@ export default function Recorder() {
       zoomCtx3.current.drawImage(zoomCanvas2.current, 0, 0)
     }
   }, [mode, zoomX, zoomY])
-
+  // start recording
   async function onRecordStart(cropped) {
     setMode(2)
     // if useCountdown display countdown in ui
@@ -144,6 +155,7 @@ export default function Recorder() {
         }, countdownTime * 1000)
       } else {
         setMode(3)
+        // delay .5s to prevent blank frames
         setTimeout(() => {
           resolve()
         }, 500)
@@ -229,7 +241,6 @@ export default function Recorder() {
       clearTimeout(stopCapture)
       tray.destroy()
       remote.globalShortcut.unregister('Esc')
-      stream.getTracks().forEach(el => el.stop())
       // create directory for project
       const folder = createFolderName()
       const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
@@ -322,6 +333,13 @@ export default function Recorder() {
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
     >
+      <Controls
+        show={mode === 0}
+        controlsX={controlsX}
+        controlsY={controlsY}
+        setControlsX={setControlsX}
+        setControlsY={setControlsY}
+      />
       <Toolbar show={mode === 0}>
         <Option onClick={() => onRecordStart(false)}>
           <CropFree />

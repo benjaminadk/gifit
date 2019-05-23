@@ -18,16 +18,16 @@ export const Container = styled.div`
     .options {
       justify-self: flex-end;
       display: grid;
-      grid-template-columns: 20px 1fr;
+      grid-template-columns: 25px 1fr;
       align-items: center;
-      font-size: 1.4rem;
-      padding: 10px 5px;
+      font-size: 1.2rem;
+      padding: 5px;
       &:hover {
         background: ${p => lighten(0.4, p.theme.primary)};
       }
       svg {
-        width: 15px;
-        height: 15px;
+        width: 25px;
+        height: 25px;
       }
     }
   }

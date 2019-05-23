@@ -9,6 +9,8 @@ const optionsWindow = {
 }
 
 const recorder = {
+  controlsWidth: 250,
+  controlsHeight: 60,
   zoomSize: 130
 }
 

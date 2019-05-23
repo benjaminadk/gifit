@@ -1,13 +1,12 @@
 import React, { useEffect, useContext } from 'react'
 import { remote } from 'electron'
-import { Settings } from 'styled-icons/material/Settings'
-import { MediaRecord } from 'styled-icons/typicons/MediaRecord'
 import { Camera } from 'styled-icons/fa-solid/Camera'
 import { Image as ImageIcon } from 'styled-icons/material/Image'
 import { AppContext } from '../App'
 import initializeRecorder from '../Recorder/initializeRecorder'
 import initializeWebcam from '../Webcam/initializeWebcam'
 import initializeOptions from '../Options/initializeOptions'
+import Svg from '../Svg'
 import { Container, Action } from './styles'
 import config from 'common/config'
 
@@ -52,13 +51,13 @@ export default function Landing() {
       <div className='top'>
         <div className='title'>GifIt</div>
         <div className='options' onClick={onOptionsClick}>
-          <Settings />
+          <Svg name='settings' />
           <div>Options</div>
         </div>
       </div>
       <div className='bottom'>
         <Action onClick={onRecordingClick}>
-          <MediaRecord />
+          <Svg name='record-new' />
           <div>Recorder</div>
         </Action>
         <Action onClick={onWebcamClick}>
