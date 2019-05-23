@@ -13,7 +13,7 @@ let mainWindow
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    title: 'Gifit - Start Window',
+    title: 'Gifit - Start Up',
     icon: path.join(__static, 'icon.ico'),
     width,
     height,
