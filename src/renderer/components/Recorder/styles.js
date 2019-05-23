@@ -1,5 +1,10 @@
 import styled, { keyframes } from 'styled-components'
 import { lighten } from 'polished'
+import config from 'common/config'
+
+const {
+  recorder: { zoomSize }
+} = config
 
 const slideDown = keyframes`
   from {
@@ -72,4 +77,39 @@ export const Countdown = styled.div`
   display: ${p => (p.show ? 'block' : 'none')};
   font-size: 4rem;
   color: #fff;
+`
+
+export const ZoomOverlay = styled.div.attrs(p => ({
+  style: {
+    display: p.show ? 'grid' : 'none',
+    top: p.top + 'px',
+    left: p.left + 'px'
+  }
+}))`
+  position: absolute;
+  z-index: 3;
+  width: ${zoomSize}px;
+  height: ${zoomSize + 20}px;
+  grid-template-rows: 1fr 20px;
+  .wrapper {
+    position: relative;
+  }
+  .canvas1 {
+    position: absolute;
+    z-index: 4;
+  }
+  .canvas2 {
+    position: absolute;
+    z-index: 5;
+  }
+  .text {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    font-size: 1.2rem;
+    background: rgba(0, 0, 0, 0.5);
+    color: #ffffff;
+  }
 `

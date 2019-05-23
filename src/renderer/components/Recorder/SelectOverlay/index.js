@@ -1,6 +1,6 @@
 import React from 'react'
 import { Rnd } from 'react-rnd'
-import { Background } from './styles'
+import { Background, Dimensions } from './styles'
 
 const handleStyle = {
   width: 10,
@@ -30,6 +30,9 @@ export default function SelectionOverlay({
           style={{
             visibility: selectWidth && selectHeight ? 'visible' : 'hidden',
             zIndex: 2,
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
             border: '2px dashed grey'
           }}
           bounds='parent'
@@ -95,7 +98,11 @@ export default function SelectionOverlay({
               top: '-5px'
             }
           }}
-        />
+        >
+          <Dimensions show={selectWidth > 100 && selectHeight > 100}>
+            {selectWidth} x {selectHeight}
+          </Dimensions>
+        </Rnd>
         <Background top={0} left={0} width='full' height={selectY} />
         <Background top={selectY} left={0} width={selectX} height={selectHeight} />
         <Background

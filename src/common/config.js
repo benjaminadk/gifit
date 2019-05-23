@@ -8,6 +8,10 @@ const optionsWindow = {
   height: 500
 }
 
+const recorder = {
+  zoomSize: 130
+}
+
 const editor = {
   drawerWidth: 300,
   styleOptions: ['Normal', 'Italic', 'Bold'],
@@ -87,6 +91,7 @@ export default {
   inDev: process.env.NODE_ENV === 'development',
   mainWindow,
   optionsWindow,
+  recorder,
   editor,
   defaultOptions,
   theme,

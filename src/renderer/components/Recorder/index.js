@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react'
+import React, { useState, useContext, useRef, useEffect } from 'react'
 import { remote } from 'electron'
 import { CropFree } from 'styled-icons/material/CropFree'
 import { Crop } from 'styled-icons/material/Crop'
@@ -10,13 +10,14 @@ import { promisify } from 'util'
 import createFolderName from '../../lib/createFolderName'
 import { AppContext } from '../App'
 import SelectOverlay from './SelectOverlay'
-import { Container, Toolbar, Option, Confirm, Countdown } from './styles'
+import { Container, Toolbar, Option, Confirm, Countdown, ZoomOverlay } from './styles'
 import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
 import config from 'common/config'
 
 const {
   ipcActions: { RECORDER_CLOSE, RECORDER_STOP },
-  constants: { VIDEO_CSS, IMAGE_TYPE, IMAGE_REGEX, MAX_LENGTH }
+  constants: { VIDEO_CSS, IMAGE_TYPE, IMAGE_REGEX, MAX_LENGTH },
+  recorder: { zoomSize }
 } = config
 
 const mkdirAsync = promisify(mkdir)
@@ -36,15 +37,97 @@ export default function Recorder() {
   const { width: screenWidth, height: screenHeight } = source.display.bounds
 
   const [mode, setMode] = useState(0)
+  const [stream, setStream] = useState(null)
+
   const [done, setDone] = useState(false)
   const [drawing, setDrawing] = useState(false)
   const [selectWidth, setSelectWidth] = useState(0)
   const [selectHeight, setSelectHeight] = useState(0)
   const [selectX, setSelectX] = useState(0)
   const [selectY, setSelectY] = useState(0)
+
+  const [zoomX, setZoomX] = useState(0)
+  const [zoomY, setZoomY] = useState(0)
+
   const [time, setTime] = useState(countdownTime)
 
+  const zoomCanvas1 = useRef(null)
+  const zoomCanvas2 = useRef(null)
+  const zoomCanvas3 = useRef(null)
+  const zoomCanvas4 = useRef(null)
+  const zoomCtx1 = useRef(null)
+  const zoomCtx2 = useRef(null)
+  const zoomCtx3 = useRef(null)
   const clicked = useRef(false)
+
+  useEffect(() => {
+    async function initialize() {
+      const desktopStream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: source.id,
+            minWidth: screenWidth,
+            maxWidth: screenWidth,
+            minHeight: screenHeight,
+            maxHeight: screenHeight
+          }
+        }
+      })
+
+      const canvas1 = document.createElement('canvas')
+      const canvas2 = document.createElement('canvas')
+      const ctx1 = canvas1.getContext('2d')
+      const ctx2 = canvas2.getContext('2d')
+      canvas1.width = screenWidth
+      canvas1.height = screenHeight
+
+      const video = document.createElement('video')
+      video.style.cssText = VIDEO_CSS
+
+      video.onloadedmetadata = async () => {
+        video.play()
+
+        await new Promise(resolve => {
+          setTimeout(() => resolve(), 1000)
+        })
+
+        ctx1.drawImage(video, 0, 0, screenWidth, screenHeight)
+        zoomCanvas1.current = canvas1
+        zoomCtx1.current = ctx1
+        zoomCanvas2.current = canvas2
+        zoomCtx2.current = ctx2
+        zoomCtx3.current = zoomCanvas3.current.getContext('2d')
+        zoomCtx3.current.scale(10, 10)
+        zoomCtx3.current.imageSmoothingEnabled = false
+        const zoomCtx4 = zoomCanvas4.current.getContext('2d')
+        zoomCtx4.strokeStyle = '#00FF0080'
+        zoomCtx4.beginPath()
+        zoomCtx4.moveTo(zoomSize / 2, 0)
+        zoomCtx4.lineTo(zoomSize / 2, zoomSize)
+        zoomCtx4.moveTo(0, zoomSize / 2)
+        zoomCtx4.lineTo(zoomSize, zoomSize / 2)
+        zoomCtx4.stroke()
+        video.remove()
+      }
+
+      video.srcObject = desktopStream
+      document.body.appendChild(video)
+      setStream(desktopStream)
+    }
+    initialize()
+  }, [])
+
+  useEffect(() => {
+    if (mode === 1 && zoomCanvas3.current) {
+      const x = zoomX - zoomSize / 20
+      const y = zoomY - zoomSize / 20
+      const imageData = zoomCtx1.current.getImageData(x, y, zoomSize / 10, zoomSize / 10)
+      zoomCtx2.current.putImageData(imageData, 0, 0)
+      zoomCtx3.current.drawImage(zoomCanvas2.current, 0, 0)
+    }
+  }, [mode, zoomX, zoomY])
 
   async function onRecordStart(cropped) {
     setMode(2)
@@ -61,7 +144,9 @@ export default function Recorder() {
         }, countdownTime * 1000)
       } else {
         setMode(3)
-        resolve()
+        setTimeout(() => {
+          resolve()
+        }, 500)
       }
     })
     // if showCursor forward all mouse events through transparent window
@@ -69,20 +154,19 @@ export default function Recorder() {
       remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
     }
     // capture full screen stream
-
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        mandatory: {
-          chromeMediaSource: 'desktop',
-          chromeMediaSourceId: source.id,
-          minWidth: screenWidth,
-          maxWidth: screenWidth,
-          minHeight: screenHeight,
-          maxHeight: screenHeight
-        }
-      }
-    })
+    // const stream = await navigator.mediaDevices.getUserMedia({
+    //   audio: false,
+    //   video: {
+    //     mandatory: {
+    //       chromeMediaSource: 'desktop',
+    //       chromeMediaSourceId: source.id,
+    //       minWidth: screenWidth,
+    //       maxWidth: screenWidth,
+    //       minHeight: screenHeight,
+    //       maxHeight: screenHeight
+    //     }
+    //   }
+    // })
     // create full screen size canvas
     const canvas1 = document.createElement('canvas')
     const ctx1 = canvas1.getContext('2d')
@@ -218,6 +302,9 @@ export default function Recorder() {
   }
   // selection drawing
   function onMouseMove(e) {
+    setZoomX(e.pageX)
+    setZoomY(e.pageY)
+
     if (!done && drawing) {
       setSelectY(e.pageY - selectY < 0 ? e.pageY : selectY)
       setSelectX(e.pageX - selectX < 0 ? e.pageX : selectX)
@@ -260,6 +347,19 @@ export default function Recorder() {
           <Close />
         </Option>
       </Toolbar>
+      <ZoomOverlay
+        show={mode === 1 && !drawing && !done}
+        top={zoomY < zoomSize + 40 ? zoomY + 40 : zoomY - zoomSize - 40}
+        left={zoomX > screenWidth - zoomSize - 40 ? zoomX - zoomSize - 40 : zoomX + 40}
+      >
+        <div className='wrapper'>
+          <canvas ref={zoomCanvas3} className='canvas1' width={zoomSize} height={zoomSize} />
+          <canvas ref={zoomCanvas4} className='canvas2' width={zoomSize} height={zoomSize} />
+        </div>
+        <div className='text'>
+          X: {zoomX} {'\u25c7'} Y: {zoomY}
+        </div>
+      </ZoomOverlay>
       <SelectOverlay
         show={mode === 1}
         showHandles={mode === 1 && done}
@@ -277,7 +377,7 @@ export default function Recorder() {
       <Confirm
         show={mode === 1 && done}
         top={selectHeight + selectY + 5}
-        left={selectWidth + selectX / 2 - 50}
+        left={selectWidth / 2 + selectX - 70}
       >
         <Option onClick={() => onRecordStart(true)}>
           <Check />

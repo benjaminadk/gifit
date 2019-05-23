@@ -12,3 +12,11 @@ export const Background = styled.div.attrs(p => ({
   z-index: 1;
   background: rgba(0, 0, 0, 0.5);
 `
+
+export const Dimensions = styled.div`
+  display: ${p => (p.show ? 'inline' : 'none')};
+  background: rgba(255, 255, 255, 0.75);
+  color: #000000;
+  font-size: 2rem;
+  padding: 5px;
+`
