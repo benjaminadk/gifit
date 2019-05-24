@@ -1,21 +1,44 @@
-import React, { useRef, useEffect, useContext } from 'react'
+import React, { useRef, useEffect, useContext, useState } from 'react'
 import { Rnd } from 'react-rnd'
-import { Close } from 'styled-icons/material/Close'
+import { remote } from 'electron'
+import { writeFile } from 'fs'
+import { promisify } from 'util'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
 import { AppContext } from '../../App'
-import { Top, Bottom, FpsDisplay } from './styles'
+import { Top, Bottom, FpsDisplay, SourceSelect } from './styles'
+import { OPTIONS_PATH } from 'common/filepaths'
 import config from 'common/config'
 
+const writeFileAsync = promisify(writeFile)
+
 const {
+  ipcActions: { OPTIONS_UPDATE },
   appActions: { SET_OPTIONS },
   recorder: { controlsWidth, controlsHeight }
 } = config
 
-export default function Controls({ show, controlsX, controlsY, setControlsX, setControlsY }) {
+export default function Controls({
+  stop,
+  mode,
+  time,
+  count,
+  captureType,
+  controlsX,
+  controlsY,
+  setCaptureType,
+  setControlsX,
+  setControlsY,
+  setMode,
+  onRecordStart,
+  onCloseClick
+}) {
   const { state, dispatch } = useContext(AppContext)
   const { options } = state
+  const useCountdown = options.get('useCountdown')
   const frameRate = options.get('frameRate')
+
+  const [showSelect, setShowSelect] = useState(false)
 
   const canvas1 = useRef(null)
   const canvas2 = useRef(null)
@@ -50,19 +73,48 @@ export default function Controls({ show, controlsX, controlsY, setControlsX, set
     ctx2.fill()
   }, [frameRate])
 
+  useEffect(() => {
+    writeFileAsync(OPTIONS_PATH, JSON.stringify(options)).then(() => {
+      remote.BrowserWindow.fromId(1).webContents.send(OPTIONS_UPDATE, options.toObject())
+    })
+  }, [options])
+
+  useEffect(() => {
+    function onCloseSelect() {
+      window.removeEventListener('click', onCloseSelect)
+      setShowSelect(false)
+    }
+
+    if (showSelect) {
+      window.addEventListener('click', onCloseSelect)
+    }
+
+    return () => {
+      window.removeEventListener('click', onCloseSelect)
+    }
+  }, [showSelect])
+
   function onChangeFrameRate(x) {
     dispatch({ type: SET_OPTIONS, payload: options.set('frameRate', x) })
+  }
+
+  function onCaptureClick() {
+    if (captureType === 'screen') {
+      setMode(2)
+    } else if (captureType === 'crop') {
+      setMode(1)
+    }
   }
 
   return (
     <Rnd
       style={{
-        visibility: show ? 'visible' : 'hidden',
+        visibility: [0, 2, 4].includes(mode) || (mode === 3 && useCountdown) ? 'visible' : 'hidden',
         zIndex: 2,
         display: 'grid',
         gridTemplateRows: '30px 40px',
         background: '#FFFFFF',
-        outline: '1px solid lightgrey'
+        outline: '1px solid #CFCFCF'
       }}
       bounds='parent'
       size={{ width: controlsWidth, height: controlsHeight }}
@@ -74,11 +126,18 @@ export default function Controls({ show, controlsX, controlsY, setControlsX, set
       enableResizing={false}
     >
       <Top>
-        <div className='text'>GifIt</div>
-        <Close />
+        <div className='text'>
+          GifIt{' '}
+          {mode === 3 && useCountdown ? `(Prestart Recording ${time}s)` : mode === 4 ? count : ''}
+        </div>
+        <div className='close' onClick={onCloseClick}>
+          <Svg name='close' />
+        </div>
       </Top>
       <Bottom>
-        <Svg name='settings' />
+        <div className='button'>
+          <Svg name='settings' />
+        </div>
         <FpsDisplay>
           <canvas ref={canvas1} className='canvas1' width={40} height={40} />
           <canvas ref={canvas2} className='canvas2' width={40} height={40} />
@@ -93,9 +152,34 @@ export default function Controls({ show, controlsX, controlsY, setControlsX, set
           setter={onChangeFrameRate}
         />
         <div className='label'>fps</div>
-        <div />
-        <Svg name='record' />
-        <Svg name='stop' />
+        <div className='divider' />
+        <SourceSelect show={showSelect}>
+          <div className='selected'>
+            <div className='icon' onClick={onCaptureClick}>
+              <Svg name={captureType} />
+            </div>
+            <div className='arrow' onClick={() => setShowSelect(!showSelect)}>
+              {'\u2bc6'}
+            </div>
+          </div>
+          <div className='options'>
+            <div className='option' onClick={() => setCaptureType('crop')}>
+              <Svg name='crop' />
+              <div className='text'>Area</div>
+            </div>
+            <div className='option' onClick={() => setCaptureType('screen')}>
+              <Svg name='screen' />
+              <div className='text'>Screen</div>
+            </div>
+          </div>
+        </SourceSelect>
+        <div className='divider' />
+        <div className='button' onClick={onRecordStart}>
+          <Svg name='record' />
+        </div>
+        <div ref={stop} className='button'>
+          <Svg name='stop' />
+        </div>
       </Bottom>
     </Rnd>
   )

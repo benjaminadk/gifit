@@ -574,31 +574,34 @@ export default function Editor() {
 
   // open drawer, adjust scale, side effects, and assign mode
   function onOpenDrawer(mode) {
-    if (!gifData) {
-      return
-    }
-    if (mode === 'title') {
-      setScale(zoomToFit)
-    } else if (mode === 'border') {
-      setScale(1)
-    } else if (mode === 'progress') {
-      setScale(1)
-      setTimeout(() => {
-        var height
-        if (progressVertical === 'Bottom') {
-          height = main.current.scrollHeight
-        } else if (progressVertical === 'Center') {
-          height = main.current.scrollHeight / 2
-        }
-        main.current.scrollTop = height
-      }, 500)
-    } else if (mode === 'drawing') {
-      setScale(1)
-    } else if (mode === 'resize') {
-    } else if (mode === 'crop') {
-      setScale(1)
-      setCropWidth(gifData.width)
-      setCropHeight(gifData.height)
+    if (mode === 'recent') {
+    } else {
+      if (!gifData) {
+        return
+      }
+      if (mode === 'title') {
+        setScale(zoomToFit)
+      } else if (mode === 'border') {
+        setScale(1)
+      } else if (mode === 'progress') {
+        setScale(1)
+        setTimeout(() => {
+          var height
+          if (progressVertical === 'Bottom') {
+            height = main.current.scrollHeight
+          } else if (progressVertical === 'Center') {
+            height = main.current.scrollHeight / 2
+          }
+          main.current.scrollTop = height
+        }, 500)
+      } else if (mode === 'drawing') {
+        setScale(1)
+      } else if (mode === 'resize') {
+      } else if (mode === 'crop') {
+        setScale(1)
+        setCropWidth(gifData.width)
+        setCropHeight(gifData.height)
+      }
     }
     setDrawerMode(mode)
     setShowDrawer(true)

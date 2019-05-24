@@ -1,9 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from 'react'
 import { remote } from 'electron'
-import { CropFree } from 'styled-icons/material/CropFree'
-import { Crop } from 'styled-icons/material/Crop'
-import { Close } from 'styled-icons/material/Close'
-import { Check } from 'styled-icons/material/Check'
 import path from 'path'
 import { writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
@@ -11,14 +7,15 @@ import createFolderName from '../../lib/createFolderName'
 import { AppContext } from '../App'
 import Controls from './Controls'
 import SelectOverlay from './SelectOverlay'
-import { Container, Toolbar, Option, Confirm, Countdown, ZoomOverlay } from './styles'
+import Svg from '../Svg'
+import { Container, Confirm, Option, Outline, ZoomOverlay } from './styles'
 import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
 import config from 'common/config'
 
 const {
   ipcActions: { RECORDER_CLOSE, RECORDER_STOP },
   constants: { VIDEO_CSS, IMAGE_TYPE, IMAGE_REGEX, MAX_LENGTH },
-  recorder: { zoomSize }
+  recorder: { zoomSize, controlsWidth, controlsHeight }
 } = config
 
 const mkdirAsync = promisify(mkdir)
@@ -37,8 +34,11 @@ export default function Recorder() {
   const source = sources[sourceIndex]
   const { width: screenWidth, height: screenHeight } = source.display.bounds
 
+  // modes 0=initial 1=selection 2=confirmation 3=countdown 4=record crop 5=record full
   const [mode, setMode] = useState(0)
   const [stream, setStream] = useState(null)
+  const [captureType, setCaptureType] = useState('screen')
+  const [count, setCount] = useState(0)
 
   const [controlsX, setControlsX] = useState(screenWidth / 2)
   const [controlsY, setControlsY] = useState(screenHeight / 2)
@@ -63,6 +63,7 @@ export default function Recorder() {
   const zoomCtx2 = useRef(null)
   const zoomCtx3 = useRef(null)
   const clicked = useRef(false)
+  const stop = useRef(null)
 
   useEffect(() => {
     async function initialize() {
@@ -139,10 +140,12 @@ export default function Recorder() {
       zoomCtx3.current.drawImage(zoomCanvas2.current, 0, 0)
     }
   }, [mode, zoomX, zoomY])
+
   // start recording
-  async function onRecordStart(cropped) {
-    setMode(2)
-    // if useCountdown display countdown in ui
+  async function onRecordStart() {
+    if (mode !== 2) return
+    setMode(3)
+
     await new Promise(resolve => {
       if (useCountdown) {
         const countdown = setInterval(() => {
@@ -150,21 +153,17 @@ export default function Recorder() {
         }, 1000)
         setTimeout(() => {
           clearInterval(countdown)
-          setMode(3)
+          setMode(captureType === 'crop' ? 4 : 5)
           resolve()
         }, countdownTime * 1000)
       } else {
-        setMode(3)
+        setMode(captureType === 'crop' ? 4 : 5)
         // delay .5s to prevent blank frames
         setTimeout(() => {
           resolve()
         }, 500)
       }
     })
-    // if showCursor forward all mouse events through transparent window
-    if (showCursor) {
-      remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
-    }
     // create full screen size canvas
     const canvas1 = document.createElement('canvas')
     const ctx1 = canvas1.getContext('2d')
@@ -191,12 +190,13 @@ export default function Recorder() {
     var t1 = performance.now()
     // capture individual frames at configured frame rate per second
     const captureFrame = setInterval(() => {
+      setCount(x => x + 1)
       var frame
       // draw full screen image
       ctx1.clearRect(0, 0, screenWidth, screenHeight)
       ctx1.drawImage(video, 0, 0, screenWidth, screenHeight)
-      // if cropped redraw selection on second canvas
-      if (cropped) {
+      // if captureType==='crop' redraw selection on second canvas
+      if (captureType === 'crop') {
         ctx2.clearRect(0, 0, selectWidth, selectHeight)
         ctx2.drawImage(
           canvas1,
@@ -228,14 +228,15 @@ export default function Recorder() {
       isClicked.push(clicked.current)
     }, Math.round(1000 / frameRate))
     // automatically stop recording after max recording length
-    const stopCapture = setTimeout(() => onStopGifit(), MAX_LENGTH)
+    const stopCapture = setTimeout(() => onRecordStop(), MAX_LENGTH)
+    stop.current.onclick = () => onRecordStop()
     // register escape key as a way to stop recording
-    remote.globalShortcut.register('Esc', () => onStopGifit())
+    remote.globalShortcut.register('Esc', () => onRecordStop())
     // create tray icon that can also be used to stop recording
     const tray = new remote.Tray(RECORDING_ICON)
-    tray.on('click', () => onStopGifit())
+    tray.on('click', () => onRecordStop())
     // called to stop recording
-    async function onStopGifit() {
+    async function onRecordStop() {
       // clean up
       clearInterval(captureFrame)
       clearTimeout(stopCapture)
@@ -266,8 +267,8 @@ export default function Recorder() {
       const project = {
         relative: folder,
         date: new Date().getTime(),
-        width: cropped ? selectWidth : screenWidth,
-        height: cropped ? selectHeight : screenHeight,
+        width: captureType === 'crop' ? selectWidth : screenWidth,
+        height: captureType === 'crop' ? selectHeight : screenHeight,
         frameRate,
         frames: data
       }
@@ -299,8 +300,10 @@ export default function Recorder() {
   }
   // selection drawing
   function onMouseMove(e) {
-    setZoomX(e.pageX)
-    setZoomY(e.pageY)
+    if ([0, 1].includes(mode)) {
+      setZoomX(e.pageX)
+      setZoomY(e.pageY)
+    }
 
     if (!done && drawing) {
       setSelectY(e.pageY - selectY < 0 ? e.pageY : selectY)
@@ -309,8 +312,14 @@ export default function Recorder() {
       setSelectHeight(Math.abs(e.pageY - selectY))
     }
   }
-  // reset state
-  function onRedoClick() {
+  // accpet selection
+  function onAcceptClick() {
+    setControlsX(selectX + selectWidth / 2 - controlsWidth / 2)
+    setControlsY(selectY + selectHeight + 10)
+    setMode(2)
+  }
+  // reset selection state
+  function onRetryClick() {
     setDone(false)
     setDrawing(false)
     setSelectWidth(0)
@@ -318,39 +327,35 @@ export default function Recorder() {
     setSelectX(0)
     setSelectY(0)
   }
-  // cancel selection
+  // cancel selection mode
   function onCancelClick() {
-    onRedoClick()
+    onRetryClick()
     setMode(0)
   }
 
   return (
     <Container
-      darken={mode === 2}
       crosshair={mode === 1 && !done}
-      noCursor={mode === 3 && !showCursor}
+      noCursor={mode === 4 && !showCursor}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
     >
       <Controls
-        show={mode === 0}
+        stop={stop}
+        mode={mode}
+        time={time}
+        count={count}
+        captureType={captureType}
         controlsX={controlsX}
         controlsY={controlsY}
+        setCaptureType={setCaptureType}
         setControlsX={setControlsX}
         setControlsY={setControlsY}
+        setMode={setMode}
+        onRecordStart={onRecordStart}
+        onCloseClick={onCloseClick}
       />
-      <Toolbar show={mode === 0}>
-        <Option onClick={() => onRecordStart(false)}>
-          <CropFree />
-        </Option>
-        <Option onClick={() => setMode(1)}>
-          <Crop />
-        </Option>
-        <Option onClick={onCloseClick}>
-          <Close />
-        </Option>
-      </Toolbar>
       <ZoomOverlay
         show={mode === 1 && !drawing && !done}
         top={zoomY < zoomSize + 40 ? zoomY + 40 : zoomY - zoomSize - 40}
@@ -381,19 +386,28 @@ export default function Recorder() {
       <Confirm
         show={mode === 1 && done}
         top={selectHeight + selectY + 5}
-        left={selectWidth / 2 + selectX - 70}
+        left={selectWidth / 2 + selectX - 112.5}
       >
-        <Option onClick={() => onRecordStart(true)}>
-          <Check />
-        </Option>
-        <Option onClick={onRedoClick}>
-          <Crop />
-        </Option>
         <Option onClick={onCancelClick}>
-          <Close />
+          <Svg name='cancel' />
+          <div className='text'>Cancel</div>
+        </Option>
+        <Option onClick={onRetryClick}>
+          <Svg name='refresh' />
+          <div className='text'>Retry</div>
+        </Option>
+        <Option onClick={onAcceptClick}>
+          <Svg name='check' />
+          <div className='text'>Accept</div>
         </Option>
       </Confirm>
-      <Countdown show={mode === 2 && useCountdown}>Start recording in {time} seconds...</Countdown>
+      <Outline
+        show={mode === 2}
+        top={captureType === 'screen' ? 2 : selectY}
+        left={captureType === 'screen' ? 2 : selectX}
+        width={captureType === 'screen' ? screenWidth - 4 : selectWidth}
+        height={captureType === 'screen' ? screenHeight - 34 : selectHeight}
+      />
     </Container>
   )
 }
