@@ -37,7 +37,7 @@ import config from 'common/config'
 
 const {
   mainWindow,
-  appActions: { SET_APP_MODE, SET_PROJECT_FOLDER },
+  appActions: { SET_APP_MODE, SET_PROJECT_FOLDER, SET_OPTIONS_OPEN },
   constants: { IMAGE_TYPE }
 } = config
 

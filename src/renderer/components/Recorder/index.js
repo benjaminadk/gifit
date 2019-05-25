@@ -1,5 +1,6 @@
 import React, { useState, useContext, useRef, useEffect } from 'react'
 import { remote } from 'electron'
+import { List } from 'immutable'
 import path from 'path'
 import { writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
@@ -9,7 +10,7 @@ import Controls from './Controls'
 import SelectOverlay from './SelectOverlay'
 import Svg from '../Svg'
 import { Container, Confirm, Option, Outline, ZoomOverlay } from './styles'
-import { RECORDINGS_DIRECTORY, RECORDING_ICON } from 'common/filepaths'
+import { RECORDINGS_DIRECTORY, RECORDING_ICON, PAUSED_ICON } from 'common/filepaths'
 import config from 'common/config'
 
 const {
@@ -34,11 +35,25 @@ export default function Recorder() {
   const source = sources[sourceIndex]
   const { width: screenWidth, height: screenHeight } = source.display.bounds
 
-  // modes 0=initial 1=selection 2=confirmation 3=countdown 4=record crop 5=record full
+  // modes 0=initial 1=selection 2=confirmation 3=countdown 4=record crop 5=record full 6=paused
   const [mode, setMode] = useState(0)
   const [stream, setStream] = useState(null)
   const [captureType, setCaptureType] = useState('screen')
   const [count, setCount] = useState(0)
+
+  const [frames, setFrames] = useState(List([]))
+  const [times, setTimes] = useState(List([]))
+  const [xCursors, setXCursors] = useState(List([]))
+  const [yCursors, setYCursors] = useState(List([]))
+  const canvas1ID = useRef(null)
+  const ctx1ID = useRef(null)
+  const canvas2ID = useRef(null)
+  const ctx2ID = useRef(null)
+  const videoID = useRef(null)
+  const captureID = useRef(null)
+  const limitID = useRef(null)
+  const trayID = useRef(null)
+  const t1 = useRef(null)
 
   const [controlsX, setControlsX] = useState(screenWidth / 2)
   const [controlsY, setControlsY] = useState(screenHeight / 2)
@@ -62,8 +77,6 @@ export default function Recorder() {
   const zoomCtx1 = useRef(null)
   const zoomCtx2 = useRef(null)
   const zoomCtx3 = useRef(null)
-  const clicked = useRef(false)
-  const stop = useRef(null)
 
   useEffect(() => {
     async function initialize() {
@@ -141,9 +154,11 @@ export default function Recorder() {
     }
   }, [mode, zoomX, zoomY])
 
-  // start recording
   async function onRecordStart() {
-    if (mode !== 2) return
+    if (mode !== 2) {
+      return
+    }
+
     setMode(3)
 
     await new Promise(resolve => {
@@ -158,127 +173,138 @@ export default function Recorder() {
         }, countdownTime * 1000)
       } else {
         setMode(captureType === 'crop' ? 4 : 5)
-        // delay .5s to prevent blank frames
-        setTimeout(() => {
-          resolve()
-        }, 500)
+        resolve()
       }
     })
-    // create full screen size canvas
+
+    await new Promise(resolve => {
+      setTimeout(() => {
+        resolve()
+      }, 500)
+    })
+
     const canvas1 = document.createElement('canvas')
     const ctx1 = canvas1.getContext('2d')
     canvas1.width = screenWidth
     canvas1.height = screenHeight
-    // create selection size canvas
+    canvas1ID.current = canvas1
+    ctx1ID.current = ctx1
+
     const canvas2 = document.createElement('canvas')
     const ctx2 = canvas2.getContext('2d')
     canvas2.width = selectWidth
     canvas2.height = selectHeight
-    // create video element to play stream on
+    canvas2ID.current = canvas2
+    ctx2ID.current = ctx2
+
     const video = document.createElement('video')
     video.style.cssText = VIDEO_CSS
     video.srcObject = stream
     document.body.appendChild(video)
     video.onloadedmetadata = e => video.play()
-    // create data structures for frame, time and mouse data
-    const frames = []
-    const times = []
-    const xPos = []
-    const yPos = []
-    const isClicked = []
-    // record time and recording start
-    var t1 = performance.now()
-    // capture individual frames at configured frame rate per second
-    const captureFrame = setInterval(() => {
-      setCount(x => x + 1)
-      var frame
-      // draw full screen image
-      ctx1.clearRect(0, 0, screenWidth, screenHeight)
-      ctx1.drawImage(video, 0, 0, screenWidth, screenHeight)
-      // if captureType==='crop' redraw selection on second canvas
-      if (captureType === 'crop') {
-        ctx2.clearRect(0, 0, selectWidth, selectHeight)
-        ctx2.drawImage(
-          canvas1,
-          selectX,
-          selectY,
-          selectWidth,
-          selectHeight,
-          0,
-          0,
-          selectWidth,
-          selectHeight
-        )
-        // get raw data from canvas2
-        frame = canvas2.toDataURL(IMAGE_TYPE)
-      } else {
-        // or get raw data from full screen canvas
-        frame = canvas1.toDataURL(IMAGE_TYPE)
-      }
-      frames.push(frame)
-      // calculate elapsed time between frames
-      const t2 = performance.now()
-      const diff = Math.round(t2 - t1)
-      t1 = t2
-      times.push(diff)
-      // get x and y coordinates of mouse
-      const { x, y } = remote.screen.getCursorScreenPoint()
-      xPos.push(x)
-      yPos.push(y)
-      isClicked.push(clicked.current)
-    }, Math.round(1000 / frameRate))
-    // automatically stop recording after max recording length
-    const stopCapture = setTimeout(() => onRecordStop(), MAX_LENGTH)
-    stop.current.onclick = () => onRecordStop()
-    // register escape key as a way to stop recording
-    remote.globalShortcut.register('Esc', () => onRecordStop())
-    // create tray icon that can also be used to stop recording
-    const tray = new remote.Tray(RECORDING_ICON)
+    videoID.current = video
+
+    t1.current = performance.now()
+
+    captureID.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+
+    var tray = new remote.Tray(RECORDING_ICON)
     tray.on('click', () => onRecordStop())
-    // called to stop recording
-    async function onRecordStop() {
-      // clean up
-      clearInterval(captureFrame)
-      clearTimeout(stopCapture)
-      tray.destroy()
-      remote.globalShortcut.unregister('Esc')
-      // create directory for project
-      const folder = createFolderName()
-      const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
-      await mkdirAsync(folderPath)
-      const data = []
-      // create data object for each frame
-      // save each frame as a png file
-      for (const [i, frame] of frames.entries()) {
-        const filepath = path.join(folderPath, `${i}.png`)
-        data.push({
-          path: filepath,
-          time: times[i],
-          cursorX: xPos[i],
-          cursorY: yPos[i],
-          clicked: isClicked[i]
-        })
-        const base64Data = frame.replace(IMAGE_REGEX, '')
-        await writeFileAsync(filepath, base64Data, {
-          encoding: 'base64'
-        })
-      }
-      // create project.json file with all relevant data
-      const project = {
-        relative: folder,
-        date: new Date().getTime(),
-        width: captureType === 'crop' ? selectWidth : screenWidth,
-        height: captureType === 'crop' ? selectHeight : screenHeight,
-        frameRate,
-        frames: data
-      }
-      await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
-      // send message to main process and close window
-      remote.BrowserWindow.fromId(1).webContents.send(RECORDER_STOP, folder)
-      remote.getCurrentWindow().close()
-    }
+    trayID.current = tray
+
+    remote.globalShortcut.register('Esc', () => onRecordStop())
   }
-  // exit out without recording
+
+  function onCaptureFrame() {
+    setCount(cur => cur + 1)
+    var frame
+    // draw full screen image
+    ctx1ID.current.clearRect(0, 0, screenWidth, screenHeight)
+    ctx1ID.current.drawImage(videoID.current, 0, 0, screenWidth, screenHeight)
+    // if captureType==='crop' redraw selection on second canvas
+    if (captureType === 'crop') {
+      ctx2ID.current.clearRect(0, 0, selectWidth, selectHeight)
+      ctx2ID.current.drawImage(
+        canvas1ID.current,
+        selectX,
+        selectY,
+        selectWidth,
+        selectHeight,
+        0,
+        0,
+        selectWidth,
+        selectHeight
+      )
+      frame = canvas2ID.current.toDataURL(IMAGE_TYPE)
+    } else {
+      frame = canvas1ID.current.toDataURL(IMAGE_TYPE)
+    }
+    setFrames(cur => cur.push(frame))
+
+    const t2 = performance.now()
+    const diff = Math.round(t2 - t1.current)
+    t1.current = t2
+    setTimes(cur => cur.push(diff))
+
+    const { x, y } = remote.screen.getCursorScreenPoint()
+    setXCursors(cur => cur.push(x))
+    setYCursors(cur => cur.push(y))
+  }
+
+  async function onRecordStop() {
+    if (![4, 5].includes(mode)) {
+      return
+    }
+
+    clearInterval(captureID.current)
+    trayID.current.destroy()
+
+    const folder = createFolderName()
+    const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
+    await mkdirAsync(folderPath)
+    const data = []
+
+    for (const [i, frame] of frames.toArray().entries()) {
+      const filepath = path.join(folderPath, `${i}.png`)
+      data.push({
+        path: filepath,
+        time: times.get(i),
+        cursorX: xCursors.get(i),
+        cursorY: yCursors.get(i)
+      })
+      const base64Data = frame.replace(IMAGE_REGEX, '')
+      await writeFileAsync(filepath, base64Data, {
+        encoding: 'base64'
+      })
+    }
+    // create project.json file with all relevant data
+    const project = {
+      relative: folder,
+      date: new Date().getTime(),
+      width: captureType === 'crop' ? selectWidth : screenWidth,
+      height: captureType === 'crop' ? selectHeight : screenHeight,
+      frameRate,
+      frames: data
+    }
+    await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
+    // send message to main process and close window
+    remote.BrowserWindow.fromId(1).webContents.send(RECORDER_STOP, folder)
+    remote.getCurrentWindow().close()
+  }
+
+  function onRecordPause() {
+    setMode(6)
+    clearInterval(captureID.current)
+    trayID.current.setImage(PAUSED_ICON)
+  }
+
+  function onRecordResume() {
+    setMode(captureType === 'crop' ? 4 : 5)
+    t1.current = performance.now()
+    captureID.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+    trayID.current.setImage(RECORDING_ICON)
+  }
+
   function onCloseClick() {
     remote.BrowserWindow.fromId(1).webContents.send(RECORDER_CLOSE, null)
     remote.getCurrentWindow().close()
@@ -342,7 +368,6 @@ export default function Recorder() {
       onMouseMove={onMouseMove}
     >
       <Controls
-        stop={stop}
         mode={mode}
         time={time}
         count={count}
@@ -354,6 +379,9 @@ export default function Recorder() {
         setControlsY={setControlsY}
         setMode={setMode}
         onRecordStart={onRecordStart}
+        onRecordStop={onRecordStop}
+        onRecordPause={onRecordPause}
+        onRecordResume={onRecordResume}
         onCloseClick={onCloseClick}
       />
       <ZoomOverlay
@@ -402,7 +430,7 @@ export default function Recorder() {
         </Option>
       </Confirm>
       <Outline
-        show={mode === 2}
+        show={[2, 3].includes(mode)}
         top={captureType === 'screen' ? 2 : selectY}
         left={captureType === 'screen' ? 2 : selectX}
         width={captureType === 'screen' ? screenWidth - 4 : selectWidth}

@@ -19,7 +19,6 @@ const {
 } = config
 
 export default function Controls({
-  stop,
   mode,
   time,
   count,
@@ -31,6 +30,9 @@ export default function Controls({
   setControlsY,
   setMode,
   onRecordStart,
+  onRecordStop,
+  onRecordPause,
+  onRecordResume,
   onCloseClick
 }) {
   const { state, dispatch } = useContext(AppContext)
@@ -109,7 +111,8 @@ export default function Controls({
   return (
     <Rnd
       style={{
-        visibility: [0, 2, 4].includes(mode) || (mode === 3 && useCountdown) ? 'visible' : 'hidden',
+        visibility:
+          [0, 2, 4, 6].includes(mode) || (mode === 3 && useCountdown) ? 'visible' : 'hidden',
         zIndex: 2,
         display: 'grid',
         gridTemplateRows: '30px 40px',
@@ -128,7 +131,11 @@ export default function Controls({
       <Top>
         <div className='text'>
           GifIt{' '}
-          {mode === 3 && useCountdown ? `(Prestart Recording ${time}s)` : mode === 4 ? count : ''}
+          {mode === 3 && useCountdown
+            ? `(Prestart Recording ${time}s)`
+            : [4, 6].includes(mode)
+            ? count
+            : ''}
         </div>
         <div className='close' onClick={onCloseClick}>
           <Svg name='close' />
@@ -174,10 +181,13 @@ export default function Controls({
           </div>
         </SourceSelect>
         <div className='divider' />
-        <div className='button' onClick={onRecordStart}>
-          <Svg name='record' />
+        <div
+          className='button'
+          onClick={mode === 4 ? onRecordPause : mode === 6 ? onRecordResume : onRecordStart}
+        >
+          <Svg name={mode === 4 ? 'pause' : 'record'} />
         </div>
-        <div ref={stop} className='button'>
+        <div className='button' onClick={onRecordStop}>
           <Svg name='stop' />
         </div>
       </Bottom>
