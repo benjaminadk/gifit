@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
 import { remote } from 'electron'
-import { Shrink } from 'styled-icons/icomoon/Shrink'
-import { MediaRecord } from 'styled-icons/typicons/MediaRecord'
-import { Stop } from 'styled-icons/material/Stop'
+import { List } from 'immutable'
 import path from 'path'
 import { writeFile, mkdir } from 'fs'
 import { promisify } from 'util'
 import createFolderName from '../../lib/createFolderName'
-import { Container, Video, Controls, Action } from './styles'
-import { AppContext } from '../App'
 import initializeScale from '../Scale/initializeScale'
+import { AppContext } from '../App'
+import Svg from '../Svg'
+import FrameRate from '../Shared/FrameRate'
+import { Container, Video, Controls, Action } from './styles'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
@@ -30,18 +30,23 @@ export default function Webcam() {
 
   const videoInput = videoInputs[videoInputIndex]
 
+  const [mode, setMode] = useState(0)
   const [scale, setScale] = useState(0.5)
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
-  const [recording, setRecording] = useState(false)
+  const [count, setCount] = useState(0)
+  const [frames, setFrames] = useState(List([]))
+  const [times, setTimes] = useState(List([]))
 
-  const videoStream = useRef(null)
   const video = useRef(null)
-  const stop = useRef(null)
+  const canvas = useRef(null)
+  const ctx = useRef(null)
+  const t1 = useRef(null)
+  const captureInterval = useRef(null)
 
   useEffect(() => {
     async function initialize() {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const webcamStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
           deviceId: {
@@ -49,97 +54,108 @@ export default function Webcam() {
           }
         }
       })
-      videoStream.current = stream
-      video.current.srcObject = stream
+
+      video.current.srcObject = webcamStream
       video.current.onloadedmetadata = () => {
-        const w = Math.floor(video.current.videoWidth * scale)
-        const h = Math.floor(video.current.videoHeight * scale)
+        const w = Math.ceil(video.current.videoWidth * scale)
+        const h = Math.ceil(video.current.videoHeight * scale)
+        video.current.width = w
+        video.current.height = h
         setWidth(w)
         setHeight(h)
         remote.getCurrentWindow().show()
-        remote.getCurrentWindow().setSize(w, h + 100)
+        remote.getCurrentWindow().setSize(w + 16, h + 40)
         remote.getCurrentWindow().center()
       }
     }
 
     initialize()
+
+    return () => {
+      webcamStream.current.getTracks().forEach(el => el.stop())
+    }
   }, [])
 
   useEffect(() => {
-    const w = Math.floor(video.current.videoWidth * scale)
-    const h = Math.floor(video.current.videoHeight * scale)
+    const w = Math.ceil(video.current.videoWidth * scale)
+    const h = Math.ceil(video.current.videoHeight * scale)
+    video.current.width = w
+    video.current.height = h
     setWidth(w)
     setHeight(h)
-    remote.getCurrentWindow().setSize(w, h + 100)
+    remote.getCurrentWindow().setSize(w + 16, h + 40)
   }, [scale])
 
   function onShowScale() {
     initializeScale(scale, setScale)
   }
 
-  async function onRecordClick() {
-    if (recording) {
+  async function onRecordStart() {
+    if (mode === 1) {
       return
     }
 
-    setRecording(true)
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    canvas.width = width
-    canvas.height = height
-    ctx.scale(scale, scale)
-    const frames = []
-    const times = []
-    var t1 = performance.now()
+    setMode(1)
 
-    const captureFrame = setInterval(() => {
-      ctx.clearRect(0, 0, width, height)
-      ctx.drawImage(video.current, 0, 0)
-      const frame = canvas.toDataURL(IMAGE_TYPE)
-      frames.push(frame)
+    canvas.current = document.createElement('canvas')
+    ctx.current = canvas.current.getContext('2d')
+    canvas.current.width = width
+    canvas.current.height = height
+    ctx.current.scale(scale, scale)
+    t1.current = performance.now()
 
-      const t2 = performance.now()
-      const diff = Math.round(t2 - t1)
-      t1 = t2
-      times.push(diff)
-    }, Math.round(1000 / frameRate))
+    captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+  }
 
-    stop.current.addEventListener('click', () => onStopClick())
+  function onCaptureFrame() {
+    setCount(cur => cur + 1)
 
-    async function onStopClick() {
-      setRecording(false)
-      clearInterval(captureFrame)
-      videoStream.current.getTracks().forEach(el => el.stop())
+    ctx.current.clearRect(0, 0, width, height)
+    ctx.current.drawImage(video.current, 0, 0)
+    const frame = canvas.current.toDataURL(IMAGE_TYPE)
+    setFrames(cur => cur.push(frame))
 
-      const folder = createFolderName()
-      const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
-      await mkdirAsync(folderPath)
-      const data = []
+    const t2 = performance.now()
+    const diff = Math.round(t2 - t1.current)
+    t1.current = t2
+    setTimes(cur => cur.push(diff))
+  }
 
-      for (const [i, frame] of frames.entries()) {
-        const filepath = path.join(folderPath, `${i}.png`)
-        data.push({
-          path: filepath,
-          time: times[i]
-        })
-        const base64Data = frame.replace(IMAGE_REGEX, '')
-        await writeFileAsync(filepath, base64Data, {
-          encoding: 'base64'
-        })
-      }
-
-      const project = {
-        relative: folder,
-        date: new Date().getTime(),
-        width,
-        height,
-        frameRate,
-        frames: data
-      }
-      await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
-      remote.BrowserWindow.fromId(1).webContents.send(WEBCAM_STOP, folder)
-      remote.getCurrentWindow().close()
+  async function onRecordStop() {
+    if (mode === 0) {
+      return
     }
+
+    clearInterval(captureInterval.current)
+
+    const folder = createFolderName()
+    const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
+    await mkdirAsync(folderPath)
+    const data = []
+
+    for (const [i, frame] of frames.toArray().entries()) {
+      const filepath = path.join(folderPath, `${i}.png`)
+      data.push({
+        path: filepath,
+        time: times.get(i)
+      })
+      const base64Data = frame.replace(IMAGE_REGEX, '')
+      await writeFileAsync(filepath, base64Data, {
+        encoding: 'base64'
+      })
+    }
+
+    const project = {
+      relative: folder,
+      date: new Date().getTime(),
+      width,
+      height,
+      frameRate,
+      frames: data
+    }
+    await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
+    remote.BrowserWindow.fromId(1).webContents.send(WEBCAM_STOP, folder)
+    remote.getCurrentWindow().close()
   }
 
   function onCloseClick() {
@@ -148,18 +164,27 @@ export default function Webcam() {
   }
 
   return (
-    <Container width={width} height={height + 50}>
-      <Video ref={video} width={width} height={height} autoPlay={true} />
-      <Controls>
-        <div />
-        <Shrink size={20} onClick={onShowScale} />
-        <button onClick={onCloseClick}>x</button>
-        <Action onClick={onRecordClick}>
-          <MediaRecord color={recording ? 'red' : 'black'} />
+    <Container width={width} height={height}>
+      <Video ref={video} autoPlay={true} />
+      <Controls width={width}>
+        <div className='count'>{mode !== 0 ? count : ''}</div>
+        <div className='action' onClick={onShowScale}>
+          <Svg name='scale' />
+        </div>
+        <div className='action'>
+          <Svg name='refresh' />
+        </div>
+        <FrameRate />
+        <Action onClick={onRecordStart}>
+          <div className='icon'>
+            <Svg name='record' />
+          </div>
           <div className='text'>Record</div>
         </Action>
-        <Action ref={stop}>
-          <Stop />
+        <Action onClick={onRecordStop}>
+          <div className='icon'>
+            <Svg name='stop' />
+          </div>
           <div className='text'>Stop</div>
         </Action>
       </Controls>
