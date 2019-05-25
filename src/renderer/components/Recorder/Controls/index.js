@@ -3,6 +3,7 @@ import { Rnd } from 'react-rnd'
 import { remote } from 'electron'
 import { writeFile } from 'fs'
 import { promisify } from 'util'
+import initializeOptions from '../../Options/initializeOptions'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
 import { AppContext } from '../../App'
@@ -14,7 +15,7 @@ const writeFileAsync = promisify(writeFile)
 
 const {
   ipcActions: { OPTIONS_UPDATE },
-  appActions: { SET_OPTIONS },
+  appActions: { SET_OPTIONS, SET_OPTIONS_OPEN },
   recorder: { controlsWidth, controlsHeight }
 } = config
 
@@ -36,7 +37,7 @@ export default function Controls({
   onCloseClick
 }) {
   const { state, dispatch } = useContext(AppContext)
-  const { options } = state
+  const { options, optionsOpen } = state
   const useCountdown = options.get('useCountdown')
   const frameRate = options.get('frameRate')
 
@@ -108,6 +109,11 @@ export default function Controls({
     }
   }
 
+  function onOptionsClick() {
+    dispatch({ type: SET_OPTIONS_OPEN, payload: true })
+    initializeOptions(remote.getCurrentWindow(), dispatch)
+  }
+
   return (
     <Rnd
       style={{
@@ -142,7 +148,7 @@ export default function Controls({
         </div>
       </Top>
       <Bottom>
-        <div className='button'>
+        <div className='button' onClick={onOptionsClick}>
           <Svg name='settings' />
         </div>
         <FpsDisplay>

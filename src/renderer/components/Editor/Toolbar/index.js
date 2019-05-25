@@ -259,7 +259,7 @@ export default function Toolbar({
               <SectionText>Overlay</SectionText>
             </Section>
           </>
-        ) : menuIndex === 6 ? (
+        ) : menuIndex === 6 && gifData ? (
           <>
             <Section width={450}>
               <General>

@@ -40,20 +40,12 @@ export default function Recorder() {
   const [stream, setStream] = useState(null)
   const [captureType, setCaptureType] = useState('screen')
   const [count, setCount] = useState(0)
+  const [time, setTime] = useState(countdownTime)
 
   const [frames, setFrames] = useState(List([]))
   const [times, setTimes] = useState(List([]))
   const [xCursors, setXCursors] = useState(List([]))
   const [yCursors, setYCursors] = useState(List([]))
-  const canvas1ID = useRef(null)
-  const ctx1ID = useRef(null)
-  const canvas2ID = useRef(null)
-  const ctx2ID = useRef(null)
-  const videoID = useRef(null)
-  const captureID = useRef(null)
-  const limitID = useRef(null)
-  const trayID = useRef(null)
-  const t1 = useRef(null)
 
   const [controlsX, setControlsX] = useState(screenWidth / 2)
   const [controlsY, setControlsY] = useState(screenHeight / 2)
@@ -68,7 +60,15 @@ export default function Recorder() {
   const [zoomX, setZoomX] = useState(0)
   const [zoomY, setZoomY] = useState(0)
 
-  const [time, setTime] = useState(countdownTime)
+  const canvas1 = useRef(null)
+  const ctx1 = useRef(null)
+  const canvas2 = useRef(null)
+  const ctx2 = useRef(null)
+  const video = useRef(null)
+  const captureInterval = useRef(null)
+  const timeLimit = useRef(null)
+  const tray = useRef(null)
+  const t1 = useRef(null)
 
   const zoomCanvas1 = useRef(null)
   const zoomCanvas2 = useRef(null)
@@ -95,28 +95,23 @@ export default function Recorder() {
         }
       })
       // create helper elements
-      const canvas1 = document.createElement('canvas')
-      const canvas2 = document.createElement('canvas')
-      const ctx1 = canvas1.getContext('2d')
-      const ctx2 = canvas2.getContext('2d')
-      canvas1.width = screenWidth
-      canvas1.height = screenHeight
-      const video = document.createElement('video')
-      video.style.cssText = VIDEO_CSS
+      zoomCanvas1.current = document.createElement('canvas')
+      zoomCanvas2.current = document.createElement('canvas')
+      zoomCtx1.current = zoomCanvas1.current.getContext('2d')
+      zoomCtx2.current = zoomCanvas2.current.getContext('2d')
+      zoomCanvas1.current.width = screenWidth
+      zoomCanvas1.current.height = screenHeight
+      const zoomVideo = document.createElement('video')
+      zoomVideo.style.cssText = VIDEO_CSS
       // triggers zoom overlay config
-      video.onloadedmetadata = async () => {
-        video.play()
+      zoomVideo.onloadedmetadata = async () => {
+        zoomVideo.play()
         // pause .5s before taking snapshot
         await new Promise(resolve => {
           setTimeout(() => resolve(), 500)
         })
         // draw desktop to full screen canvas
-        ctx1.drawImage(video, 0, 0, screenWidth, screenHeight)
-        zoomCanvas1.current = canvas1
-        zoomCtx1.current = ctx1
-        // intermediate canvas to help with zoom effect
-        zoomCanvas2.current = canvas2
-        zoomCtx2.current = ctx2
+        zoomCtx1.current.drawImage(zoomVideo, 0, 0, screenWidth, screenHeight)
         // actual zoom overlay magnified 10x
         zoomCtx3.current = zoomCanvas3.current.getContext('2d')
         zoomCtx3.current.scale(10, 10)
@@ -130,11 +125,11 @@ export default function Recorder() {
         zoomCtx4.moveTo(0, zoomSize / 2)
         zoomCtx4.lineTo(zoomSize, zoomSize / 2)
         zoomCtx4.stroke()
-        video.remove()
+        zoomVideo.remove()
       }
 
-      video.srcObject = desktopStream
-      document.body.appendChild(video)
+      zoomVideo.srcObject = desktopStream
+      document.body.appendChild(zoomVideo)
       setStream(desktopStream)
     }
     initialize()
@@ -143,6 +138,7 @@ export default function Recorder() {
       desktopStream.getTracks().forEach(el => el.stop())
     }
   }, [])
+
   // when cursor position changes redraw zoom overlay
   useEffect(() => {
     if (mode === 1 && zoomCanvas3.current) {
@@ -154,13 +150,35 @@ export default function Recorder() {
     }
   }, [mode, zoomX, zoomY])
 
+  useEffect(() => {
+    if ([4, 5].includes(mode)) {
+      tray.current = new remote.Tray(RECORDING_ICON)
+    } else if (mode === 6) {
+      tray.current.setImage(PAUSED_ICON)
+    }
+
+    return () => {
+      tray.current && tray.current.destroy()
+    }
+  }, [mode])
+
+  useEffect(() => {
+    if (tray.current) {
+      tray.current.removeAllListeners('click')
+      tray.current.on('click', onRecordStop)
+    }
+    remote.globalShortcut.unregisterAll('Esc')
+    remote.globalShortcut.register('Esc', () => onRecordStop())
+  }, [onRecordStop])
+
+  // start recording frames
   async function onRecordStart() {
     if (mode !== 2) {
       return
     }
 
     setMode(3)
-
+    // if useCountdown is true display it then record
     await new Promise(resolve => {
       if (useCountdown) {
         const countdown = setInterval(() => {
@@ -176,56 +194,49 @@ export default function Recorder() {
         resolve()
       }
     })
-
+    // wait an additional .5s to not capture blank frames
     await new Promise(resolve => {
       setTimeout(() => {
         resolve()
       }, 500)
     })
 
-    const canvas1 = document.createElement('canvas')
-    const ctx1 = canvas1.getContext('2d')
-    canvas1.width = screenWidth
-    canvas1.height = screenHeight
-    canvas1ID.current = canvas1
-    ctx1ID.current = ctx1
-
-    const canvas2 = document.createElement('canvas')
-    const ctx2 = canvas2.getContext('2d')
-    canvas2.width = selectWidth
-    canvas2.height = selectHeight
-    canvas2ID.current = canvas2
-    ctx2ID.current = ctx2
-
-    const video = document.createElement('video')
-    video.style.cssText = VIDEO_CSS
-    video.srcObject = stream
-    document.body.appendChild(video)
-    video.onloadedmetadata = e => video.play()
-    videoID.current = video
-
+    // create full screen canvas
+    canvas1.current = document.createElement('canvas')
+    ctx1.current = canvas1.current.getContext('2d')
+    canvas1.current.width = screenWidth
+    canvas1.current.height = screenHeight
+    // create second canvas for cropped selections
+    canvas2.current = document.createElement('canvas')
+    ctx2.current = canvas2.current.getContext('2d')
+    canvas2.current.width = selectWidth
+    canvas2.current.height = selectHeight
+    // create video element to play stream
+    video.current = document.createElement('video')
+    video.current.style.cssText = VIDEO_CSS
+    video.current.srcObject = stream
+    document.body.appendChild(video.current)
+    video.current.onloadedmetadata = e => video.current.play()
+    // set time and start
     t1.current = performance.now()
-
-    captureID.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
-
-    var tray = new remote.Tray(RECORDING_ICON)
-    tray.on('click', () => onRecordStop())
-    trayID.current = tray
-
-    remote.globalShortcut.register('Esc', () => onRecordStop())
+    // run captureFrame at desired frame rate per second
+    captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
   }
 
+  // function to capture a single frame
+  // setter use function version since fresh values are needed inside of setInterval
   function onCaptureFrame() {
+    // increase total frame count by 1
     setCount(cur => cur + 1)
     var frame
     // draw full screen image
-    ctx1ID.current.clearRect(0, 0, screenWidth, screenHeight)
-    ctx1ID.current.drawImage(videoID.current, 0, 0, screenWidth, screenHeight)
+    ctx1.current.clearRect(0, 0, screenWidth, screenHeight)
+    ctx1.current.drawImage(video.current, 0, 0, screenWidth, screenHeight)
     // if captureType==='crop' redraw selection on second canvas
     if (captureType === 'crop') {
-      ctx2ID.current.clearRect(0, 0, selectWidth, selectHeight)
-      ctx2ID.current.drawImage(
-        canvas1ID.current,
+      ctx2.current.clearRect(0, 0, selectWidth, selectHeight)
+      ctx2.current.drawImage(
+        canvas1.current,
         selectX,
         selectY,
         selectWidth,
@@ -235,35 +246,41 @@ export default function Recorder() {
         selectWidth,
         selectHeight
       )
-      frame = canvas2ID.current.toDataURL(IMAGE_TYPE)
+      // get dataURL from canvas
+      frame = canvas2.current.toDataURL(IMAGE_TYPE)
     } else {
-      frame = canvas1ID.current.toDataURL(IMAGE_TYPE)
+      frame = canvas1.current.toDataURL(IMAGE_TYPE)
     }
+    // add frame to frames state
     setFrames(cur => cur.push(frame))
-
+    // calculate time elapsed since last frame and update time
     const t2 = performance.now()
     const diff = Math.round(t2 - t1.current)
     t1.current = t2
     setTimes(cur => cur.push(diff))
-
+    // get and save cursor position
     const { x, y } = remote.screen.getCursorScreenPoint()
     setXCursors(cur => cur.push(x))
     setYCursors(cur => cur.push(y))
   }
 
+  // stop recording and process frames into project
   async function onRecordStop() {
-    if (![4, 5].includes(mode)) {
+    // if not recording return
+    if ([1, 2, 3].includes(mode)) {
       return
     }
 
-    clearInterval(captureID.current)
-    trayID.current.destroy()
-
+    // clean up
+    clearInterval(captureInterval.current)
+    tray.current.destroy()
+    remote.globalShortcut.unregister('Esc', () => onRecordStop())
+    // create a new directory for project
     const folder = createFolderName()
     const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
     await mkdirAsync(folderPath)
     const data = []
-
+    // loop over frames and create data and image file
     for (const [i, frame] of frames.toArray().entries()) {
       const filepath = path.join(folderPath, `${i}.png`)
       data.push({
@@ -277,7 +294,7 @@ export default function Recorder() {
         encoding: 'base64'
       })
     }
-    // create project.json file with all relevant data
+    // create a project object and save as json file
     const project = {
       relative: folder,
       date: new Date().getTime(),
@@ -287,22 +304,24 @@ export default function Recorder() {
       frames: data
     }
     await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
-    // send message to main process and close window
+    // close recorder and set folder to state so editor can open it
     remote.BrowserWindow.fromId(1).webContents.send(RECORDER_STOP, folder)
     remote.getCurrentWindow().close()
   }
 
+  // pause recorder
   function onRecordPause() {
     setMode(6)
-    clearInterval(captureID.current)
-    trayID.current.setImage(PAUSED_ICON)
+    clearInterval(captureInterval.current)
+    tray.current.setImage(PAUSED_ICON)
   }
 
+  // resume recording from being paused
   function onRecordResume() {
     setMode(captureType === 'crop' ? 4 : 5)
     t1.current = performance.now()
-    captureID.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
-    trayID.current.setImage(RECORDING_ICON)
+    captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+    tray.current.setImage(RECORDING_ICON)
   }
 
   function onCloseClick() {
