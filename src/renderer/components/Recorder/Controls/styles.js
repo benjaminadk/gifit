@@ -28,15 +28,11 @@ export const Top = styled.div`
 `
 
 export const Bottom = styled.div`
+  height: 100%;
   display: grid;
-  grid-template-columns: 30px 40px 50px 20px 5px 40px 5px 30px 30px;
+  grid-template-columns: 30px 110px 5px 40px 5px 30px 30px;
   align-items: center;
   cursor: auto !important;
-  .label {
-    justify-self: center;
-    font-size: 1.1rem;
-    color: ${p => p.theme.grey[10]};
-  }
   .button {
     width: 100%;
     height: 100%;
@@ -57,30 +53,6 @@ export const Bottom = styled.div`
     width: 1px;
     height: 75%;
     background: ${p => p.theme.grey[3]};
-  }
-`
-
-export const FpsDisplay = styled.div`
-  position: relative;
-  width: 100%;
-  height: 100%;
-  .canvas1 {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 3;
-  }
-  .canvas2 {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 4;
-  }
-  .canvas3 {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 5;
   }
 `
 
