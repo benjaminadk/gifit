@@ -9,6 +9,7 @@ import { AppContext } from '../App'
 import Checkbox from '../Shared/Checkbox'
 import Button from '../Shared/Button'
 import NumberInput from '../Shared/NumberInput'
+import Svg from '../Svg'
 import { Container, MenuItem, Application, Section, CountdownSize, PathInput } from './styles'
 import { OPTIONS_PATH } from 'common/filepaths'
 import config from 'common/config'
@@ -167,7 +168,7 @@ export default function Options() {
                           onChange={onFFMpegChange}
                           onBlur={onFFMpegBlur}
                         />
-                        <FolderOpen onClick={onFFMpegBrowsePath} />
+                        <Svg name='folder' onClick={onFFMpegBrowsePath} />
                       </div>
                     </PathInput>
                   ) : null}

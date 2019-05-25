@@ -128,8 +128,8 @@ export const PathInput = styled.div`
     }
     svg {
       justify-self: center;
-      width: 15px;
-      height: 15px;
+      width: 25px;
+      height: 25px;
     }
   }
 `

@@ -62,8 +62,8 @@ export default function Editor() {
   const [totalDuration, setTotalDuration] = useState(null)
   const [averageDuration, setAverageDuration] = useState(null)
 
-  const [thumbWidth, setThumbWidth] = useState(null)
-  const [thumbHeight, setThumbHeight] = useState(null)
+  const [thumbWidth, setThumbWidth] = useState(100)
+  const [thumbHeight, setThumbHeight] = useState(56)
 
   const [scale, setScale] = useState(null)
   const [zoomToFit, setZoomToFit] = useState(null)

@@ -6,12 +6,13 @@ import { AngleDoubleRight } from 'styled-icons/fa-solid/AngleDoubleRight'
 import { AngleRight } from 'styled-icons/fa-solid/AngleRight'
 import { PlayArrow } from 'styled-icons/material/PlayArrow'
 import { Pause } from 'styled-icons/material/Pause'
+import Svg from '../../Svg'
 import { Container, Progress, Bar, ZoomInput, Stats, Stat, Playback } from './styles'
 
 const playback = [
   { icon: <AngleDoubleLeft />, text: 'First' },
   { icon: <AngleLeft />, text: 'Previous' },
-  { icon1: <PlayArrow />, text1: 'Play', icon2: <Pause />, text2: 'Pause' },
+  { icon1: <Svg name='play' />, text1: 'Play', icon2: <Pause />, text2: 'Pause' },
   { icon: <AngleRight />, text: 'Next' },
   { icon: <AngleDoubleRight />, text: 'Last' }
 ]

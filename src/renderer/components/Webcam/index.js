@@ -158,6 +158,17 @@ export default function Webcam() {
     remote.getCurrentWindow().close()
   }
 
+  function onRecordPause() {
+    setMode(2)
+    clearInterval(captureInterval.current)
+  }
+
+  function onRecordResume() {
+    setMode(1)
+    t1.current = performance.now()
+    captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+  }
+
   function onCloseClick() {
     remote.BrowserWindow.fromId(1).webContents.send(WEBCAM_CLOSE, null)
     remote.getCurrentWindow().close()
@@ -175,11 +186,11 @@ export default function Webcam() {
           <Svg name='refresh' />
         </div>
         <FrameRate />
-        <Action onClick={onRecordStart}>
+        <Action onClick={mode === 0 ? onRecordStart : mode === 1 ? onRecordPause : onRecordResume}>
           <div className='icon'>
-            <Svg name='record' />
+            <Svg name={mode === 1 ? 'pause' : 'record'} />
           </div>
-          <div className='text'>Record</div>
+          <div className='text'>{mode === 0 ? 'Record' : mode === 1 ? 'Pause' : 'Resume'}</div>
         </Action>
         <Action onClick={onRecordStop}>
           <div className='icon'>

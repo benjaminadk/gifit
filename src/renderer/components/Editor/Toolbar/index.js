@@ -49,9 +49,9 @@ import {
 } from './styles'
 
 const tabs = [
-  { icon: <Save />, text: 'File' },
+  { icon: <Svg name='save' />, text: 'File' },
   { icon: <Home />, text: 'Home' },
-  { icon: <PlayArrow />, text: 'Playback' },
+  { icon: <Svg name='play' />, text: 'Playback' },
   { icon: <Edit />, text: 'Edit' },
   { icon: <ImageIcon />, text: 'Image' },
   { icon: <Transfer />, text: 'Transitions' },
@@ -61,7 +61,7 @@ const tabs = [
 const playback = [
   { icon: <AngleDoubleLeft />, text: 'First' },
   { icon: <AngleLeft />, text: 'Previous' },
-  { icon1: <PlayArrow />, text1: 'Play', icon2: <Pause />, text2: 'Pause' },
+  { icon1: <Svg name='play' />, text1: 'Play', icon2: <Pause />, text2: 'Pause' },
   { icon: <AngleRight />, text: 'Next' },
   { icon: <AngleDoubleRight />, text: 'Last' }
 ]
@@ -114,7 +114,7 @@ export default function Toolbar({
             <Section width={75}>
               <GenericGrid columns={1}>
                 <Action onClick={onNewRecordingClick}>
-                  <MediaRecord />
+                  <Svg name='record-new' />
                   <div className='text'>Recording</div>
                 </Action>
               </GenericGrid>
@@ -123,7 +123,7 @@ export default function Toolbar({
             <Section width={225}>
               <GenericGrid columns={3}>
                 <Action onClick={onSaveClick}>
-                  <Save />
+                  <Svg name='save' />
                   <div className='text'>Save As</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('recent')}>
@@ -143,7 +143,7 @@ export default function Toolbar({
             <Section width={300}>
               <Zoom>
                 <Action onClick={() => setScale(1)}>
-                  <Expand className='expand' />
+                  <Svg name='zoom-100' />
                   <div className='text'>100%</div>
                 </Action>
                 <Action onClick={() => setScale(zoomToFit)}>
@@ -222,11 +222,11 @@ export default function Toolbar({
             <Section width={150}>
               <GenericGrid columns={2}>
                 <Action onClick={() => onOpenDrawer('resize')}>
-                  <Expand />
+                  <Svg name='scale' />
                   <div className='text'>Resize</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('crop')}>
-                  <Crop />
+                  <Svg name='crop' />
                   <div className='text'>Crop</div>
                 </Action>
               </GenericGrid>
@@ -248,11 +248,11 @@ export default function Toolbar({
                   <div className='text'>Free Drawing</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('border')}>
-                  <BorderOuter />
+                  <Svg name='border' />
                   <div className='text'>Border</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('progress')}>
-                  <RemoveFromQueue />
+                  <Svg name='progress' />
                   <div className='text'>Progress</div>
                 </Action>
               </GenericGrid>

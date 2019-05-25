@@ -118,15 +118,12 @@ export const Action = styled.div`
   }
   svg {
     align-self: flex-end;
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
   }
   .text {
     text-align: center;
     font-size: 1.2rem;
-  }
-  .expand {
-    transform: rotate(45deg);
   }
   .fit {
     outline: 1px dashed;
