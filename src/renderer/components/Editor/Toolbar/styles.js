@@ -125,9 +125,6 @@ export const Action = styled.div`
     text-align: center;
     font-size: 1.2rem;
   }
-  .fit {
-    outline: 1px dashed;
-  }
 `
 
 export const ZoomInput = styled.div`

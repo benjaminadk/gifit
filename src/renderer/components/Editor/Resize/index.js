@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Check } from 'styled-icons/material/Check'
-import { Close } from 'styled-icons/material/Close'
-import { Expand } from 'styled-icons/boxicons-regular/Expand'
 import { LockOutline } from 'styled-icons/material/LockOutline'
 import { LockOpen } from 'styled-icons/material/LockOpen'
+import Svg from '../../Svg'
 import NumberInput from '../../Shared/NumberInput'
 import Checkbox from '../../Shared/Checkbox'
 import { Dimension, LockRatio } from './styles'
@@ -45,11 +43,11 @@ export default function Resize({ drawerHeight, gifData, onAccept, onCancel }) {
     <>
       <Header>
         <div className='left'>
-          <Expand />
+          <Svg name='scale' />
           <div className='text'>Resize</div>
         </div>
         <div className='right'>
-          <Close onClick={onCancel} />
+          <Svg name='close' onClick={onCancel} />
         </div>
       </Header>
       <Main height={drawerHeight}>
@@ -103,11 +101,11 @@ export default function Resize({ drawerHeight, gifData, onAccept, onCancel }) {
       </Main>
       <Footer>
         <Button width={115} onClick={() => onAccept(width, height)}>
-          <Check />
+          <Svg name='check' />
           <div className='text'>Accept</div>
         </Button>
         <Button width={115} onClick={onCancel}>
-          <Close />
+          <Svg name='cancel' />
           <div className='text'>Cancel</div>
         </Button>
       </Footer>

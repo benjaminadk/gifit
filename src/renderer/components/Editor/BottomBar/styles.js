@@ -99,6 +99,7 @@ export const Playback = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 40px);
   .icon {
+    height: 100%;
     display: grid;
     justify-items: center;
     align-items: center;

@@ -1,20 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Search } from 'styled-icons/octicons/Search'
-import { AngleDoubleLeft } from 'styled-icons/fa-solid/AngleDoubleLeft'
-import { AngleLeft } from 'styled-icons/fa-solid/AngleLeft'
-import { AngleDoubleRight } from 'styled-icons/fa-solid/AngleDoubleRight'
-import { AngleRight } from 'styled-icons/fa-solid/AngleRight'
-import { PlayArrow } from 'styled-icons/material/PlayArrow'
-import { Pause } from 'styled-icons/material/Pause'
 import Svg from '../../Svg'
 import { Container, Progress, Bar, ZoomInput, Stats, Stat, Playback } from './styles'
 
 const playback = [
-  { icon: <AngleDoubleLeft />, text: 'First' },
-  { icon: <AngleLeft />, text: 'Previous' },
-  { icon1: <Svg name='play' />, text1: 'Play', icon2: <Pause />, text2: 'Pause' },
-  { icon: <AngleRight />, text: 'Next' },
-  { icon: <AngleDoubleRight />, text: 'Last' }
+  { icon: <Svg name='arrow-start' />, text: 'First' },
+  { icon: <Svg name='arrow-prev' />, text: 'Previous' },
+  { icon1: <Svg name='play' />, text1: 'Play', icon2: <Svg name='pause' />, text2: 'Pause' },
+  { icon: <Svg name='arrow-next' />, text: 'Next' },
+  { icon: <Svg name='arrow-end' />, text: 'Last' }
 ]
 
 export default function BottomBar({
@@ -98,7 +91,7 @@ export default function BottomBar({
       <div />
       <ZoomInput show={scale !== null}>
         <div className='divider' />
-        <Search />
+        <Svg name='search' />
         <input value={Math.round(scale * 100)} onChange={onScaleChange} />
         <div className='arrows'>
           <div className='arrow' onClick={() => onScaleArrowClick(true)}>

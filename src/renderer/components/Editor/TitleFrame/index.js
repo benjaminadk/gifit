@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import { Title } from 'styled-icons/material/Title'
 import { Check } from 'styled-icons/material/Check'
 import { Close } from 'styled-icons/material/Close'
+import Svg from '../../Svg'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import NumberInput from '../../Shared/NumberInput'
 import Textarea from '../../Shared/Textarea'
@@ -63,11 +64,11 @@ export default function TitleFrame({
     <>
       <Header>
         <div className='left'>
-          <Title />
+          <Svg name='title-frame' />
           <div className='text'>Title Frame</div>
         </div>
         <div className='right'>
-          <Close onClick={onCancel} />
+          <Svg name='close' onClick={onCancel} />
         </div>
       </Header>
       <Main height={drawerHeight}>
@@ -187,11 +188,11 @@ export default function TitleFrame({
       </Main>
       <Footer>
         <Button width={115} onClick={onAccept}>
-          <Check />
+          <Svg name='check' />
           <div className='text'>Apply</div>
         </Button>
         <Button width={115} onClick={onCancel}>
-          <Close />
+          <Svg name='cancel' />
           <div className='text'>Cancel</div>
         </Button>
       </Footer>

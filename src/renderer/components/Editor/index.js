@@ -482,6 +482,9 @@ export default function Editor() {
   // playback interface
   // index refers to button order 0=first 1=previous 2=play/pause 3=next 4=last
   function onPlaybackClick(index) {
+    if (!gifData) {
+      return
+    }
     if (index === 2) {
       setPlaying(!playing)
     } else {

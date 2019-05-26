@@ -1,8 +1,6 @@
 import React from 'react'
-import { Check } from 'styled-icons/material/Check'
-import { Close } from 'styled-icons/material/Close'
-import { RemoveFromQueue } from 'styled-icons/material/RemoveFromQueue'
 import { TextFields } from 'styled-icons/material/TextFields'
+import Svg from '../../Svg'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import Select from '../../Shared/Select'
@@ -101,11 +99,11 @@ export default function Progress({
     <>
       <Header>
         <div className='left'>
-          <RemoveFromQueue />
+          <Svg name='progress' />
           <div className='text'>Progress</div>
         </div>
         <div className='right'>
-          <Close onClick={onCancel} />
+          <Svg name='close' onClick={onCancel} />
         </div>
       </Header>
       <Main height={drawerHeight}>
@@ -118,7 +116,7 @@ export default function Progress({
             <ChoiceRow>
               <Choice
                 selected={progressType === 'bar'}
-                icon={<RemoveFromQueue />}
+                icon={<Svg name='progress' />}
                 label='Bar'
                 onClick={() => setProgressType('bar')}
               />
@@ -296,11 +294,11 @@ export default function Progress({
       </Main>
       <Footer>
         <Button width={115} onClick={onAccept}>
-          <Check />
+          <Svg name='check' />
           <div className='text'>Accept</div>
         </Button>
         <Button width={115} onClick={onCancel}>
-          <Close />
+          <Svg name='cancel' />
           <div className='text'>Cancel</div>
         </Button>
       </Footer>

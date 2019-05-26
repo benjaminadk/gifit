@@ -31,11 +31,12 @@ export const Header = styled.header`
   grid-template-columns: 1fr 1fr;
   .left {
     display: grid;
-    grid-template-columns: 30px 1fr;
+    grid-template-columns: 50px 1fr;
     align-items: center;
     svg {
-      width: 25px;
-      height: 25px;
+      justify-self: center;
+      width: 30px;
+      height: 30px;
     }
     .text {
       font-size: 1.2rem;
@@ -48,6 +49,7 @@ export const Header = styled.header`
     svg {
       width: 30px;
       height: 30px;
+      padding: 5px;
       margin-right: 10px;
       &:hover {
         background: ${p => lighten(0.4, p.theme.primary)};
@@ -114,9 +116,9 @@ export const Footer = styled.footer`
 
 export const Button = styled.div`
   width: ${p => p.width}px;
-  height: 40px;
+  height: 35px;
   display: grid;
-  grid-template-columns: 30px 1fr;
+  grid-template-columns: 40px 1fr;
   justify-items: center;
   align-items: center;
   background: #fff;

@@ -1,7 +1,5 @@
 import React, { useRef, useEffect } from 'react'
-import { Check } from 'styled-icons/material/Check'
-import { Close } from 'styled-icons/material/Close'
-import { Crop as CropIcon } from 'styled-icons/material/Crop'
+import Svg from '../../Svg'
 import NumberInput from '../../Shared/NumberInput'
 import { Preview } from './styles'
 import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
@@ -51,11 +49,11 @@ export default function Crop({
     <>
       <Header>
         <div className='left'>
-          <CropIcon />
+          <Svg name='crop' />
           <div className='text'>Crop</div>
         </div>
         <div className='right'>
-          <Close onClick={onCancel} />
+          <Svg name='close' onClick={onCancel} />
         </div>
       </Header>
       <Main height={drawerHeight}>
@@ -128,11 +126,11 @@ export default function Crop({
       </Main>
       <Footer>
         <Button width={115} onClick={onAccept}>
-          <Check />
+          <Svg name='check' />
           <div className='text'>Accept</div>
         </Button>
         <Button width={115} onClick={onCancel}>
-          <Close />
+          <Svg name='cancel' />
           <div className='text'>Cancel</div>
         </Button>
       </Footer>

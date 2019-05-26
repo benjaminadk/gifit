@@ -1,17 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import { FileArchive } from 'styled-icons/fa-solid/FileArchive'
-import { Check } from 'styled-icons/material/Check'
-import { Close } from 'styled-icons/material/Close'
+import Svg from '../../Svg'
 import { Header, Main, Section, Footer, Button } from '../Drawer/styles'
 import { Table, Row } from './styles'
 
-export default function RecentProjects({
-  drawerHeight,
-  recentProjects,
-  onAccept,
-  onCancel
-}) {
+export default function RecentProjects({ drawerHeight, recentProjects, onAccept, onCancel }) {
   const [projects, setProjects] = useState([])
   const [projectIndex, setProjectIndex] = useState(0)
   const [sortMode, setSortMode] = useState(0)
@@ -43,11 +36,11 @@ export default function RecentProjects({
     <>
       <Header>
         <div className='left'>
-          <FileArchive />
+          <Svg name='recent' />
           <div className='text'>Recent Projects</div>
         </div>
         <div className='right'>
-          <Close onClick={onCancel} />
+          <Svg name='close' onClick={onCancel} />
         </div>
       </Header>
       <Main height={drawerHeight}>
@@ -61,26 +54,16 @@ export default function RecentProjects({
               <div className='header'>
                 <div className='left' onClick={() => onHeaderClick(true)}>
                   <div>Creation date</div>
-                  <div>
-                    {sortMode === 0 ? '\u2bc6' : sortMode === 1 ? '\u2bc5' : ''}
-                  </div>
+                  <div>{sortMode === 0 ? '\u2bc6' : sortMode === 1 ? '\u2bc5' : ''}</div>
                 </div>
                 <div className='right' onClick={() => onHeaderClick(false)}>
                   <div>Frame count</div>
-                  <div>
-                    {sortMode === 2 ? '\u2bc6' : sortMode === 3 ? '\u2bc5' : ''}
-                  </div>
+                  <div>{sortMode === 2 ? '\u2bc6' : sortMode === 3 ? '\u2bc5' : ''}</div>
                 </div>
               </div>
               {projects.map((el, i) => (
-                <Row
-                  key={i}
-                  selected={projectIndex === i}
-                  onClick={() => setProjectIndex(i)}
-                >
-                  <div className='left'>
-                    {format(new Date(el.date), 'MM/dd/yyyy K:mm:ss a')}
-                  </div>
+                <Row key={i} selected={projectIndex === i} onClick={() => setProjectIndex(i)}>
+                  <div className='left'>{format(new Date(el.date), 'MM/dd/yyyy K:mm:ss a')}</div>
                   <div className='right'>{el.frames.length}</div>
                 </Row>
               ))}
@@ -89,15 +72,12 @@ export default function RecentProjects({
         </Section>
       </Main>
       <Footer>
-        <Button
-          width={115}
-          onClick={() => onAccept(projects[projectIndex].relative)}
-        >
-          <Check />
+        <Button width={115} onClick={() => onAccept(projects[projectIndex].relative)}>
+          <Svg name='folder' />
           <div className='text'>Open</div>
         </Button>
         <Button width={115} onClick={onCancel}>
-          <Close />
+          <Svg name='cancel' />
           <div className='text'>Cancel</div>
         </Button>
       </Footer>

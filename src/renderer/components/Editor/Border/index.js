@@ -3,9 +3,7 @@ import { TriangleLeft } from 'styled-icons/octicons/TriangleLeft'
 import { TriangleRight } from 'styled-icons/octicons/TriangleRight'
 import { TriangleUp } from 'styled-icons/octicons/TriangleUp'
 import { TriangleDown } from 'styled-icons/octicons/TriangleDown'
-import { BorderOuter } from 'styled-icons/material/BorderOuter'
-import { Check } from 'styled-icons/material/Check'
-import { Close } from 'styled-icons/material/Close'
+import Svg from '../../Svg'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
@@ -30,11 +28,11 @@ export default function Border({
     <>
       <Header>
         <div className='left'>
-          <BorderOuter />
+          <Svg name='border' />
           <div className='text'>Border</div>
         </div>
         <div className='right'>
-          <Close onClick={onCancel} />
+          <Svg name='close' onClick={onCancel} />
         </div>
       </Header>
       <Main height={drawerHeight}>
@@ -108,11 +106,11 @@ export default function Border({
       </Main>
       <Footer>
         <Button width={115} onClick={onAccept}>
-          <Check />
+          <Svg name='check' />
           <div className='text'>Accept</div>
         </Button>
         <Button width={115} onClick={onCancel}>
-          <Close />
+          <Svg name='cancel' />
           <div className='text'>Cancel</div>
         </Button>
       </Footer>
