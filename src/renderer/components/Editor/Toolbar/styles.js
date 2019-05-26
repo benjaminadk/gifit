@@ -5,6 +5,7 @@ export const Container = styled.div`
   height: ${p => (p.show ? '120px' : '25px')};
   display: grid;
   grid-template-rows: 25px 1fr;
+  border-top: 2px solid ${p => p.theme.grey[1]};
   border-bottom: ${p => p.theme.border};
   transition: height 0.25s;
 `
@@ -29,7 +30,6 @@ export const Tab = styled.div`
   background: ${p => (p.selected ? '#FFFFFF' : 'transparent')};
   color: ${p => (p.selected ? darken(0.2, p.theme.primary) : '#000000')};
   border: ${p => (p.selected ? p.theme.border : `1px solid ${p.theme.grey[1]}`)};
-  border-bottom: 0;
   &:hover {
     color: ${p => darken(0.2, p.theme.primary)};
   }

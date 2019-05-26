@@ -12,7 +12,8 @@ export const Container = styled.div.attrs(p => ({
   width: 100vw;
   display: grid;
   grid-template-columns: ${p => `repeat(${p.columns}, ${p.thumbWidth + 10}px)`};
-  overflow-y: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   border-top: ${p => p.theme.border};
   padding-top: 2px;
 `
