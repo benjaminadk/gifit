@@ -20,12 +20,14 @@ import createGIFEncoder from './createGIFEncoder'
 import getTextXY from './getTextXY'
 import { AppContext } from '../App'
 import CropOverlay from './Crop/CropOverlay'
+import WatermarkOverlay from './Watermark/WatermarkOverlay'
 import Drawer from './Drawer'
 import Resize from './Resize'
 import Crop from './Crop'
 import TitleFrame from './TitleFrame'
 import FreeDrawing from './FreeDrawing'
 import Border from './Border'
+import Watermark from './Watermark'
 import Progress from './Progress'
 import RecentProjects from './RecentProjects'
 import Toolbar from './Toolbar'
@@ -105,6 +107,16 @@ export default function Editor() {
   const [progressFont, setProgressFont] = useState('Segoe UI')
   const [progressStyle, setProgressStyle] = useState('Normal')
   const [progressPrecision, setProgressPrecision] = useState('Seconds')
+
+  const [watermarkPath, setWatermarkPath] = useState('')
+  const [watermarkWidth, setWatermarkWidth] = useState(0)
+  const [watermarkHeight, setWatermarkHeight] = useState(0)
+  const [watermarkX, setWatermarkX] = useState(0)
+  const [watermarkY, setWatermarkY] = useState(0)
+  const [watermarkOpacity, setWatermarkOpacity] = useState(0.7)
+  const [watermarkScale, setWatermarkScale] = useState(1)
+  const [watermarkRealWidth, setWatermarkRealWidth] = useState(0)
+  const [watermarkRealHeight, setWatermarkRealHeight] = useState(0)
 
   const [titleText, setTitleText] = useState('Title Frame')
   const [titleColor, setTitleColor] = useState('#000000')
@@ -400,6 +412,19 @@ export default function Editor() {
     }
   }, [selected])
 
+  useEffect(() => {
+    if (watermarkPath) {
+      const image = new Image()
+      image.onload = () => {
+        setWatermarkWidth(image.width)
+        setWatermarkHeight(image.height)
+        setWatermarkRealWidth(image.width)
+        setWatermarkRealHeight(image.height)
+      }
+      image.src = watermarkPath
+    }
+  }, [watermarkPath])
+
   // navigate back to Landing page
   function onNewRecordingClick() {
     dispatch({
@@ -597,6 +622,8 @@ export default function Editor() {
           }
           main.current.scrollTop = height
         }, 500)
+      } else if (mode === 'watermark') {
+        setScale(1)
       } else if (mode === 'drawing') {
         setScale(1)
       } else if (mode === 'resize') {
@@ -1095,6 +1122,31 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
+  function onWatermarkFileClick() {
+    const win = remote.getCurrentWindow()
+    const opts = {
+      title: 'Select an Image',
+      defaultPath: remote.app.getPath('downloads'),
+      buttonLabel: 'Open',
+      filters: [{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] }],
+      properties: ['openFile']
+    }
+    const callback = filepath => {
+      if (filepath) {
+        setWatermarkPath(filepath[0])
+      }
+    }
+
+    remote.dialog.showOpenDialog(win, opts, callback)
+  }
+
+  function onWatermarkAccept() {}
+
+  function onWatermarkCancel() {
+    setShowDrawer(false)
+    setScale(zoomToFit)
+  }
+
   // open options window
   function onOptionsClick() {
     if (!optionsOpen) {
@@ -1184,7 +1236,7 @@ export default function Editor() {
             onMouseLeave={onDrawMouseLeave}
           />
           <CropOverlay
-            drawerMode={drawerMode}
+            show={drawerMode === 'crop'}
             gifData={gifData}
             cropWidth={cropWidth}
             cropHeight={cropHeight}
@@ -1194,6 +1246,19 @@ export default function Editor() {
             setCropHeight={setCropHeight}
             setCropX={setCropX}
             setCropY={setCropY}
+          />
+          <WatermarkOverlay
+            show={drawerMode === 'watermark'}
+            watermarkPath={watermarkPath}
+            watermarkWidth={watermarkWidth}
+            watermarkHeight={watermarkHeight}
+            watermarkX={watermarkX}
+            watermarkY={watermarkY}
+            watermarkOpacity={watermarkOpacity}
+            setWatermarkWidth={setWatermarkWidth}
+            setWatermarkHeight={setWatermarkHeight}
+            setWatermarkX={setWatermarkX}
+            setWatermarkY={setWatermarkY}
           />
         </Wrapper>
       </Main>
@@ -1338,6 +1403,22 @@ export default function Editor() {
             setProgressPrecision={setProgressPrecision}
             onAccept={onProgressAccept}
             onCancel={onProgressCancel}
+          />
+        ) : drawerMode === 'watermark' ? (
+          <Watermark
+            drawerHeight={drawerHeight}
+            watermarkPath={watermarkPath}
+            watermarkRealWidth={watermarkRealWidth}
+            watermarkRealHeight={watermarkRealHeight}
+            watermarkOpacity={watermarkOpacity}
+            watermarkScale={watermarkScale}
+            setWatermarkOpacity={setWatermarkOpacity}
+            setWatermarkScale={setWatermarkScale}
+            setWatermarkWidth={setWatermarkWidth}
+            setWatermarkHeight={setWatermarkHeight}
+            onWatermarkFileClick={onWatermarkFileClick}
+            onAccept={onWatermarkAccept}
+            onCancel={onWatermarkAccept}
           />
         ) : null}
       </Drawer>

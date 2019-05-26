@@ -33,7 +33,7 @@ export default function SelectionOverlay({
             display: 'flex',
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
-            border: '2px dashed grey'
+            border: '1px dashed grey'
           }}
           bounds='parent'
           size={{ width: selectWidth, height: selectHeight }}

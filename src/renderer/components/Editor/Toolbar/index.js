@@ -220,8 +220,8 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>Text</SectionText>
             </Section>
-            <Section width={225}>
-              <GenericGrid columns={3}>
+            <Section width={300}>
+              <GenericGrid columns={4}>
                 <Action onClick={() => onOpenDrawer('drawing')}>
                   <PenFancy />
                   <div className='text'>Free Drawing</div>
@@ -233,6 +233,10 @@ export default function Toolbar({
                 <Action onClick={() => onOpenDrawer('progress')}>
                   <Svg name='progress' />
                   <div className='text'>Progress</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('watermark')}>
+                  <Svg name='watermark' />
+                  <div className='text'>Watermark</div>
                 </Action>
               </GenericGrid>
               <SectionText>Overlay</SectionText>

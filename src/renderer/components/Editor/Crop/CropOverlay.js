@@ -3,7 +3,7 @@ import { Rnd } from 'react-rnd'
 import { Background, resizeHandleStyles } from './styles'
 
 export default function CropOverlay({
-  drawerMode,
+  show,
   gifData,
   cropWidth,
   cropHeight,
@@ -14,7 +14,7 @@ export default function CropOverlay({
   setCropX,
   setCropY
 }) {
-  if (drawerMode === 'crop' && gifData) {
+  if (show && gifData) {
     return (
       <>
         <Rnd

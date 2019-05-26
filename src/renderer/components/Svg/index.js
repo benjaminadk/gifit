@@ -402,6 +402,24 @@ export default function Svg({ name, ...rest }) {
             />
           </>
         )
+      case 'watermark':
+        return (
+          <>
+            <path d='M7 3h25.227L43 13.773V48H7z' stroke='gray' fill='#fff' />
+            <path d='M31.824 3.819l10.499 10.499H31.824V3.819z' stroke='gray' fill='#fff' />
+            <path
+              strokeWidth='.5'
+              fill='#fff'
+              stroke='#c6c6c6'
+              d='M14.316 19.135h21.999v21.999H14.316z'
+            />
+            <path
+              d='M19.844 25.747c.681-.834 1.363-.835 2.046-.003l4.224 5.123-.004.003 7.963 9.824h-9.304v-.006l-10.032.022v-8.72zm10.032 2.05c.68-.833 1.363-.834 2.048-.004l3.961 4.807v8.094h-1.273l-7.607-9.386z'
+              fill='#bdd0e5'
+            />
+            <circle cx='32.377' cy='22.634' r='2.466' fill='#f9ebd2' />
+          </>
+        )
       case 'zoom-100':
         return (
           <>
