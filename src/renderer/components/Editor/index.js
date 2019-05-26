@@ -869,6 +869,7 @@ export default function Editor() {
 
   // create a new title frame image file and update project.json
   function onTitleAccept() {
+    setLoading(true)
     const reader = new FileReader()
     const filepath = path.join(RECORDINGS_DIRECTORY, gifData.relative, createTFName())
 
@@ -905,6 +906,7 @@ export default function Editor() {
       // re-initialize editor to include new title frame and close drawer
       initialize(imageIndex)
       setShowDrawer(false)
+      setLoading(false)
     })
   }
 
