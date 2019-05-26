@@ -416,14 +416,27 @@ export default function Editor() {
     if (watermarkPath) {
       const image = new Image()
       image.onload = () => {
-        setWatermarkWidth(image.width)
-        setWatermarkHeight(image.height)
-        setWatermarkRealWidth(image.width)
-        setWatermarkRealHeight(image.height)
+        var w, h
+        const ratio = Math.floor((image.width / image.height) * 100) / 100
+        const inverse = Math.floor((image.height / image.width) * 100) / 100
+        if (image.height > gifData.height) {
+          w = gifData.height * ratio
+          h = gifData.height
+        } else if (image.width > gifData.width) {
+          w = gifData.width
+          h = gifData.width * inverse
+        } else {
+          w = image.width
+          h = image.height
+        }
+        setWatermarkWidth(w)
+        setWatermarkHeight(h)
+        setWatermarkRealWidth(w)
+        setWatermarkRealHeight(h)
       }
       image.src = watermarkPath
     }
-  }, [watermarkPath])
+  }, [watermarkPath, gifData])
 
   // navigate back to Landing page
   function onNewRecordingClick() {
@@ -1006,17 +1019,17 @@ export default function Editor() {
               })
             }
             // create new canvas draw image and then border on top of it
-            const canvas = document.createElement('canvas')
-            canvas.width = gifData.width
-            canvas.height = gifData.height
-            const ctx = canvas.getContext('2d')
-            const image = new Image()
-            image.onload = () => {
-              ctx.drawImage(image, 0, 0)
-              drawBorder(canvas, borderLeft, borderRight, borderTop, borderBottom, borderColor)
-              canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            const c1 = document.createElement('canvas')
+            c1.width = gifData.width
+            c1.height = gifData.height
+            const ctx1 = c1.getContext('2d')
+            const image1 = new Image()
+            image1.onload = () => {
+              ctx1.drawImage(image1, 0, 0)
+              drawBorder(c1, borderLeft, borderRight, borderTop, borderBottom, borderColor)
+              c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
             }
-            image.src = images[i].path
+            image1.src = images[i].path
           }
         }
       })
@@ -1122,11 +1135,12 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
+  // open file dialog for watermark image file
   function onWatermarkFileClick() {
     const win = remote.getCurrentWindow()
     const opts = {
       title: 'Select an Image',
-      defaultPath: remote.app.getPath('downloads'),
+      defaultPath: remote.app.getPath('pictures'),
       buttonLabel: 'Open',
       filters: [{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] }],
       properties: ['openFile']
@@ -1136,11 +1150,69 @@ export default function Editor() {
         setWatermarkPath(filepath[0])
       }
     }
-
     remote.dialog.showOpenDialog(win, opts, callback)
   }
 
-  function onWatermarkAccept() {}
+  // add watermark to selected frames
+  async function onWatermarkAccept() {
+    async function draw() {
+      return new Promise(async resolve1 => {
+        // use last truthy index to resolve draw promise
+        const lastIndex = selected.findLastIndex(el => el)
+        // loop over selected List
+        for (const [i, bool] of selected.toArray().entries()) {
+          if (bool) {
+            const reader = new FileReader()
+            // overwrite file and hash state path to trick cache
+            reader.onload = () => {
+              const filepath = originalPaths[i]
+              const buffer = Buffer.from(reader.result)
+              writeFileAsync(filepath, buffer).then(() => {
+                images[i].path = createHashPath(images[i].path)
+                if (i === lastIndex) {
+                  resolve1()
+                }
+              })
+            }
+            // create a new canvas and image
+            const c1 = document.createElement('canvas')
+            c1.width = gifData.width
+            c1.height = gifData.height
+            const ctx1 = c1.getContext('2d')
+            const image1 = new Image()
+            // wait for original image to be drawn
+            await new Promise(resolve2 => {
+              image1.onload = () => {
+                ctx1.drawImage(image1, 0, 0)
+                resolve2()
+              }
+              image1.src = images[i].path
+            })
+            //create a second canvas to draw transparent watermark
+            const c2 = document.createElement('canvas')
+            c2.width = gifData.width
+            c2.height = gifData.height
+            const ctx2 = c2.getContext('2d')
+            // set context global alpha to match opacity setting
+            ctx2.globalAlpha = watermarkOpacity
+            const image2 = new Image()
+            // draw image2 on canvas2 then draw canvas2 on top of canvas1 then feed to file reader
+            image2.onload = () => {
+              ctx2.drawImage(image2, watermarkX, watermarkY, watermarkWidth, watermarkHeight)
+              ctx1.drawImage(c2, 0, 0)
+              c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            }
+            image2.src = watermarkPath
+          }
+        }
+      })
+    }
+    setLoading(true)
+    await draw()
+    setLoading(false)
+    setShowDrawer(false)
+    setScale(zoomToFit)
+  }
 
   function onWatermarkCancel() {
     setShowDrawer(false)
@@ -1418,7 +1490,7 @@ export default function Editor() {
             setWatermarkHeight={setWatermarkHeight}
             onWatermarkFileClick={onWatermarkFileClick}
             onAccept={onWatermarkAccept}
-            onCancel={onWatermarkAccept}
+            onCancel={onWatermarkCancel}
           />
         ) : null}
       </Drawer>

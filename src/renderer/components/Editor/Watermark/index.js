@@ -25,15 +25,15 @@ export default function Watermark({
 
   function onWatermarkScaleChange(x) {
     setWatermarkScale(x / 100)
-    setWatermarkWidth(watermarkRealWidth * watermarkScale)
-    setWatermarkHeight(watermarkRealHeight * watermarkScale)
+    setWatermarkWidth((watermarkRealWidth * x) / 100)
+    setWatermarkHeight((watermarkRealHeight * x) / 100)
   }
 
   return (
     <>
       <Header>
         <div className='left'>
-          <Svg name='title-frame' />
+          <Svg name='watermark' />
           <div className='text'>Watermark</div>
         </div>
         <div className='right'>
