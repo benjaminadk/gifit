@@ -1,16 +1,21 @@
 import React from 'react'
 import Svg from '../../Svg'
 import NumberInput from '../../Shared/NumberInput'
-import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
-import { Filename, FileInput, Percent } from './styles'
+import { Header, Main, Section, Property, Label, PostLabel, Footer, Button } from '../Drawer/styles'
+import { Filename, FileInput } from './styles'
 
 export default function Watermark({
   drawerHeight,
+  gifData,
   watermarkPath,
+  watermarkX,
+  watermarkY,
   watermarkOpacity,
   watermarkScale,
   watermarkRealWidth,
   watermarkRealHeight,
+  setWatermarkX,
+  setWatermarkY,
   setWatermarkOpacity,
   setWatermarkScale,
   setWatermarkWidth,
@@ -49,7 +54,9 @@ export default function Watermark({
           <div>
             <Property>
               <Label width={30}>File:</Label>
-              <Filename>{watermarkPath || 'No Image Selected'}</Filename>
+              <Filename title={watermarkPath || 'No Image Selected'}>
+                {watermarkPath || 'No Image Selected'}
+              </Filename>
             </Property>
             <FileInput>
               <div className='button' onClick={onWatermarkFileClick}>
@@ -67,7 +74,7 @@ export default function Watermark({
                 fallback={70}
                 setter={onWatermarkOpacityChange}
               />
-              <Percent>%</Percent>
+              <PostLabel>%</PostLabel>
             </Property>
             <Property>
               <Label width={60}>Scale:</Label>
@@ -79,7 +86,37 @@ export default function Watermark({
                 fallback={100}
                 setter={onWatermarkScaleChange}
               />
-              <Percent>%</Percent>
+              <PostLabel>%</PostLabel>
+            </Property>
+          </div>
+        </Section>
+        <Section height={100}>
+          <div className='title'>
+            <div className='text'>Points</div>
+            <div className='divider' />
+          </div>
+          <div>
+            <Property>
+              <Label width={60}>Top:</Label>
+              <NumberInput
+                width={80}
+                value={watermarkY}
+                min={0}
+                max={gifData.height - watermarkRealHeight}
+                fallback={0}
+                setter={setWatermarkY}
+              />
+            </Property>
+            <Property>
+              <Label width={60}>Left:</Label>
+              <NumberInput
+                width={80}
+                value={watermarkX}
+                min={0}
+                max={gifData.width - watermarkRealWidth}
+                fallback={0}
+                setter={setWatermarkX}
+              />
             </Property>
           </div>
         </Section>

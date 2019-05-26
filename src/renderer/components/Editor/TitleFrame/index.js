@@ -140,7 +140,7 @@ export default function TitleFrame({
                 width={80}
                 value={titleDelay}
                 min={100}
-                max={10000}
+                max={25000}
                 fallback={500}
                 setter={setTitleDelay}
               />

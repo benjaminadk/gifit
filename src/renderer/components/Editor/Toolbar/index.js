@@ -58,6 +58,7 @@ export default function Toolbar({
   setScale,
   onOpenDrawer,
   onNewRecordingClick,
+  onNewWebcamClick,
   onSaveClick,
   onDiscardProjectClick,
   onPlaybackClick,
@@ -90,11 +91,15 @@ export default function Toolbar({
         </Collapse>
         {menuIndex === 0 ? (
           <>
-            <Section width={75}>
-              <GenericGrid columns={1}>
+            <Section width={150}>
+              <GenericGrid columns={2}>
                 <Action onClick={onNewRecordingClick}>
                   <Svg name='record-new' />
                   <div className='text'>Recording</div>
+                </Action>
+                <Action onClick={onNewWebcamClick}>
+                  <Svg name='camera-new' />
+                  <div className='text'>Webcam</div>
                 </Action>
               </GenericGrid>
               <SectionText>New</SectionText>
@@ -195,6 +200,19 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>Frames</SectionText>
             </Section>
+            <Section width={225}>
+              <GenericGrid columns={3}>
+                <Action onClick={() => onOpenDrawer('override')}>
+                  <Svg name='clock-override' />
+                  <div className='text'>Override</div>
+                </Action>
+                <Action>
+                  <Svg name='clock-increase' />
+                  <div className='text'>Increase or Decrease</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Delay (Duration)</SectionText>
+            </Section>
           </>
         ) : menuIndex === 4 ? (
           <>
@@ -220,11 +238,15 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>Text</SectionText>
             </Section>
-            <Section width={300}>
-              <GenericGrid columns={4}>
+            <Section width={375}>
+              <GenericGrid columns={5}>
                 <Action onClick={() => onOpenDrawer('drawing')}>
-                  <PenFancy />
+                  <Svg name='draw' />
                   <div className='text'>Free Drawing</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('shape')}>
+                  <Svg name='shape' />
+                  <div className='text'>Shape</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('border')}>
                   <Svg name='border' />

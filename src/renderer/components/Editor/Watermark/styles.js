@@ -7,6 +7,7 @@ export const Filename = styled.div`
   font-style: italic;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 export const FileInput = styled.div`
@@ -36,11 +37,6 @@ export const FileInput = styled.div`
       font-size: 1.2rem;
     }
   }
-`
-
-export const Percent = styled.div`
-  margin-left: 2px;
-  font-size: 1.2rem;
 `
 
 const handleStyle = {

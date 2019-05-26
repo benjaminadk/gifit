@@ -107,6 +107,30 @@ export const Label = styled.div`
   margin-left: 10px;
 `
 
+export const PostLabel = styled.div`
+  margin-left: 2px;
+  font-size: 1.2rem;
+`
+
+export const Info = styled.div`
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  align-items: center;
+  margin-top: 20px;
+  .text {
+    color: #3b8c4f;
+    font-size: 1.2rem;
+    font-style: italic;
+    line-height: 1.5;
+    margin-right: 20px;
+  }
+  svg {
+    justify-self: center;
+    width: 20px;
+    height: 20px;
+  }
+`
+
 export const Footer = styled.footer`
   display: grid;
   grid-template-columns: 1fr 1fr;

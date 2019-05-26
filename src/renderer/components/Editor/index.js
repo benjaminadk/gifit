@@ -8,6 +8,8 @@ import createRandomString from '../../lib/createRandomString'
 import createHashPath from '../../lib/createHashPath'
 import createTFName from '../../lib/createTFName'
 import initializeOptions from '../Options/initializeOptions'
+import initializeRecorder from '../Recorder/initializeRecorder'
+import initializeWebcam from '../Webcam/initializeWebcam'
 import drawBorder from './Border/drawBorder'
 import drawProgressBar from './Progress/drawProgressBar'
 import drawProgressText from './Progress/drawProgressText'
@@ -30,6 +32,7 @@ import Border from './Border'
 import Watermark from './Watermark'
 import Progress from './Progress'
 import RecentProjects from './RecentProjects'
+import Override from './Override'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
 import BottomBar from './BottomBar'
@@ -132,6 +135,8 @@ export default function Editor() {
   const [cropHeight, setCropHeight] = useState(0)
   const [cropX, setCropX] = useState(0)
   const [cropY, setCropY] = useState(0)
+
+  const [overrideMS, setOverrideMS] = useState(100)
 
   const container = useRef(null)
   const main = useRef(null)
@@ -438,12 +443,19 @@ export default function Editor() {
     }
   }, [watermarkPath, gifData])
 
-  // navigate back to Landing page
+  // navigate back recorder
   function onNewRecordingClick() {
-    dispatch({
-      type: SET_APP_MODE,
-      payload: 0
-    })
+    initializeRecorder(state, dispatch)
+    dispatch({ type: SET_APP_MODE, payload: 0 })
+    remote.getCurrentWindow().setSize(mainWindow.width, mainWindow.height)
+    remote.getCurrentWindow().center()
+    remote.getCurrentWindow().setTitle('GifIt - Start Page')
+  }
+
+  // navigate to webcam
+  function onNewWebcamClick() {
+    initializeWebcam(state, dispatch)
+    dispatch({ type: SET_APP_MODE, payload: 0 })
     remote.getCurrentWindow().setSize(mainWindow.width, mainWindow.height)
     remote.getCurrentWindow().center()
     remote.getCurrentWindow().setTitle('GifIt - Start Page')
@@ -556,9 +568,7 @@ export default function Editor() {
     if (count === 0) {
       return
     }
-    // parent window
     const win = remote.getCurrentWindow()
-    // dialog options
     const opts = {
       type: 'question',
       buttons: ['Delete', 'Cancel'],
@@ -567,9 +577,7 @@ export default function Editor() {
       message: `Are you sure you want to delete?`,
       detail: `Action will delete ${count} selected frame${count === 1 ? '' : 's'}.`
     }
-    // callback after user clicks button
     const callback = result => {
-      // if user clicks Delete
       if (result === 0) {
         var deleteImages, keepImages
         if (type === 'selection') {
@@ -613,7 +621,7 @@ export default function Editor() {
     }
   }
 
-  // open drawer, adjust scale, side effects, and assign mode
+  // open drawer, adjust scale, side effects, and assign drawer mode
   function onOpenDrawer(mode) {
     if (mode === 'recent') {
     } else {
@@ -820,6 +828,42 @@ export default function Editor() {
   }
 
   function onCropCancel() {
+    setShowDrawer(false)
+  }
+
+  async function onOverrideAccept() {
+    async function update() {
+      return new Promise(resolve => {
+        const newFrames = []
+        for (const [i, bool] of selected.toArray().entries()) {
+          var newFrame = {
+            ...images[i],
+            path: originalPaths[i]
+          }
+          if (bool) {
+            newFrame.time = overrideMS
+          }
+          newFrames.push(newFrame)
+        }
+        const newProject = {
+          ...gifData,
+          frames: newFrames
+        }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(imageIndex)
+  }
+
+  function onOverrideCancel() {
     setShowDrawer(false)
   }
 
@@ -1278,6 +1322,7 @@ export default function Editor() {
         setScale={setScale}
         onOpenDrawer={onOpenDrawer}
         onNewRecordingClick={onNewRecordingClick}
+        onNewWebcamClick={onNewWebcamClick}
         onSaveClick={onSaveClick}
         onDiscardProjectClick={onDiscardProjectClick}
         onPlaybackClick={onPlaybackClick}
@@ -1384,6 +1429,14 @@ export default function Editor() {
             onAccept={onCropAccept}
             onCancel={onCropCancel}
           />
+        ) : drawerMode === 'override' ? (
+          <Override
+            drawerHeight={drawerHeight}
+            overrideMS={overrideMS}
+            setOverrideMS={setOverrideMS}
+            onAccept={onOverrideAccept}
+            onCancel={onOverrideCancel}
+          />
         ) : drawerMode === 'title' ? (
           <TitleFrame
             drawerHeight={drawerHeight}
@@ -1479,11 +1532,16 @@ export default function Editor() {
         ) : drawerMode === 'watermark' ? (
           <Watermark
             drawerHeight={drawerHeight}
+            gifData={gifData}
             watermarkPath={watermarkPath}
+            watermarkX={watermarkX}
+            watermarkY={watermarkY}
             watermarkRealWidth={watermarkRealWidth}
             watermarkRealHeight={watermarkRealHeight}
             watermarkOpacity={watermarkOpacity}
             watermarkScale={watermarkScale}
+            setWatermarkX={setWatermarkX}
+            setWatermarkY={setWatermarkY}
             setWatermarkOpacity={setWatermarkOpacity}
             setWatermarkScale={setWatermarkScale}
             setWatermarkWidth={setWatermarkWidth}
