@@ -73,13 +73,13 @@ export default function Shape({
             <ChoiceRow>
               <Choice
                 selected={shapeMode === 'insert'}
-                icon={<Svg name='shape' />}
+                icon={<Svg name='insert' />}
                 label='Insert'
                 onClick={() => setShapeMode('insert')}
               />
               <Choice
                 selected={shapeMode === 'select'}
-                icon={<Svg name='shape' />}
+                icon={<Svg name='select' />}
                 label='Select'
                 onClick={() => setShapeMode('select')}
               />
@@ -99,7 +99,7 @@ export default function Shape({
                     selected={shapeType === 'rectangle'}
                     onClick={() => setShapeType('rectangle')}
                   >
-                    <Svg name='shape' />
+                    <Svg name='rectangle' />
                   </ShapeOption>
                   <ShapeOption
                     selected={shapeType === 'ellipsis'}

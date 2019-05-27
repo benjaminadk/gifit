@@ -1,82 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
+import { remote } from 'electron'
 import { Rnd } from 'react-rnd'
-import { List, Map } from 'immutable'
-import styled from 'styled-components'
-
-export const Container = styled.div.attrs(p => ({}))`
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 8;
-  cursor: crosshair;
-`
-
-export const Inner = styled.div`
-  position: relative;
-  width: 100%;
-  height: 100%;
-`
-
-export const Shape = styled.div.attrs(p => ({
-  style: {
-    border: `${p.strokeWidth}px solid ${p.strokeColor}`,
-    borderRadius: p.shape === 'ellipsis' ? '50%' : 0,
-    background: p.fillColor
-  }
-}))`
-  width: 100%;
-  height: 100%;
-`
-
-const handleStyle = {
-  width: '10px',
-  height: '10px',
-  background: '#FFF',
-  border: '1px solid grey'
-}
-
-export const resizeHandleStyles = {
-  top: {
-    ...handleStyle,
-    left: '50%',
-    cursor: 'n-resize'
-  },
-  topRight: {
-    ...handleStyle,
-    right: '-5px',
-    top: '-5px'
-  },
-  right: {
-    ...handleStyle,
-    top: '50%',
-    cursor: 'e-resize'
-  },
-  bottomRight: {
-    ...handleStyle,
-    right: '-5px',
-    bottom: '-5px'
-  },
-  bottom: {
-    ...handleStyle,
-    left: '50%',
-    cursor: 'n-resize'
-  },
-  bottomLeft: {
-    ...handleStyle,
-    left: '-5px',
-    bottom: '-5px'
-  },
-  left: {
-    ...handleStyle,
-    top: '50%',
-    cursor: 'e-resize'
-  },
-  topLeft: {
-    ...handleStyle,
-    left: '-5px',
-    top: '-5px'
-  }
-}
+import { Container, Inner, Shape, resizeHandleStyles } from './styles'
 
 export default function ShapeOverlay({
   show,
@@ -87,7 +12,7 @@ export default function ShapeOverlay({
   shapeStrokeColor,
   shapeFillColor
 }) {
-  const [shapes, setShapes] = useState(List([]))
+  const [shapes, setShapes] = useState([])
   const [index, setIndex] = useState(null)
   const [drawing, setDrawing] = useState(false)
   const [startX, setStartX] = useState(null)
@@ -111,39 +36,67 @@ export default function ShapeOverlay({
   }, [show, gifData])
 
   useEffect(() => {
-    if (!shapes.size) return
-    const s = shapes.get(index)
-    const obj = s.toObject()
+    async function onDeleteShape() {
+      if (shapes.length) {
+        const s = shapes.slice()
+        s.splice(index, 1)
+        // const obj = s[index]
+        // obj.show = false
+        // s[index] = obj
+        await setShapes(s)
+        await setIndex(null)
+      }
+    }
+
+    if (!shapes.length) {
+      remote.globalShortcut.unregisterAll('Ctrl+Backspace')
+    }
+    remote.globalShortcut.unregister('Ctrl+Backspace', onDeleteShape)
+    remote.globalShortcut.register('Ctrl+Backspace', onDeleteShape)
+
+    return () => {
+      remote.globalShortcut.unregister('Ctrl+Backspace', onDeleteShape)
+    }
+  }, [shapes, index])
+
+  useEffect(() => {
+    if (!shapes.length) return
+    const s = shapes.slice()
+    const obj = s[index]
     obj.strokeColor = shapeStrokeColor
-    setShapes(shapes.set(index, Map(obj)))
+    s[index] = obj
+    setShapes(s)
   }, [shapeStrokeColor])
 
   useEffect(() => {
-    if (!shapes.size) return
-    const s = shapes.get(index)
-    const obj = s.toObject()
+    if (!shapes.length) return
+    const s = shapes.slice()
+    const obj = s[index]
     obj.fillColor = shapeFillColor
-    setShapes(shapes.set(index, Map(obj)))
+    s[index] = obj
+    setShapes(s)
   }, [shapeFillColor])
 
   useEffect(() => {
-    if (!shapes.size) return
-    const s = shapes.get(index)
-    const obj = s.toObject()
+    if (!shapes.length) return
+    const s = shapes.slice()
+    const obj = s[index]
     obj.strokeWidth = shapeStrokeWidth
-    setShapes(shapes.set(index, Map(obj)))
+    s[index] = obj
+    setShapes(s)
   }, [shapeStrokeWidth])
 
   useEffect(() => {
     if (shapeMode === 'select') {
-      onSwitch()
+      onSwitchIndex()
     }
-  }, [onSwitch, shapeMode])
+  }, [shapes.length, index, shapeMode])
 
-  function onSwitch() {
-    if (shapes.size) {
-      const s = shapes.get(index)
-      const obj = s.toObject()
+  function onSwitchIndex() {
+    if (shapes.length && index !== null) {
+      const s = shapes.slice()
+      const obj = s[index]
+      if (!obj) return
       setWidth(obj.width)
       setHeight(obj.height)
       setX(obj.x)
@@ -155,7 +108,7 @@ export default function ShapeOverlay({
     if (shapeMode === 'insert' && e.target === inner.current) {
       const { layerX, layerY } = e.nativeEvent
       const shape = {
-        index: shapes.size,
+        index: shapes.length,
         drawn: false,
         shape: shapeType,
         width: 0,
@@ -167,12 +120,12 @@ export default function ShapeOverlay({
         strokeWidth: shapeStrokeWidth
       }
 
-      await setIndex(shapes.size)
+      await setIndex(shapes.length)
 
       setDrawing(true)
       setStartX(layerX)
       setStartY(layerY)
-      setShapes(shapes.push(Map(shape)))
+      setShapes([...shapes, shape])
     }
   }
 
@@ -184,16 +137,17 @@ export default function ShapeOverlay({
       const x1 = layerX - startX < 0 ? layerX : startX
       const y1 = layerY - startY < 0 ? layerY : startY
 
-      const s = shapes.get(index)
-      const obj = s.toObject()
+      const s = shapes.slice()
+      const obj = s[index]
       obj.width = w1
       obj.height = h1
       obj.x = x1
       obj.y = y1
+      s[index] = obj
 
       setStartX(x1)
       setStartY(y1)
-      setShapes(shapes.set(index, Map(obj)))
+      setShapes(s)
 
       setWidth(w1)
       setHeight(h1)
@@ -205,43 +159,44 @@ export default function ShapeOverlay({
   function onMouseUp(e) {
     if (shapeMode === 'insert' && drawing) {
       setDrawing(false)
-      const s = shapes.get(index)
-      const obj = s.toObject()
+      const s = shapes.slice()
+      const obj = s[index]
       obj.drawn = true
-      setShapes(shapes.set(index, Map(obj)))
+      s[index] = obj
+      setShapes(s)
     }
   }
 
   function onWidthChange(w1) {
-    setWidth(w1)
-    const s = shapes.get(index)
-    const obj = s.toObject()
+    const s = shapes.slice()
+    const obj = s[index]
     obj.width = w1
-    setShapes(shapes.set(index, Map(obj)))
+    s[index] = obj
+    setShapes(s)
   }
 
   function onHeightChange(h1) {
-    setHeight(h1)
-    const s = shapes.get(index)
-    const obj = s.toObject()
+    const s = shapes.slice()
+    const obj = s[index]
     obj.height = h1
-    setShapes(shapes.set(index, Map(obj)))
+    s[index] = obj
+    setShapes(s)
   }
 
   function onXChange(x1) {
-    setX(x1)
-    const s = shapes.get(index)
-    const obj = s.toObject()
+    const s = shapes.slice()
+    const obj = s[index]
     obj.x = x1
-    setShapes(shapes.set(index, Map(obj)))
+    s[index] = obj
+    setShapes(s)
   }
 
   function onYChange(y1) {
-    setY(y1)
-    const s = shapes.get(index)
-    const obj = s.toObject()
+    const s = shapes.slice()
+    const obj = s[index]
     obj.y = y1
-    setShapes(shapes.set(index, Map(obj)))
+    s[index] = obj
+    setShapes(s)
   }
 
   function onShapeClick(i) {
@@ -260,12 +215,12 @@ export default function ShapeOverlay({
       >
         <Inner ref={inner}>
           {shapes.map((el, i) => {
-            if (el.get('drawn') && i === index) {
+            if (el.drawn && i === index) {
               return (
                 <Rnd
                   key={i}
                   style={{
-                    zIndex: `${9 + el.get('index')}`,
+                    zIndex: `${9 + el.index}`,
                     border: '2px dotted lightgrey'
                   }}
                   bounds='parent'
@@ -274,11 +229,21 @@ export default function ShapeOverlay({
                   resizeHandleStyles={resizeHandleStyles}
                   lockAspectRatio={lockAspectRatio}
                   onDrag={(e, d) => {
+                    setX(d.x)
+                    setY(d.y)
+                  }}
+                  onDragStop={(e, d) => {
                     onXChange(d.x)
                     onYChange(d.y)
                   }}
                   onResize={(e, direction, ref, delta, position) => {
                     setLockAspectRatio(e.shiftKey)
+                    setWidth(ref.offsetWidth)
+                    setHeight(ref.offsetHeight)
+                    setX(position.x)
+                    setY(position.y)
+                  }}
+                  onResizeStop={(e, direction, ref, delta, position) => {
                     onWidthChange(ref.offsetWidth)
                     onHeightChange(ref.offsetHeight)
                     onXChange(position.x)
@@ -286,34 +251,34 @@ export default function ShapeOverlay({
                   }}
                 >
                   <Shape
-                    shape={el.get('shape')}
-                    strokeWidth={el.get('strokeWidth')}
-                    strokeColor={el.get('strokeColor')}
-                    fillColor={el.get('fillColor')}
+                    shape={el.shape}
+                    strokeWidth={el.strokeWidth}
+                    strokeColor={el.strokeColor}
+                    fillColor={el.fillColor}
                   />
                 </Rnd>
               )
             } else {
-              if (el.get('width') < 50 || el.get('height') < 50) {
+              if (el.width < 50 || el.height < 50) {
                 return null
               }
               return (
                 <Rnd
                   key={i}
                   style={{
-                    zIndex: `${9 + el.get('index')}`
+                    zIndex: `${9 + el.index}`
                   }}
                   bounds='parent'
-                  size={{ width: el.get('width'), height: el.get('height') }}
-                  position={{ x: el.get('x'), y: el.get('y') }}
+                  size={{ width: el.width, height: el.height }}
+                  position={{ x: el.x, y: el.y }}
                   enableResizing={false}
                   onClick={() => onShapeClick(i)}
                 >
                   <Shape
-                    shape={el.get('shape')}
-                    strokeWidth={el.get('strokeWidth')}
-                    strokeColor={el.get('strokeColor')}
-                    fillColor={el.get('fillColor')}
+                    shape={el.shape}
+                    strokeWidth={el.strokeWidth}
+                    strokeColor={el.strokeColor}
+                    fillColor={el.fillColor}
                   />
                 </Rnd>
               )
