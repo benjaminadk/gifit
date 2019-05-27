@@ -169,6 +169,10 @@ export default function Recorder() {
     }
     remote.globalShortcut.unregisterAll('Esc')
     remote.globalShortcut.register('Esc', () => onRecordStop())
+    return () => {
+      remote.globalShortcut.unregisterAll('Esc')
+      remote.globalShortcut.unregister('Esc', () => onRecordStop())
+    }
   }, [onRecordStop])
 
   // start recording frames

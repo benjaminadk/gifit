@@ -40,61 +40,6 @@ export default function Progress({
   onAccept,
   onCancel
 }) {
-  function onProgressThicknessChange({ target: { value } }) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 30) {
-        newValue = 30
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 1
-    }
-    setProgressThickness(newValue)
-  }
-
-  function onProgressThicknessBlur({ target: { value } }) {
-    if (!value) {
-      setProgressThickness(1)
-    }
-  }
-
-  function onProgressThicknessArrowClick(inc) {
-    var newValue
-    const currentValue = progressThickness
-    if (inc) {
-      if (currentValue < 30) {
-        newValue = currentValue + 1
-      } else {
-        newValue = currentValue
-      }
-    } else {
-      if (currentValue > 1) {
-        newValue = currentValue - 1
-      } else {
-        newValue = currentValue
-      }
-    }
-    setProgressThickness(newValue)
-  }
-
-  function onProgressSizeChange({ target: { value } }) {
-    const isDigit = /^\d*$/
-    var newValue
-    if (isDigit.test(value)) {
-      if (Number(value) > 200) {
-        newValue = 200
-      } else {
-        newValue = value
-      }
-    } else {
-      newValue = 40
-    }
-    setProgressSize(Number(newValue))
-  }
-
   return (
     <>
       <Header>

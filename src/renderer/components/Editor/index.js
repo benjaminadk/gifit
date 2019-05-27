@@ -23,11 +23,13 @@ import getTextXY from './getTextXY'
 import { AppContext } from '../App'
 import CropOverlay from './Crop/CropOverlay'
 import WatermarkOverlay from './Watermark/WatermarkOverlay'
+import ShapeOverlay from './Shape/ShapeOverlay'
 import Drawer from './Drawer'
 import Resize from './Resize'
 import Crop from './Crop'
 import TitleFrame from './TitleFrame'
 import FreeDrawing from './FreeDrawing'
+import Shape from './Shape'
 import Border from './Border'
 import Watermark from './Watermark'
 import Progress from './Progress'
@@ -137,6 +139,12 @@ export default function Editor() {
   const [cropY, setCropY] = useState(0)
 
   const [overrideMS, setOverrideMS] = useState(100)
+
+  const [shapeMode, setShapeMode] = useState('insert')
+  const [shapeType, setShapeType] = useState('rectangle')
+  const [shapeStrokeWidth, setShapeStrokeWidth] = useState(10)
+  const [shapeStrokeColor, setShapeStrokeColor] = useState('#000000')
+  const [shapeFillColor, setShapeFillColor] = useState('#FFFFFF00')
 
   const container = useRef(null)
   const main = useRef(null)
@@ -632,6 +640,8 @@ export default function Editor() {
         setScale(zoomToFit)
       } else if (mode === 'border') {
         setScale(1)
+      } else if (mode === 'shape') {
+        setScale(1)
       } else if (mode === 'progress') {
         setScale(1)
         setTimeout(() => {
@@ -1041,6 +1051,12 @@ export default function Editor() {
     ctx5.clearRect(0, 0, canvas5.current.width, canvas5.current.height)
   }
 
+  function onShapeAccept() {}
+
+  function onShapeCancel() {
+    setShowDrawer(false)
+  }
+
   // add configured border to selected frames
   async function onBorderAccept() {
     // draw function returns promise to make sure all borders are created
@@ -1379,6 +1395,15 @@ export default function Editor() {
             setWatermarkX={setWatermarkX}
             setWatermarkY={setWatermarkY}
           />
+          <ShapeOverlay
+            show={drawerMode === 'shape'}
+            gifData={gifData}
+            shapeMode={shapeMode}
+            shapeType={shapeType}
+            shapeStrokeWidth={shapeStrokeWidth}
+            shapeStrokeColor={shapeStrokeColor}
+            shapeFillColor={shapeFillColor}
+          />
         </Wrapper>
       </Main>
       <Thumbnails
@@ -1485,6 +1510,22 @@ export default function Editor() {
             setDrawEraserHeight={setDrawEraserHeight}
             onAccept={onDrawAccept}
             onCancel={onDrawCancel}
+          />
+        ) : drawerMode === 'shape' ? (
+          <Shape
+            drawerHeight={drawerHeight}
+            shapeMode={shapeMode}
+            shapeType={shapeType}
+            shapeStrokeWidth={shapeStrokeWidth}
+            shapeStrokeColor={shapeStrokeColor}
+            shapeFillColor={shapeFillColor}
+            setShapeMode={setShapeMode}
+            setShapeType={setShapeType}
+            setShapeStrokeWidth={setShapeStrokeWidth}
+            setShapeStrokeColor={setShapeStrokeColor}
+            setShapeFillColor={setShapeFillColor}
+            onAccept={onShapeAccept}
+            onCancel={onShapeCancel}
           />
         ) : drawerMode === 'border' ? (
           <Border
