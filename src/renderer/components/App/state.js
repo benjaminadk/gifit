@@ -52,7 +52,7 @@ const initialState = {
   sources: null,
   videoInputs: null,
   mode: 1,
-  projectFolder: '2019-05-28@04-57-02'
+  projectFolder: '2019-05-28@14-01-27'
 }
 
 export { reducer, initialState }

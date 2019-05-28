@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from 'react'
-import { remote } from 'electron'
+import { remote, ipcRenderer } from 'electron'
 import { List } from 'immutable'
 import path from 'path'
 import { writeFile, mkdir } from 'fs'
@@ -46,6 +46,7 @@ export default function Recorder() {
   const [times, setTimes] = useState(List([]))
   const [xCursors, setXCursors] = useState(List([]))
   const [yCursors, setYCursors] = useState(List([]))
+  const [cursors, setCursors] = useState(List([]))
 
   const [controlsX, setControlsX] = useState(screenWidth / 2)
   const [controlsY, setControlsY] = useState(screenHeight / 2)
@@ -69,6 +70,7 @@ export default function Recorder() {
   const timeLimit = useRef(null)
   const tray = useRef(null)
   const t1 = useRef(null)
+  const isClicked = useRef(null)
 
   const zoomCanvas1 = useRef(null)
   const zoomCanvas2 = useRef(null)
@@ -152,13 +154,17 @@ export default function Recorder() {
 
   useEffect(() => {
     if ([4, 5].includes(mode)) {
-      tray.current = new remote.Tray(RECORDING_ICON)
+      ipcRenderer.send('record', { isRecording: true, id: remote.getCurrentWindow().id })
+      ipcRenderer.on('mouse-watch', (e, bool) => {
+        isClicked.current = bool
+      })
     } else if (mode === 6) {
-      tray.current.setImage(PAUSED_ICON)
+      ipcRenderer.send('record', { isRecording: false, id: null })
     }
 
     return () => {
-      tray.current && tray.current.destroy()
+      ipcRenderer.removeAllListeners('mouse-watch')
+      ipcRenderer.send('record', { isRecording: false, id: null })
     }
   }, [mode])
 
@@ -182,7 +188,7 @@ export default function Recorder() {
     }
 
     setMode(3)
-    remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
+
     // if useCountdown is true display it then record
     await new Promise(resolve => {
       if (useCountdown) {
@@ -205,6 +211,9 @@ export default function Recorder() {
         resolve()
       }, 500)
     })
+
+    tray.current = new remote.Tray(RECORDING_ICON)
+    remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
 
     // create full screen canvas
     canvas1.current = document.createElement('canvas')
@@ -267,6 +276,7 @@ export default function Recorder() {
     const { x, y } = remote.screen.getCursorScreenPoint()
     setXCursors(cur => cur.push(x))
     setYCursors(cur => cur.push(y))
+    setCursors(cur => cur.push(isClicked.current))
   }
 
   // stop recording and process frames into project
@@ -277,8 +287,9 @@ export default function Recorder() {
     }
 
     // clean up
+    ipcRenderer.send('record', { isRecording: false, id: null })
     clearInterval(captureInterval.current)
-    tray.current.destroy()
+    tray.current && tray.current.destroy()
     remote.globalShortcut.unregister('Esc', () => onRecordStop())
     // create a new directory for project
     const folder = createFolderName()
@@ -292,7 +303,8 @@ export default function Recorder() {
         path: filepath,
         time: times.get(i),
         cursorX: xCursors.get(i),
-        cursorY: yCursors.get(i)
+        cursorY: yCursors.get(i),
+        clicked: cursors.get(i)
       })
       const base64Data = frame.replace(IMAGE_REGEX, '')
       await writeFileAsync(filepath, base64Data, {

@@ -25,6 +25,7 @@
   "dependencies": {
     "date-fns": "2.0.0-alpha.27",
     "immutable": "4.0.0-rc.12",
+    "iohook": "0.4.6",
     "polished": "3.2.0",
     "react": "16.8.6",
     "react-dom": "16.8.6",
@@ -57,5 +58,22 @@
     "directories": {
       "output": "release"
     }
+  },
+  "iohook": {
+    "targets": [
+      "node-72",
+      "electron-70"
+    ],
+    "platforms": [
+      "win32"
+    ],
+    "arches": [
+      "x64",
+      "ia32"
+    ]
+  },
+  "cmake-js": {
+    "runtime": "electron",
+    "runtimeVersion": "5.0.0"
   }
 }

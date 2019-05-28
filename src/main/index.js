@@ -1,4 +1,5 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
+import ioHook from 'iohook'
 import path from 'path'
 import installDevTools from './installDevTools'
 import getURL from 'common/getURL'
@@ -10,6 +11,8 @@ const {
 } = config
 
 let mainWindow
+var recording = false
+var recorderId = null
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -33,6 +36,7 @@ function createMainWindow() {
 
   mainWindow.on('close', () => {
     mainWindow = null
+    ipcMain.removeListener('record', onRecord)
   })
 }
 
@@ -42,3 +46,24 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+function onRecord(e, { isRecording, id }) {
+  recording = isRecording
+  recorderId = id
+}
+
+ipcMain.on('record', onRecord)
+
+ioHook.on('mousedown', e => {
+  if (recording && recorderId) {
+    BrowserWindow.fromId(recorderId).webContents.send('mouse-watch', true)
+  }
+})
+
+ioHook.on('mouseup', e => {
+  if (recording && recorderId) {
+    BrowserWindow.fromId(recorderId).webContents.send('mouse-watch', false)
+  }
+})
+
+ioHook.start()

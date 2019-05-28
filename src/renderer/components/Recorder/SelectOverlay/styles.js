@@ -10,7 +10,7 @@ export const Background = styled.div.attrs(p => ({
 }))`
   position: absolute;
   z-index: 1;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
 `
 
 export const Dimensions = styled.div`
