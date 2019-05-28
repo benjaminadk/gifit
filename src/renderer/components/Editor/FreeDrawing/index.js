@@ -1,15 +1,11 @@
 import React from 'react'
-import { Check } from 'styled-icons/material/Check'
-import { Close } from 'styled-icons/material/Close'
-import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
 import { PenNib } from 'styled-icons/fa-solid/PenNib'
 import { Eraser } from 'styled-icons/boxicons-solid/Eraser'
-import { Square } from 'styled-icons/fa-regular/Square'
-import { Circle } from 'styled-icons/boxicons-regular/Circle'
 import Choice from '../../Shared/Choice'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import Checkbox from '../../Shared/Checkbox'
+import Svg from '../../Svg'
 import { Header, Main, Section, ChoiceRow, Property, Label, Footer, Button } from '../Drawer/styles'
 
 export default function FreeDrawing({
@@ -37,11 +33,11 @@ export default function FreeDrawing({
     <>
       <Header>
         <div className='left'>
-          <PenFancy />
+          <Svg name='draw' />
           <div className='text'>Free Drawing</div>
         </div>
         <div className='right'>
-          <Close onClick={onCancel} />
+          <Svg name='close' onClick={onCancel} />
         </div>
       </Header>
       <Main height={drawerHeight}>
@@ -106,13 +102,13 @@ export default function FreeDrawing({
                   <ChoiceRow>
                     <Choice
                       selected={drawShape === 'rectangle'}
-                      icon={<Square />}
+                      icon={<Svg name='rectangle' />}
                       label='Rectangle'
                       onClick={() => setDrawShape('rectangle')}
                     />
                     <Choice
                       selected={drawShape === 'ellipsis'}
-                      icon={<Circle />}
+                      icon={<Svg name='shape' />}
                       label='Ellipsis'
                       onClick={() => setDrawShape('ellipsis')}
                     />
@@ -167,11 +163,11 @@ export default function FreeDrawing({
       </Main>
       <Footer>
         <Button width={115} onClick={onAccept}>
-          <Check />
+          <Svg name='check' />
           <div className='text'>Accept</div>
         </Button>
         <Button width={115} onClick={onCancel}>
-          <Close />
+          <Svg name='cancel' />
           <div className='text'>Cancel</div>
         </Button>
       </Footer>
