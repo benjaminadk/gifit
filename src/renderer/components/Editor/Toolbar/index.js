@@ -1,12 +1,10 @@
 import React, { useState } from 'react'
 import { format } from 'date-fns'
-import { Edit } from 'styled-icons/material/Edit'
 import { Transfer } from 'styled-icons/boxicons-regular/Transfer'
 import { Stats } from 'styled-icons/boxicons-regular/Stats'
 import { Hashtag } from 'styled-icons/fa-solid/Hashtag'
 import { PhotoSizeSelectLarge } from 'styled-icons/material/PhotoSizeSelectLarge'
 import { AccessTime } from 'styled-icons/material/AccessTime'
-import { PenFancy } from 'styled-icons/fa-solid/PenFancy'
 import { ChevronDown } from 'styled-icons/boxicons-regular/ChevronDown'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
@@ -31,7 +29,7 @@ const tabs = [
   { icon: <Svg name='save' />, text: 'File' },
   { icon: <Svg name='editor' />, text: 'Home' },
   { icon: <Svg name='play' />, text: 'Playback' },
-  { icon: <Edit />, text: 'Edit' },
+  { icon: <Svg name='pen' />, text: 'Edit' },
   { icon: <Svg name='image' />, text: 'Image' },
   { icon: <Transfer />, text: 'Transitions' },
   { icon: <Stats />, text: 'Statistics' }

@@ -50,13 +50,13 @@ export default function FreeDrawing({
             <ChoiceRow>
               <Choice
                 selected={drawType === 'pen'}
-                icon={<PenNib />}
+                icon={<Svg name='pen' />}
                 label='Pen'
                 onClick={() => setDrawType('pen')}
               />
               <Choice
                 selected={drawType === 'eraser'}
-                icon={<Eraser />}
+                icon={<Svg name='eraser' />}
                 label='Eraser'
                 onClick={() => setDrawType('eraser')}
               />
