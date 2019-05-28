@@ -373,6 +373,21 @@ export default function Svg({ name, ...rest }) {
             />
           </>
         )
+      case 'obfuscate':
+        return (
+          <>
+            <path fill='gray' d='M0 0h16.7v16.7H0z' />
+            <path fill='#fff' d='M0 16.7h16.7v16.7H0z' />
+            <path fill='gray' d='M0 33.4h16.7v16.7H0z' />
+            <path fill='#fff' d='M16.7 0h16.7v16.7H16.7z' />
+            <path fill='gray' d='M16.7 16.7h16.7v16.7H16.7z' />
+            <path fill='#fff' d='M16.7 33.4h16.7v16.7H16.7z' />
+            <path fill='gray' d='M33.4 0h16.7v16.7H33.4z' />
+            <path fill='#fff' d='M33.4 16.7h16.7v16.7H33.4z' />
+            <path fill='gray' d='M33.4 33.4h16.7v16.7H33.4z' />
+            <path fill='none' stroke='gray' strokeWidth='2' d='M1 1h48.079v48.158H1z' />
+          </>
+        )
       case 'pause':
         return <path fill='#407eb5' d='M5 2h15v46H5zM30 1.804h15v46H30z' />
       case 'play':

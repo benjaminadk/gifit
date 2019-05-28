@@ -140,6 +140,7 @@ export default function Editor() {
 
   const [overrideMS, setOverrideMS] = useState(100)
 
+  const [shapeArray, setShapeArray] = useState([])
   const [shapeMode, setShapeMode] = useState('insert')
   const [shapeType, setShapeType] = useState('rectangle')
   const [shapeStrokeWidth, setShapeStrokeWidth] = useState(10)
@@ -1051,7 +1052,67 @@ export default function Editor() {
     ctx5.clearRect(0, 0, canvas5.current.width, canvas5.current.height)
   }
 
-  function onShapeAccept() {}
+  async function onShapeAccept() {
+    async function draw() {
+      return new Promise(resolve => {
+        const lastIndex = selected.findLastIndex(el => el)
+
+        const c1 = document.createElement('canvas')
+        c1.width = gifData.width
+        c1.height = gifData.height
+        const ctx1 = c1.getContext('2d')
+        for (const shape of shapeArray) {
+          console.log(shape)
+          ctx1.beginPath()
+          if (shape.shape === 'rectangle') {
+            ctx1.rect(shape.x, shape.y, shape.width, shape.height)
+          } else if (shape.shape === 'ellipsis') {
+            ctx1.ellipse(shape.x, shape.y, shape.width / 2, shape.height / 2, 0, 0, Math.PI * 2)
+          }
+          ctx1.strokeStyle = shape.strokeColor
+          ctx1.lineWidth = shape.strokeWidth
+          ctx1.fillStyle = shape.fillColor
+          ctx1.stroke()
+          ctx1.fill()
+        }
+
+        for (const [i, bool] of selected.toArray().entries()) {
+          if (bool) {
+            const reader = new FileReader()
+
+            reader.onload = () => {
+              const filepath = originalPaths[i]
+              const buffer = Buffer.from(reader.result)
+              writeFileAsync(filepath, buffer).then(() => {
+                images[i].path = createHashPath(images[i].path)
+                if (i === lastIndex) {
+                  resolve()
+                }
+              })
+            }
+
+            const c2 = document.createElement('canvas')
+            c2.width = gifData.width
+            c2.height = gifData.height
+            const ctx2 = c2.getContext('2d')
+            const image = new Image()
+            image.onload = () => {
+              ctx2.drawImage(image, 0, 0)
+              ctx2.drawImage(c1, 0, 0)
+              c2.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            }
+            image.src = images[i].path
+          }
+        }
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    setLoading(false)
+    setShowDrawer(false)
+    setScale(zoomToFit)
+  }
 
   function onShapeCancel() {
     setShowDrawer(false)
@@ -1398,11 +1459,16 @@ export default function Editor() {
           <ShapeOverlay
             show={drawerMode === 'shape'}
             gifData={gifData}
+            shapeArray={shapeArray}
             shapeMode={shapeMode}
             shapeType={shapeType}
             shapeStrokeWidth={shapeStrokeWidth}
             shapeStrokeColor={shapeStrokeColor}
             shapeFillColor={shapeFillColor}
+            setShapeArray={setShapeArray}
+            setShapeStrokeWidth={setShapeStrokeWidth}
+            setShapeStrokeColor={setShapeStrokeColor}
+            setShapeFillColor={setShapeFillColor}
           />
         </Wrapper>
       </Main>

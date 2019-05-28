@@ -6,13 +6,17 @@ import { Container, Inner, Shape, resizeHandleStyles } from './styles'
 export default function ShapeOverlay({
   show,
   gifData,
+  shapeArray,
   shapeMode,
   shapeType,
   shapeStrokeWidth,
   shapeStrokeColor,
-  shapeFillColor
+  shapeFillColor,
+  setShapeArray,
+  setShapeStrokeWidth,
+  setShapeStrokeColor,
+  setShapeFillColor
 }) {
-  const [shapes, setShapes] = useState([])
   const [index, setIndex] = useState(null)
   const [drawing, setDrawing] = useState(false)
   const [startX, setStartX] = useState(null)
@@ -37,18 +41,29 @@ export default function ShapeOverlay({
 
   useEffect(() => {
     async function onDeleteShape() {
-      if (shapes.length) {
-        const s = shapes.slice()
+      if (shapeArray.length) {
+        const s = shapeArray.slice()
         s.splice(index, 1)
-        // const obj = s[index]
-        // obj.show = false
-        // s[index] = obj
-        await setShapes(s)
-        await setIndex(null)
+        await setShapeArray(s)
+        var newIndex
+        if (s.length) {
+          if (s.length === 1) {
+            newIndex = 0
+          } else {
+            if (index === 0) {
+              newIndex = 0
+            } else {
+              newIndex = index - 1
+            }
+          }
+        } else {
+          newIndex = null
+        }
+        await setIndex(newIndex)
       }
     }
 
-    if (!shapes.length) {
+    if (!shapeArray.length) {
       remote.globalShortcut.unregisterAll('Ctrl+Backspace')
     }
     remote.globalShortcut.unregister('Ctrl+Backspace', onDeleteShape)
@@ -57,58 +72,40 @@ export default function ShapeOverlay({
     return () => {
       remote.globalShortcut.unregister('Ctrl+Backspace', onDeleteShape)
     }
-  }, [shapes, index])
+  }, [shapeArray, index])
 
   useEffect(() => {
-    if (!shapes.length) return
-    const s = shapes.slice()
+    if (!shapeArray.length) return
+    const s = shapeArray.slice()
     const obj = s[index]
     obj.strokeColor = shapeStrokeColor
     s[index] = obj
-    setShapes(s)
+    setShapeArray(s)
   }, [shapeStrokeColor])
 
   useEffect(() => {
-    if (!shapes.length) return
-    const s = shapes.slice()
+    if (!shapeArray.length) return
+    const s = shapeArray.slice()
     const obj = s[index]
     obj.fillColor = shapeFillColor
     s[index] = obj
-    setShapes(s)
+    setShapeArray(s)
   }, [shapeFillColor])
 
   useEffect(() => {
-    if (!shapes.length) return
-    const s = shapes.slice()
+    if (!shapeArray.length) return
+    const s = shapeArray.slice()
     const obj = s[index]
     obj.strokeWidth = shapeStrokeWidth
     s[index] = obj
-    setShapes(s)
+    setShapeArray(s)
   }, [shapeStrokeWidth])
-
-  useEffect(() => {
-    if (shapeMode === 'select') {
-      onSwitchIndex()
-    }
-  }, [shapes.length, index, shapeMode])
-
-  function onSwitchIndex() {
-    if (shapes.length && index !== null) {
-      const s = shapes.slice()
-      const obj = s[index]
-      if (!obj) return
-      setWidth(obj.width)
-      setHeight(obj.height)
-      setX(obj.x)
-      setY(obj.y)
-    }
-  }
 
   async function onMouseDown(e) {
     if (shapeMode === 'insert' && e.target === inner.current) {
       const { layerX, layerY } = e.nativeEvent
       const shape = {
-        index: shapes.length,
+        index: shapeArray.length,
         drawn: false,
         shape: shapeType,
         width: 0,
@@ -120,12 +117,12 @@ export default function ShapeOverlay({
         strokeWidth: shapeStrokeWidth
       }
 
-      await setIndex(shapes.length)
+      await setIndex(shapeArray.length)
 
       setDrawing(true)
       setStartX(layerX)
       setStartY(layerY)
-      setShapes([...shapes, shape])
+      setShapeArray([...shapeArray, shape])
     }
   }
 
@@ -137,7 +134,7 @@ export default function ShapeOverlay({
       const x1 = layerX - startX < 0 ? layerX : startX
       const y1 = layerY - startY < 0 ? layerY : startY
 
-      const s = shapes.slice()
+      const s = shapeArray.slice()
       const obj = s[index]
       obj.width = w1
       obj.height = h1
@@ -147,7 +144,7 @@ export default function ShapeOverlay({
 
       setStartX(x1)
       setStartY(y1)
-      setShapes(s)
+      setShapeArray(s)
 
       setWidth(w1)
       setHeight(h1)
@@ -159,49 +156,61 @@ export default function ShapeOverlay({
   function onMouseUp(e) {
     if (shapeMode === 'insert' && drawing) {
       setDrawing(false)
-      const s = shapes.slice()
+      const s = shapeArray.slice()
       const obj = s[index]
       obj.drawn = true
       s[index] = obj
-      setShapes(s)
+      setShapeArray(s)
     }
   }
 
   function onWidthChange(w1) {
-    const s = shapes.slice()
+    const s = shapeArray.slice()
     const obj = s[index]
     obj.width = w1
     s[index] = obj
-    setShapes(s)
+    setShapeArray(s)
   }
 
   function onHeightChange(h1) {
-    const s = shapes.slice()
+    const s = shapeArray.slice()
     const obj = s[index]
     obj.height = h1
     s[index] = obj
-    setShapes(s)
+    setShapeArray(s)
   }
 
   function onXChange(x1) {
-    const s = shapes.slice()
+    const s = shapeArray.slice()
     const obj = s[index]
     obj.x = x1
     s[index] = obj
-    setShapes(s)
+    setShapeArray(s)
   }
 
   function onYChange(y1) {
-    const s = shapes.slice()
+    const s = shapeArray.slice()
     const obj = s[index]
     obj.y = y1
     s[index] = obj
-    setShapes(s)
+    setShapeArray(s)
   }
 
   function onShapeClick(i) {
     if (shapeMode === 'select') {
       setIndex(i)
+
+      const s = shapeArray.slice()
+      const obj = s[i]
+      if (!obj) return
+
+      setWidth(obj.width)
+      setHeight(obj.height)
+      setX(obj.x)
+      setY(obj.y)
+      setShapeStrokeWidth(obj.strokeWidth)
+      setShapeStrokeColor(obj.strokeColor)
+      setShapeFillColor(obj.fillColor)
     }
   }
 
@@ -214,7 +223,7 @@ export default function ShapeOverlay({
         onMouseMove={onMouseMove}
       >
         <Inner ref={inner}>
-          {shapes.map((el, i) => {
+          {shapeArray.map((el, i) => {
             if (el.drawn && i === index) {
               return (
                 <Rnd
