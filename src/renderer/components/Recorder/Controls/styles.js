@@ -1,6 +1,13 @@
 import styled from 'styled-components'
 import { lighten, darken } from 'polished'
 
+export const Inner = styled.div`
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 30px 40px;
+`
+
 export const Top = styled.div`
   display: grid;
   grid-template-columns: 1fr 30px;

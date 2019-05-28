@@ -182,6 +182,7 @@ export default function Recorder() {
     }
 
     setMode(3)
+    remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
     // if useCountdown is true display it then record
     await new Promise(resolve => {
       if (useCountdown) {
@@ -382,6 +383,18 @@ export default function Recorder() {
     setMode(0)
   }
 
+  function onControlsEnter() {
+    if ([4, 5, 6].includes(mode)) {
+      remote.getCurrentWindow().setIgnoreMouseEvents(false)
+    }
+  }
+
+  function onControlsLeave() {
+    if ([4, 5, 6].includes(mode)) {
+      remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
+    }
+  }
+
   return (
     <Container
       crosshair={mode === 1 && !done}
@@ -406,6 +419,8 @@ export default function Recorder() {
         onRecordPause={onRecordPause}
         onRecordResume={onRecordResume}
         onCloseClick={onCloseClick}
+        onControlsEnter={onControlsEnter}
+        onControlsLeave={onControlsLeave}
       />
       <ZoomOverlay
         show={mode === 1 && !drawing && !done}

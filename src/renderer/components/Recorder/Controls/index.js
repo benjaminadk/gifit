@@ -5,7 +5,7 @@ import initializeOptions from '../../Options/initializeOptions'
 import FrameRate from '../../Shared/FrameRate'
 import Svg from '../../Svg'
 import { AppContext } from '../../App'
-import { Top, Bottom, SourceSelect } from './styles'
+import { Inner, Top, Bottom, SourceSelect } from './styles'
 import config from 'common/config'
 
 const {
@@ -28,7 +28,9 @@ export default function Controls({
   onRecordStop,
   onRecordPause,
   onRecordResume,
-  onCloseClick
+  onCloseClick,
+  onControlsEnter,
+  onControlsLeave
 }) {
   const { state, dispatch } = useContext(AppContext)
   const { options, optionsOpen } = state
@@ -72,8 +74,6 @@ export default function Controls({
         visibility:
           [0, 2, 4, 6].includes(mode) || (mode === 3 && useCountdown) ? 'visible' : 'hidden',
         zIndex: 2,
-        display: 'grid',
-        gridTemplateRows: '30px 40px',
         background: '#FFFFFF',
         outline: '1px solid #CFCFCF'
       }}
@@ -86,56 +86,58 @@ export default function Controls({
       }}
       enableResizing={false}
     >
-      <Top>
-        <div className='text'>
-          GifIt{' '}
-          {mode === 3 && useCountdown
-            ? `(Prestart Recording ${time}s)`
-            : [4, 6].includes(mode)
-            ? count
-            : ''}
-        </div>
-        <div className='close' onClick={onCloseClick}>
-          <Svg name='close' />
-        </div>
-      </Top>
-      <Bottom>
-        <div className='button' onClick={onOptionsClick}>
-          <Svg name='settings' />
-        </div>
-        <FrameRate />
-        <div className='divider' />
-        <SourceSelect show={showSelect}>
-          <div className='selected'>
-            <div className='icon' onClick={onCaptureClick}>
-              <Svg name={captureType} />
-            </div>
-            <div className='arrow' onClick={() => setShowSelect(!showSelect)}>
-              {'\u2bc6'}
-            </div>
+      <Inner onMouseEnter={onControlsEnter} onMouseLeave={onControlsLeave}>
+        <Top>
+          <div className='text'>
+            GifIt{' '}
+            {mode === 3 && useCountdown
+              ? `(Prestart Recording ${time}s)`
+              : [4, 6].includes(mode)
+              ? count
+              : ''}
           </div>
-          <div className='options'>
-            <div className='option' onClick={() => setCaptureType('crop')}>
-              <Svg name='crop' />
-              <div className='text'>Area</div>
-            </div>
-            <div className='option' onClick={() => setCaptureType('screen')}>
-              <Svg name='screen' />
-              <div className='text'>Screen</div>
-            </div>
+          <div className='close' onClick={onCloseClick}>
+            <Svg name='close' />
           </div>
-        </SourceSelect>
-        <div className='divider' />
-        <div
-          className='button'
-          onClick={mode === 4 ? onRecordPause : mode === 6 ? onRecordResume : onRecordStart}
-        >
-          <Svg name={mode === 4 ? 'pause' : 'record'} />
-        </div>
-        <div className='button' onClick={onRecordStop}>
-          <Svg name='stop' />
-        </div>
-      </Bottom>
+        </Top>
+        <Bottom>
+          <div className='button' onClick={onOptionsClick}>
+            <Svg name='settings' />
+          </div>
+          <FrameRate />
+          <div className='divider' />
+          <SourceSelect show={showSelect}>
+            <div className='selected'>
+              <div className='icon' onClick={onCaptureClick}>
+                <Svg name={captureType} />
+              </div>
+              <div className='arrow' onClick={() => setShowSelect(!showSelect)}>
+                {'\u2bc6'}
+              </div>
+            </div>
+            <div className='options'>
+              <div className='option' onClick={() => setCaptureType('crop')}>
+                <Svg name='crop' />
+                <div className='text'>Area</div>
+              </div>
+              <div className='option' onClick={() => setCaptureType('screen')}>
+                <Svg name='screen' />
+                <div className='text'>Screen</div>
+              </div>
+            </div>
+          </SourceSelect>
+          <div className='divider' />
+          <div
+            className='button'
+            onClick={mode === 4 ? onRecordPause : mode === 6 ? onRecordResume : onRecordStart}
+          >
+            <Svg name={mode === 4 ? 'pause' : 'record'} />
+          </div>
+          <div className='button' onClick={onRecordStop}>
+            <Svg name='stop' />
+          </div>
+        </Bottom>
+      </Inner>
     </Rnd>
   )
 }
