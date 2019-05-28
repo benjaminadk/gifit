@@ -32,6 +32,7 @@ import TitleFrame from './TitleFrame'
 import FreeDrawing from './FreeDrawing'
 import Shape from './Shape'
 import Border from './Border'
+import MouseClicks from './MouseClicks'
 import Watermark from './Watermark'
 import Progress from './Progress'
 import Obfuscate from './Obfuscate'
@@ -114,6 +115,10 @@ export default function Editor() {
   const [progressFont, setProgressFont] = useState('Segoe UI')
   const [progressStyle, setProgressStyle] = useState('Normal')
   const [progressPrecision, setProgressPrecision] = useState('Seconds')
+
+  const [clicksColor, setClicksColor] = useState('#FFFF00')
+  const [clicksWidth, setClicksWidth] = useState(20)
+  const [clicksHeight, setClicksHeight] = useState(20)
 
   const [watermarkPath, setWatermarkPath] = useState('')
   const [watermarkWidth, setWatermarkWidth] = useState(0)
@@ -1072,14 +1077,16 @@ export default function Editor() {
         c1.width = gifData.width
         c1.height = gifData.height
         const ctx1 = c1.getContext('2d')
+
         for (const shape of shapeArray) {
-          console.log(shape)
           ctx1.beginPath()
+
           if (shape.shape === 'rectangle') {
             ctx1.rect(shape.x, shape.y, shape.width, shape.height)
           } else if (shape.shape === 'ellipsis') {
             ctx1.ellipse(shape.x, shape.y, shape.width / 2, shape.height / 2, 0, 0, Math.PI * 2)
           }
+
           ctx1.strokeStyle = shape.strokeColor
           ctx1.lineWidth = shape.strokeWidth
           ctx1.fillStyle = shape.fillColor
@@ -1219,16 +1226,16 @@ export default function Editor() {
             })
           }
           // draw image then progress on top of it
-          const canvas = document.createElement('canvas')
-          canvas.width = gifData.width
-          canvas.height = gifData.height
-          const ctx = canvas.getContext('2d')
-          const image = new Image()
-          image.onload = () => {
-            ctx.drawImage(image, 0, 0)
+          const c1 = document.createElement('canvas')
+          c1.width = gifData.width
+          c1.height = gifData.height
+          const ctx1 = c1.getContext('2d')
+          const image1 = new Image()
+          image1.onload = () => {
+            ctx1.drawImage(image1, 0, 0)
             if (progressType === 'bar') {
               drawProgressBar(
-                canvas,
+                c1,
                 Math.round((i / (images.length - 1)) * 100),
                 progressBackground,
                 progressHorizontal,
@@ -1238,7 +1245,7 @@ export default function Editor() {
               )
             } else if (progressType === 'text') {
               drawProgressText(
-                canvas,
+                c1,
                 times[i],
                 totalDuration,
                 progressBackground,
@@ -1251,7 +1258,7 @@ export default function Editor() {
                 progressPrecision
               )
             }
-            canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
           }
           image.src = images[i].path
         }
@@ -1268,6 +1275,63 @@ export default function Editor() {
   function onProgressCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
+  }
+
+  async function onClicksAccept() {
+    async function draw() {
+      return new Promise(resolve => {
+        const lastIndex = List(images).findLastIndex(el => el.clicked)
+
+        for (const [i, image] of images.entries()) {
+          if (image.clicked) {
+            const reader = new FileReader()
+
+            reader.onload = () => {
+              const filepath = originalPaths[i]
+              const buffer = Buffer.from(reader.result)
+              writeFileAsync(filepath, buffer).then(() => {
+                images[i].path = createHashPath(images[i].path)
+                if (i === lastIndex) {
+                  resolve()
+                }
+              })
+            }
+
+            const c1 = document.createElement('canvas')
+            c1.width = gifData.width
+            c1.height = gifData.height
+            const ctx1 = c1.getContext('2d')
+            const image1 = new Image()
+            image1.onload = () => {
+              ctx1.drawImage(image1, 0, 0)
+              ctx1.fillStyle = clicksColor + '80'
+              ctx1.beginPath()
+              ctx1.ellipse(
+                image.cursorX,
+                image.cursorY,
+                clicksWidth / 2,
+                clicksHeight / 2,
+                0,
+                0,
+                Math.PI * 2
+              )
+              ctx1.fill()
+              c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            }
+            image1.src = image.path
+          }
+        }
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    setLoading(false)
+    setShowDrawer(false)
+  }
+
+  function onClicksCancel() {
+    setShowDrawer(false)
   }
 
   async function onObfuscateAccept() {
@@ -1785,6 +1849,18 @@ export default function Editor() {
             setProgressPrecision={setProgressPrecision}
             onAccept={onProgressAccept}
             onCancel={onProgressCancel}
+          />
+        ) : drawerMode === 'clicks' ? (
+          <MouseClicks
+            drawerHeight={drawerHeight}
+            clicksColor={clicksColor}
+            clicksWidth={clicksWidth}
+            clicksHeight={clicksHeight}
+            setClicksColor={setClicksColor}
+            setClicksWidth={setClicksWidth}
+            setClicksHeight={setClicksHeight}
+            onAccept={onClicksAccept}
+            onCancel={onClicksCancel}
           />
         ) : drawerMode === 'obfuscate' ? (
           <Obfuscate

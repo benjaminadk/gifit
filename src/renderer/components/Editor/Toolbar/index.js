@@ -236,8 +236,8 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>Text</SectionText>
             </Section>
-            <Section width={450}>
-              <GenericGrid columns={6}>
+            <Section width={525}>
+              <GenericGrid columns={7}>
                 <Action onClick={() => onOpenDrawer('drawing')}>
                   <Svg name='draw' />
                   <div className='text'>Free Drawing</div>
@@ -249,6 +249,10 @@ export default function Toolbar({
                 <Action onClick={() => onOpenDrawer('progress')}>
                   <Svg name='progress' />
                   <div className='text'>Progress</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('clicks')}>
+                  <Svg name='cursor' />
+                  <div className='text'>Mouse Clicks</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('border')}>
                   <Svg name='border' />
