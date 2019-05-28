@@ -24,6 +24,7 @@ import { AppContext } from '../App'
 import CropOverlay from './Crop/CropOverlay'
 import WatermarkOverlay from './Watermark/WatermarkOverlay'
 import ShapeOverlay from './Shape/ShapeOverlay'
+import ObfuscateOverlay from './Obfuscate/ObfuscateOverlay'
 import Drawer from './Drawer'
 import Resize from './Resize'
 import Crop from './Crop'
@@ -33,6 +34,7 @@ import Shape from './Shape'
 import Border from './Border'
 import Watermark from './Watermark'
 import Progress from './Progress'
+import Obfuscate from './Obfuscate'
 import RecentProjects from './RecentProjects'
 import Override from './Override'
 import Toolbar from './Toolbar'
@@ -139,6 +141,12 @@ export default function Editor() {
   const [cropY, setCropY] = useState(0)
 
   const [overrideMS, setOverrideMS] = useState(100)
+
+  const [obfuscatePixels, setObfuscatePixels] = useState(10)
+  const [obfuscateWidth, setObfuscateWidth] = useState(null)
+  const [obfuscateHeight, setObfuscateHeight] = useState(null)
+  const [obfuscateX, setObfuscateX] = useState(null)
+  const [obfuscateY, setObfuscateY] = useState(null)
 
   const [shapeArray, setShapeArray] = useState([])
   const [shapeMode, setShapeMode] = useState('insert')
@@ -658,6 +666,8 @@ export default function Editor() {
         setScale(1)
       } else if (mode === 'drawing') {
         setScale(1)
+      } else if (mode === 'obfuscate') {
+        setScale(1)
       } else if (mode === 'resize') {
       } else if (mode === 'crop') {
         setScale(1)
@@ -1116,6 +1126,7 @@ export default function Editor() {
 
   function onShapeCancel() {
     setShowDrawer(false)
+    setScale(zoomToFit)
   }
 
   // add configured border to selected frames
@@ -1254,6 +1265,13 @@ export default function Editor() {
 
   // cancel adding progress bar
   function onProgressCancel() {
+    setShowDrawer(false)
+    setScale(zoomToFit)
+  }
+
+  function onObfuscateAccept() {}
+
+  function onObfuscateCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
   }
@@ -1470,6 +1488,18 @@ export default function Editor() {
             setShapeStrokeColor={setShapeStrokeColor}
             setShapeFillColor={setShapeFillColor}
           />
+          <ObfuscateOverlay
+            show={drawerMode === 'obfuscate'}
+            gifData={gifData}
+            obfuscateWidth={obfuscateWidth}
+            obfuscateHeight={obfuscateHeight}
+            obfuscateX={obfuscateX}
+            obfuscateY={obfuscateY}
+            setObfuscateWidth={setObfuscateWidth}
+            setObfuscateHeight={setObfuscateHeight}
+            setObfuscateX={setObfuscateX}
+            setObfuscateY={setObfuscateY}
+          />
         </Wrapper>
       </Main>
       <Thumbnails
@@ -1637,6 +1667,14 @@ export default function Editor() {
             setProgressPrecision={setProgressPrecision}
             onAccept={onProgressAccept}
             onCancel={onProgressCancel}
+          />
+        ) : drawerMode === 'obfuscate' ? (
+          <Obfuscate
+            drawerHeight={drawerHeight}
+            obfuscatePixels={obfuscatePixels}
+            setObfuscatePixels={setObfuscatePixels}
+            onAccept={onObfuscateAccept}
+            onCancel={onObfuscateCancel}
           />
         ) : drawerMode === 'watermark' ? (
           <Watermark

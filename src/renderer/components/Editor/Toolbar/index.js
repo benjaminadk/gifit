@@ -238,8 +238,8 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>Text</SectionText>
             </Section>
-            <Section width={375}>
-              <GenericGrid columns={5}>
+            <Section width={450}>
+              <GenericGrid columns={6}>
                 <Action onClick={() => onOpenDrawer('drawing')}>
                   <Svg name='draw' />
                   <div className='text'>Free Drawing</div>
@@ -248,13 +248,17 @@ export default function Toolbar({
                   <Svg name='shape' />
                   <div className='text'>Shape</div>
                 </Action>
+                <Action onClick={() => onOpenDrawer('progress')}>
+                  <Svg name='progress' />
+                  <div className='text'>Progress</div>
+                </Action>
                 <Action onClick={() => onOpenDrawer('border')}>
                   <Svg name='border' />
                   <div className='text'>Border</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('progress')}>
-                  <Svg name='progress' />
-                  <div className='text'>Progress</div>
+                <Action onClick={() => onOpenDrawer('obfuscate')}>
+                  <Svg name='obfuscate' />
+                  <div className='text'>Obfuscate</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('watermark')}>
                   <Svg name='watermark' />

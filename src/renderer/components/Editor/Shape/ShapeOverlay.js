@@ -230,7 +230,7 @@ export default function ShapeOverlay({
                   key={i}
                   style={{
                     zIndex: `${9 + el.index}`,
-                    border: '2px dotted lightgrey'
+                    border: '2px dashed lightgrey'
                   }}
                   bounds='parent'
                   size={{ width: width, height: height }}
