@@ -7,7 +7,9 @@ import { Header, Main, Section, Property, Label, Info, Footer, Button } from '..
 export default function Obfuscate({
   drawerHeight,
   obfuscatePixels,
+  obfuscateAverage,
   setObfuscatePixels,
+  setObfuscateAverage,
   onAccept,
   onCancel
 }) {
@@ -40,7 +42,11 @@ export default function Obfuscate({
                 setter={setObfuscatePixels}
               />
             </Property>
-            <Checkbox value={false} primary='Calculate the average of each pixelated block.' />
+            <Checkbox
+              value={obfuscateAverage}
+              primary='Calculate the average of each pixelated block.'
+              onClick={() => setObfuscateAverage(!obfuscateAverage)}
+            />
             <Info>
               <Svg name='info' />
               <div className='text'>

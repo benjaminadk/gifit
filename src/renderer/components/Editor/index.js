@@ -143,6 +143,7 @@ export default function Editor() {
   const [overrideMS, setOverrideMS] = useState(100)
 
   const [obfuscatePixels, setObfuscatePixels] = useState(10)
+  const [obfuscateAverage, setObfuscateAverage] = useState(true)
   const [obfuscateWidth, setObfuscateWidth] = useState(null)
   const [obfuscateHeight, setObfuscateHeight] = useState(null)
   const [obfuscateX, setObfuscateX] = useState(null)
@@ -1269,7 +1270,123 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
-  function onObfuscateAccept() {}
+  async function onObfuscateAccept() {
+    async function draw() {
+      return new Promise(async resolve1 => {
+        const lastIndex = selected.findLastIndex(el => el)
+
+        for (const [i, bool] of selected.toArray().entries()) {
+          if (bool) {
+            const reader = new FileReader()
+
+            reader.onload = () => {
+              const filepath = originalPaths[i]
+              const buffer = Buffer.from(reader.result)
+              writeFileAsync(filepath, buffer).then(() => {
+                images[i].path = createHashPath(images[i].path)
+                if (i === lastIndex) {
+                  resolve1()
+                }
+              })
+            }
+
+            const c1 = document.createElement('canvas')
+            c1.width = gifData.width
+            c1.height = gifData.height
+            const ctx1 = c1.getContext('2d')
+            var adjustedWidth =
+              obfuscateWidth - (obfuscateWidth % obfuscatePixels) + obfuscatePixels
+            var adjustedHeight =
+              obfuscateHeight - (obfuscateHeight % obfuscatePixels) + obfuscatePixels
+            const c2 = document.createElement('canvas')
+            c2.width = adjustedWidth
+            c2.height = adjustedHeight
+            const ctx2 = c2.getContext('2d')
+
+            const image1 = new Image()
+            await new Promise(resolve2 => {
+              image1.onload = () => {
+                ctx1.drawImage(image1, 0, 0)
+                ctx2.drawImage(
+                  c1,
+                  obfuscateX,
+                  obfuscateY,
+                  adjustedWidth,
+                  adjustedHeight,
+                  0,
+                  0,
+                  adjustedWidth,
+                  adjustedHeight
+                )
+                resolve2()
+              }
+              image1.src = images[i].path
+            })
+
+            const data = []
+            for (var y = 0; y < adjustedHeight; y += obfuscatePixels) {
+              for (var x = 0; x < adjustedWidth; x += obfuscatePixels) {
+                const imageData = ctx2.getImageData(x, y, obfuscatePixels, obfuscatePixels)
+                data.push(imageData.data)
+              }
+            }
+
+            const averages = []
+            var r = 0
+            var g = 0
+            var b = 0
+            var a = 0
+            var r1, g1, b1, a1
+            var divide = 0
+
+            for (const d of data) {
+              for (var j = 0; j < d.length; j += 4) {
+                r += d[j]
+                g += d[j + 1]
+                b += d[j + 2]
+                a += d[j + 3]
+                divide += 1
+              }
+
+              r1 = Math.round(r / divide)
+              g1 = Math.round(g / divide)
+              b1 = Math.round(b / divide)
+              a1 = Math.ceil((a / divide / 255) * 100) / 100
+              averages.push(`rgba(${r1},${g1},${b1},${a1})`)
+              r = 0
+              g = 0
+              b = 0
+              a = 0
+              divide = 0
+            }
+
+            const c3 = document.createElement('canvas')
+            c3.width = adjustedWidth
+            c3.height = adjustedHeight
+            const ctx3 = c3.getContext('2d')
+
+            var averageIndex = 0
+            for (let y = 0; y < adjustedHeight; y += obfuscatePixels) {
+              for (let x = 0; x < adjustedWidth; x += obfuscatePixels) {
+                ctx3.fillStyle = averages[averageIndex]
+                ctx3.fillRect(x, y, obfuscatePixels, obfuscatePixels)
+                averageIndex += 1
+              }
+            }
+
+            ctx1.drawImage(c3, obfuscateX, obfuscateY)
+            c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+          }
+        }
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    setLoading(false)
+    setShowDrawer(false)
+    setScale(zoomToFit)
+  }
 
   function onObfuscateCancel() {
     setShowDrawer(false)
@@ -1491,6 +1608,7 @@ export default function Editor() {
           <ObfuscateOverlay
             show={drawerMode === 'obfuscate'}
             gifData={gifData}
+            obfuscatePixels={obfuscatePixels}
             obfuscateWidth={obfuscateWidth}
             obfuscateHeight={obfuscateHeight}
             obfuscateX={obfuscateX}
@@ -1672,7 +1790,9 @@ export default function Editor() {
           <Obfuscate
             drawerHeight={drawerHeight}
             obfuscatePixels={obfuscatePixels}
+            obfuscateAverage={obfuscateAverage}
             setObfuscatePixels={setObfuscatePixels}
+            setObfuscateAverage={setObfuscateAverage}
             onAccept={onObfuscateAccept}
             onCancel={onObfuscateCancel}
           />

@@ -12,6 +12,7 @@ const handleStyle = {
 export default function ObfuscateOverlay({
   show,
   gifData,
+  obfuscatePixels,
   obfuscateWidth,
   obfuscateHeight,
   obfuscateX,
@@ -87,6 +88,7 @@ export default function ObfuscateOverlay({
               bounds='parent'
               size={{ width: obfuscateWidth, height: obfuscateHeight }}
               position={{ x: obfuscateX, y: obfuscateY }}
+              resizeGrid={[obfuscatePixels, obfuscatePixels]}
               onDrag={(e, d) => {
                 setObfuscateX(d.x)
                 setObfuscateY(d.y)
