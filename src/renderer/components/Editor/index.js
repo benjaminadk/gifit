@@ -2,11 +2,12 @@ import React, { useRef, useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
 import { List } from 'immutable'
 import path from 'path'
-import { readFile, writeFile, readdir, rmdir, unlink } from 'fs'
+import { readFile, writeFile, readdir, rmdir, unlink, copyFile } from 'fs'
 import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
 import createHashPath from '../../lib/createHashPath'
 import createTFName from '../../lib/createTFName'
+import createYoyoName from '../../lib/createYoyoName'
 import initializeOptions from '../Options/initializeOptions'
 import initializeRecorder from '../Recorder/initializeRecorder'
 import initializeWebcam from '../Webcam/initializeWebcam'
@@ -58,6 +59,7 @@ const writeFileAsync = promisify(writeFile)
 const readdirAsync = promisify(readdir)
 const rmdirAsync = promisify(rmdir)
 const unlinkAsync = promisify(unlink)
+const copyFileAsync = promisify(copyFile)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
@@ -908,7 +910,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
-  async function onReverseOrderClick() {
+  async function onReverseClick() {
     async function update() {
       return new Promise(resolve => {
         const newProject = {
@@ -916,6 +918,38 @@ export default function Editor() {
           frames: images.slice().reverse()
         }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    initialize(imageIndex)
+  }
+
+  async function onYoyoClick() {
+    async function update() {
+      return new Promise(async resolve => {
+        const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+        const newFrames = images.slice().map((el, i) => {
+          return { ...el, path: originalPaths[i] }
+        })
+
+        for (const [i, originalPath] of originalPaths.reverse().entries()) {
+          const dstPath = path.join(projectFolder, createYoyoName(i))
+          await copyFileAsync(originalPath, dstPath)
+          const newFrame = {
+            ...images.reverse()[i],
+            path: dstPath
+          }
+          newFrames.push(newFrame)
+        }
+
+        const projectPath = path.join(projectFolder, 'project.json')
+        const newProject = { ...gifData, frames: newFrames }
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
@@ -1733,7 +1767,8 @@ export default function Editor() {
         onDiscardProjectClick={onDiscardProjectClick}
         onPlaybackClick={onPlaybackClick}
         onFrameDeleteClick={onFrameDeleteClick}
-        onReverseOrderClick={onReverseOrderClick}
+        onReverseClick={onReverseClick}
+        onYoyoClick={onYoyoClick}
         onOptionsClick={onOptionsClick}
         onSelectClick={onSelectClick}
       />
