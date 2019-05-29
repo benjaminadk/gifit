@@ -32,7 +32,7 @@ const tabs = [
   { icon: <Svg name='pen' />, text: 'Edit' },
   { icon: <Svg name='image' />, text: 'Image' },
   { icon: <Transfer />, text: 'Transitions' },
-  { icon: <Stats />, text: 'Statistics' }
+  { icon: <Svg name='info' />, text: 'Statistics' }
 ]
 
 const playback = [
@@ -204,7 +204,7 @@ export default function Toolbar({
                   <Svg name='clock-override' />
                   <div className='text'>Override</div>
                 </Action>
-                <Action>
+                <Action onClick={() => onOpenDrawer('increase')}>
                   <Svg name='clock-increase' />
                   <div className='text'>Increase or Decrease</div>
                 </Action>

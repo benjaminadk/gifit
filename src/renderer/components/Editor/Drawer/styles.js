@@ -28,7 +28,7 @@ export const Layout = styled.div`
 
 export const Header = styled.header`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 40px;
   .left {
     display: grid;
     grid-template-columns: 50px 1fr;

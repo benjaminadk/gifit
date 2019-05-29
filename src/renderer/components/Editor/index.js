@@ -38,6 +38,7 @@ import Progress from './Progress'
 import Obfuscate from './Obfuscate'
 import RecentProjects from './RecentProjects'
 import Override from './Override'
+import IncreaseDecrease from './IncreaseDecrease'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
 import BottomBar from './BottomBar'
@@ -46,7 +47,6 @@ import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
 const {
-  mainWindow,
   appActions: { SET_APP_MODE, SET_PROJECT_FOLDER, SET_OPTIONS_OPEN },
   constants: { IMAGE_TYPE }
 } = config
@@ -146,6 +146,7 @@ export default function Editor() {
   const [cropY, setCropY] = useState(0)
 
   const [overrideMS, setOverrideMS] = useState(100)
+  const [incDecValue, setIncDecValue] = useState(0)
 
   const [obfuscatePixels, setObfuscatePixels] = useState(10)
   const [obfuscateAverage, setObfuscateAverage] = useState(true)
@@ -383,6 +384,7 @@ export default function Editor() {
     progressPrecision
   ])
 
+  // resize main window and drawer when toolbar is opened/closed
   useEffect(() => {
     var sub
     if (showToolbar) {
@@ -430,7 +432,7 @@ export default function Editor() {
   useEffect(() => {
     // listen for delete key
     function onKeyDown({ keyCode }) {
-      if (keyCode === 46) {
+      if (keyCode === 46 && !showDrawer) {
         onFrameDeleteClick('selection')
       }
     }
@@ -438,8 +440,9 @@ export default function Editor() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [selected])
+  }, [selected, showDrawer])
 
+  // load watermark image file to set its initial size
   useEffect(() => {
     if (watermarkPath) {
       const image = new Image()
@@ -447,6 +450,7 @@ export default function Editor() {
         var w, h
         const ratio = Math.floor((image.width / image.height) * 100) / 100
         const inverse = Math.floor((image.height / image.width) * 100) / 100
+        // constrain watermark to be smaller than original frame
         if (image.height > gifData.height) {
           w = gifData.height * ratio
           h = gifData.height
@@ -470,18 +474,12 @@ export default function Editor() {
   function onNewRecordingClick() {
     initializeRecorder(state, dispatch)
     dispatch({ type: SET_APP_MODE, payload: 0 })
-    remote.getCurrentWindow().setSize(mainWindow.width, mainWindow.height)
-    remote.getCurrentWindow().center()
-    remote.getCurrentWindow().setTitle('GifIt - Start Page')
   }
 
   // navigate to webcam
   function onNewWebcamClick() {
     initializeWebcam(state, dispatch)
     dispatch({ type: SET_APP_MODE, payload: 0 })
-    remote.getCurrentWindow().setSize(mainWindow.width, mainWindow.height)
-    remote.getCurrentWindow().center()
-    remote.getCurrentWindow().setTitle('GifIt - Start Page')
   }
 
   // save project as a GIF
@@ -507,8 +505,10 @@ export default function Editor() {
         if (gifProcessor === 'ffmpeg') {
           const ffmpegPath = options.get('ffmpegPath')
           const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+          // fast
           await createGIFFfmpeg(ffmpegPath, images, originalPaths, cwd, filepath)
         } else if (gifProcessor === 'gifEncoder') {
+          // slow
           await createGIFEncoder(images, originalPaths, gifData, filepath)
         }
         setLoading(false)
@@ -604,13 +604,13 @@ export default function Editor() {
       if (result === 0) {
         var deleteImages, keepImages
         if (type === 'selection') {
-          deleteImages = images.filter((el, i) => selected.get(i))
+          deleteImages = originalPaths.filter((el, i) => selected.get(i))
           keepImages = images.filter((el, i) => !selected.get(i))
         } else if (type === 'previous') {
-          deleteImages = images.filter((el, i) => i < imageIndex)
+          deleteImages = originalPaths.filter((el, i) => i < imageIndex)
           keepImages = images.filter((el, i) => i >= imageIndex)
         } else {
-          deleteImages = images.filter((el, i) => i > imageIndex)
+          deleteImages = originalPaths.filter((el, i) => i > imageIndex)
           keepImages = images.filter((el, i) => i <= imageIndex)
         }
         // overwrite project.json with new images
@@ -620,8 +620,8 @@ export default function Editor() {
           initialize()
         })
         // delete old images
-        for (const image of deleteImages) {
-          unlinkAsync(image.path)
+        for (const p of deleteImages) {
+          unlinkAsync(p)
         }
       }
     }
@@ -695,6 +695,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // resize all frames
   async function onResizeAccept(newWidth, newHeight) {
     const newGifData = {
       ...gifData,
@@ -702,7 +703,7 @@ export default function Editor() {
       height: newHeight
     }
     const newFrames = images.slice()
-
+    // draw and save new image at new size
     async function draw() {
       return new Promise(resolve => {
         for (const [i, img] of images.entries()) {
@@ -721,21 +722,22 @@ export default function Editor() {
 
           const widthScale = newWidth / gifData.width
           const heightScale = newHeight / gifData.height
-          const canvas = document.createElement('canvas')
-          canvas.width = newWidth
-          canvas.height = newHeight
-          const ctx = canvas.getContext('2d')
-          ctx.scale(widthScale, heightScale)
-          const image = new Image()
-          image.onload = () => {
-            ctx.drawImage(image, 0, 0)
-            canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+          const c1 = document.createElement('canvas')
+          c1.width = newWidth
+          c1.height = newHeight
+          const ctx1 = c1.getContext('2d')
+          ctx1.scale(widthScale, heightScale)
+          const image1 = new Image()
+          image1.onload = () => {
+            ctx1.drawImage(image1, 0, 0)
+            c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
           }
-          image.src = images[i].path
+          image1.src = images[i].path
         }
       })
     }
 
+    // update project.json and reset editor dimensions to resized project
     async function update() {
       return new Promise(resolve => {
         const newProject = { ...newGifData, frames: newFrames }
@@ -778,6 +780,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // crop all frames to new size
   async function onCropAccept() {
     const newGifData = {
       ...gifData,
@@ -802,20 +805,22 @@ export default function Editor() {
             })
           }
 
-          const canvas = document.createElement('canvas')
-          canvas.width = cropWidth
-          canvas.height = cropHeight
-          const ctx = canvas.getContext('2d')
-          const image = new Image()
-          image.onload = () => {
-            ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
-            canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+          // use cool version of drawImage to draw portion of original to new canvas
+          const c1 = document.createElement('canvas')
+          c1.width = cropWidth
+          c1.height = cropHeight
+          const ctx1 = c1.getContext('2d')
+          const image1 = new Image()
+          image1.onload = () => {
+            ctx1.drawImage(image1, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
+            c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
           }
-          image.src = images[i].path
+          image1.src = images[i].path
         }
       })
     }
 
+    // update project.json and editor dimensions
     async function update() {
       return new Promise(resolve => {
         const newProject = { ...newGifData, frames: newFrames }
@@ -858,6 +863,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // override duration for selected frames to new value
   async function onOverrideAccept() {
     async function update() {
       return new Promise(resolve => {
@@ -891,6 +897,53 @@ export default function Editor() {
   }
 
   function onOverrideCancel() {
+    setShowDrawer(false)
+  }
+
+  async function onIncreaseAccept() {
+    async function update() {
+      return new Promise(resolve => {
+        const newFrames = []
+        for (const [i, bool] of selected.toArray().entries()) {
+          var newFrame = {
+            ...images[i],
+            path: originalPaths[i]
+          }
+
+          if (bool) {
+            var newTime
+            if (incDecValue >= 0) {
+              newTime = newFrame.time + incDecValue > 25000 ? 25000 : newFrame.time + incDecValue
+            } else {
+              newTime =
+                newFrame.time - Math.abs(incDecValue) < 10
+                  ? 10
+                  : newFrame.time - Math.abs(incDecValue)
+            }
+
+            newFrame.time = newTime
+          }
+          newFrames.push(newFrame)
+        }
+        const newProject = {
+          ...gifData,
+          frames: newFrames
+        }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(imageIndex)
+  }
+
+  function onIncreaseCancel() {
     setShowDrawer(false)
   }
 
@@ -1068,6 +1121,7 @@ export default function Editor() {
     ctx5.clearRect(0, 0, canvas5.current.width, canvas5.current.height)
   }
 
+  // add new shapes to selected frames
   async function onShapeAccept() {
     async function draw() {
       return new Promise(resolve => {
@@ -1277,6 +1331,7 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
+  // highlight points where mouse was clicked during recording
   async function onClicksAccept() {
     async function draw() {
       return new Promise(resolve => {
@@ -1334,6 +1389,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // pixelate selection on selected frames
   async function onObfuscateAccept() {
     async function draw() {
       return new Promise(async resolve1 => {
@@ -1358,6 +1414,8 @@ export default function Editor() {
             c1.width = gifData.width
             c1.height = gifData.height
             const ctx1 = c1.getContext('2d')
+            // adjust width and height to multiples of pixelation size
+            // prevents discoloration of edges
             var adjustedWidth =
               obfuscateWidth - (obfuscateWidth % obfuscatePixels) + obfuscatePixels
             var adjustedHeight =
@@ -1366,8 +1424,9 @@ export default function Editor() {
             c2.width = adjustedWidth
             c2.height = adjustedHeight
             const ctx2 = c2.getContext('2d')
-
             const image1 = new Image()
+            // draw original image on main canvas
+            // draw selection onto secondary canvas
             await new Promise(resolve2 => {
               image1.onload = () => {
                 ctx1.drawImage(image1, 0, 0)
@@ -1387,6 +1446,7 @@ export default function Editor() {
               image1.src = images[i].path
             })
 
+            // use loops to get image data for each square chuck
             const data = []
             for (var y = 0; y < adjustedHeight; y += obfuscatePixels) {
               for (var x = 0; x < adjustedWidth; x += obfuscatePixels) {
@@ -1395,6 +1455,8 @@ export default function Editor() {
               }
             }
 
+            // loop over array of image data arrays
+            // find average rgba value for each square - obfuscatePixels x obfuscatePixels
             const averages = []
             var r = 0
             var g = 0
@@ -1424,6 +1486,7 @@ export default function Editor() {
               divide = 0
             }
 
+            // third canvas contains pixelated section
             const c3 = document.createElement('canvas')
             c3.width = adjustedWidth
             c3.height = adjustedHeight
@@ -1741,6 +1804,14 @@ export default function Editor() {
             setOverrideMS={setOverrideMS}
             onAccept={onOverrideAccept}
             onCancel={onOverrideCancel}
+          />
+        ) : drawerMode === 'increase' ? (
+          <IncreaseDecrease
+            drawerHeight={drawerHeight}
+            incDecValue={incDecValue}
+            setIncDecValue={setIncDecValue}
+            onAccept={onIncreaseAccept}
+            onCancel={onIncreaseCancel}
           />
         ) : drawerMode === 'title' ? (
           <TitleFrame
