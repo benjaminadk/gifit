@@ -181,11 +181,15 @@ export default function Toolbar({
           </>
         ) : menuIndex === 3 ? (
           <>
-            <Section width={225}>
-              <GenericGrid columns={3}>
+            <Section width={300}>
+              <GenericGrid columns={4}>
                 <Action onClick={() => onFrameDeleteClick('selection')}>
                   <Svg name='delete' />
                   <div className='text'>Delete</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('reduce')}>
+                  <Svg name='delete' />
+                  <div className='text'>Reduce Frames</div>
                 </Action>
                 <Action onClick={() => onFrameDeleteClick('previous')}>
                   <Svg name='delete-prev' />

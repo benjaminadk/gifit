@@ -37,6 +37,7 @@ import Watermark from './Watermark'
 import Progress from './Progress'
 import Obfuscate from './Obfuscate'
 import RecentProjects from './RecentProjects'
+import ReduceFrames from './ReduceFrames'
 import Override from './Override'
 import IncreaseDecrease from './IncreaseDecrease'
 import Toolbar from './Toolbar'
@@ -144,6 +145,9 @@ export default function Editor() {
   const [cropHeight, setCropHeight] = useState(0)
   const [cropX, setCropX] = useState(0)
   const [cropY, setCropY] = useState(0)
+
+  const [reduceFactor, setReduceFactor] = useState(1)
+  const [reduceCount, setReduceCount] = useState(1)
 
   const [overrideMS, setOverrideMS] = useState(100)
   const [incDecValue, setIncDecValue] = useState(0)
@@ -860,6 +864,47 @@ export default function Editor() {
   }
 
   function onCropCancel() {
+    setShowDrawer(false)
+  }
+
+  async function onReduceAccept() {
+    async function update() {
+      return new Promise(resolve => {
+        const deleteIndices = []
+
+        for (let i = 0; i < images.length; i += reduceFactor) {
+          if (i) {
+            var j = 0
+            while (j < reduceCount) {
+              deleteIndices.push(i + j)
+              j += 1
+            }
+            i += reduceCount
+          }
+        }
+
+        const keepImages = images.filter((el, i) => deleteIndices.indexOf(i) === -1)
+        const deleteImages = originalPaths.filter((el, i) => deleteIndices.indexOf(i) !== -1)
+        const newProject = { ...gifData, frames: keepImages }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+
+        for (const p of deleteImages) {
+          unlinkAsync(p)
+        }
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(0)
+  }
+
+  function onReduceCancel() {
     setShowDrawer(false)
   }
 
@@ -1796,6 +1841,16 @@ export default function Editor() {
             setCropY={setCropY}
             onAccept={onCropAccept}
             onCancel={onCropCancel}
+          />
+        ) : drawerMode === 'reduce' ? (
+          <ReduceFrames
+            drawerHeight={drawerHeight}
+            reduceFactor={reduceFactor}
+            reduceCount={reduceCount}
+            setReduceFactor={setReduceFactor}
+            setReduceCount={setReduceCount}
+            onAccept={onReduceAccept}
+            onCancel={onReduceCancel}
           />
         ) : drawerMode === 'override' ? (
           <Override
