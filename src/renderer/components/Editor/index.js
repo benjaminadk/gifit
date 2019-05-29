@@ -908,6 +908,26 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  async function onReverseOrderClick() {
+    async function update() {
+      return new Promise(resolve => {
+        const newProject = {
+          ...gifData,
+          frames: images.slice().reverse()
+        }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    initialize(imageIndex)
+  }
+
   // override duration for selected frames to new value
   async function onOverrideAccept() {
     async function update() {
@@ -1713,6 +1733,7 @@ export default function Editor() {
         onDiscardProjectClick={onDiscardProjectClick}
         onPlaybackClick={onPlaybackClick}
         onFrameDeleteClick={onFrameDeleteClick}
+        onReverseOrderClick={onReverseOrderClick}
         onOptionsClick={onOptionsClick}
         onSelectClick={onSelectClick}
       />

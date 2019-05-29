@@ -61,6 +61,7 @@ export default function Toolbar({
   onDiscardProjectClick,
   onPlaybackClick,
   onFrameDeleteClick,
+  onReverseOrderClick,
   onOptionsClick,
   onSelectClick
 }) {
@@ -201,6 +202,27 @@ export default function Toolbar({
                 </Action>
               </GenericGrid>
               <SectionText>Frames</SectionText>
+            </Section>
+            <Section width={300}>
+              <GenericGrid columns={4}>
+                <Action onClick={onReverseOrderClick}>
+                  <Svg name='reverse' />
+                  <div className='text'>Reverse</div>
+                </Action>
+                <Action>
+                  <Svg name='yoyo' />
+                  <div className='text'>Yoyo</div>
+                </Action>
+                <Action>
+                  <Svg name='move-left' />
+                  <div className='text'>Move Left</div>
+                </Action>
+                <Action>
+                  <Svg name='move-right' />
+                  <div className='text'>Move Right</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Reordering</SectionText>
             </Section>
             <Section width={225}>
               <GenericGrid columns={3}>

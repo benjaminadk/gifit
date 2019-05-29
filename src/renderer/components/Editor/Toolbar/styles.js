@@ -40,7 +40,7 @@ export const Tab = styled.div`
   }
   .text {
     padding-left: 5px;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
   .divider {
     position: absolute;
