@@ -70,6 +70,8 @@ export default function Editor() {
   const [imageIndex, setImageIndex] = useState(null)
   const [selected, setSelected] = useState(List())
 
+  const [hashModifier, setHashModifier] = useState('#' + performance.now())
+
   const [gifData, setGifData] = useState(null)
   const [originalPaths, setOriginalPaths] = useState(null)
   const [totalDuration, setTotalDuration] = useState(null)
@@ -221,9 +223,9 @@ export default function Editor() {
           true
         )
         // add time of all frames to determine total duration
-        const totalDuration = project.frames.reduce((acc, val) => (acc += val.time), 0)
+        const totalDur = project.frames.reduce((acc, val) => (acc += val.time), 0)
         // divide total by number of frames to get average duration
-        const averageDuration = Math.round((totalDuration / project.frames.length) * 10) / 10
+        const averageDur = Math.round((totalDur / project.frames.length) * 10) / 10
         // set state
         setSelected(initialSelected)
         setScale(initialScale)
@@ -238,8 +240,8 @@ export default function Editor() {
           frameRate: project.frameRate
         })
         setOriginalPaths(project.frames.map(el => el.path))
-        setTotalDuration(totalDuration)
-        setAverageDuration(averageDuration)
+        setTotalDuration(totalDur)
+        setAverageDuration(averageDur)
         setMainHeight(initialMainHeight)
         setDrawerHeight(initialDrawerHeight)
         setThumbWidth(tWidth)
@@ -301,14 +303,14 @@ export default function Editor() {
         ctx1.fillText(titleText, x, y)
         // create image, set scale on context and draw image
       } else {
-        // only if imageIndex is not null
         if (imageIndex !== null) {
           ctx1.scale(scale, scale)
           const image = new Image()
           image.onload = () => {
             ctx1.drawImage(image, 0, 0)
           }
-          image.src = images[imageIndex].path
+          // add hashModifier to trick cache on image updates
+          image.src = images[imageIndex].path + hashModifier
         }
       }
     }
@@ -325,7 +327,8 @@ export default function Editor() {
     titleColor,
     titleVertical,
     titleHorizontal,
-    titleBackground
+    titleBackground,
+    hashModifier
   ])
 
   // manage second canvas (overlays)
@@ -479,13 +482,19 @@ export default function Editor() {
   // navigate back recorder
   function onNewRecordingClick() {
     initializeRecorder(state, dispatch)
-    dispatch({ type: SET_APP_MODE, payload: 0 })
+    dispatch({
+      type: SET_APP_MODE,
+      payload: 0
+    })
   }
 
   // navigate to webcam
   function onNewWebcamClick() {
     initializeWebcam(state, dispatch)
-    dispatch({ type: SET_APP_MODE, payload: 0 })
+    dispatch({
+      type: SET_APP_MODE,
+      payload: 0
+    })
   }
 
   // save project as a GIF
@@ -512,10 +521,10 @@ export default function Editor() {
           const ffmpegPath = options.get('ffmpegPath')
           const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
           // fast
-          await createGIFFfmpeg(ffmpegPath, images, originalPaths, cwd, filepath)
+          await createGIFFfmpeg(ffmpegPath, images, cwd, filepath)
         } else if (gifProcessor === 'gifEncoder') {
           // slow
-          await createGIFEncoder(images, originalPaths, gifData, filepath)
+          await createGIFEncoder(images, gifData, filepath)
         }
         setLoading(false)
       }
@@ -608,26 +617,37 @@ export default function Editor() {
     }
     const callback = result => {
       if (result === 0) {
-        var deleteImages, keepImages
+        var deletePaths, keepPaths, keepImages
         if (type === 'selection') {
-          deleteImages = originalPaths.filter((el, i) => selected.get(i))
+          deletePaths = originalPaths.filter((el, i) => selected.get(i))
+          keepPaths = originalPaths.filter((el, i) => !selected.get(i))
           keepImages = images.filter((el, i) => !selected.get(i))
         } else if (type === 'previous') {
-          deleteImages = originalPaths.filter((el, i) => i < imageIndex)
+          deletePaths = originalPaths.filter((el, i) => i < imageIndex)
+          keepPaths = originalPaths.filter((el, i) => i >= imageIndex)
           keepImages = images.filter((el, i) => i >= imageIndex)
         } else {
-          deleteImages = originalPaths.filter((el, i) => i > imageIndex)
+          deletePaths = originalPaths.filter((el, i) => i > imageIndex)
+          keepPaths = originalPaths.filter((el, i) => i <= imageIndex)
           keepImages = images.filter((el, i) => i <= imageIndex)
         }
         // overwrite project.json with new images
-        const newProject = { ...gifData, frames: keepImages }
+        const newProject = {
+          ...gifData,
+          frames: keepImages
+        }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
-          initialize()
+          const totalDur = keepImages.reduce((acc, val) => (acc += val.time), 0)
+          const averageDur = Math.round((totalDur / keepImages.length) * 10) / 10
+          setImages(keepImages)
+          setOriginalPaths(keepPaths)
+          setTotalDuration(totalDur)
+          setAverageDuration(averageDur)
         })
         // delete old images
-        for (const p of deleteImages) {
-          unlinkAsync(p)
+        for (const deletePath of deletePaths) {
+          unlinkAsync(deletePath)
         }
       }
     }
@@ -693,7 +713,10 @@ export default function Editor() {
 
   // open a recent project
   function onRecentAccept(folder) {
-    dispatch({ type: SET_PROJECT_FOLDER, payload: folder })
+    dispatch({
+      type: SET_PROJECT_FOLDER,
+      payload: folder
+    })
   }
 
   // close recent project drawer
@@ -719,7 +742,6 @@ export default function Editor() {
             const filepath = originalPaths[i]
             const buffer = Buffer.from(reader.result)
             writeFileAsync(filepath, buffer).then(() => {
-              images[i].path = createHashPath(images[i].path)
               if (i === images.length - 1) {
                 resolve()
               }
@@ -746,7 +768,10 @@ export default function Editor() {
     // update project.json and reset editor dimensions to resized project
     async function update() {
       return new Promise(resolve => {
-        const newProject = { ...newGifData, frames: newFrames }
+        const newProject = {
+          ...newGifData,
+          frames: newFrames
+        }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           const imageRatio = Math.floor((newWidth / newHeight) * 100) / 100
@@ -769,6 +794,7 @@ export default function Editor() {
           setThumbHeight(tHeight)
           setMainHeight(initialMainHeight)
           setDrawerHeight(initialDrawerHeight)
+          setHashModifier('#' + performance.now())
           resolve()
         })
       })
@@ -804,7 +830,6 @@ export default function Editor() {
             const filepath = originalPaths[i]
             const buffer = Buffer.from(reader.result)
             writeFileAsync(filepath, buffer).then(() => {
-              images[i].path = createHashPath(images[i].path)
               if (i === images.length - 1) {
                 resolve()
               }
@@ -829,7 +854,10 @@ export default function Editor() {
     // update project.json and editor dimensions
     async function update() {
       return new Promise(resolve => {
-        const newProject = { ...newGifData, frames: newFrames }
+        const newProject = {
+          ...newGifData,
+          frames: newFrames
+        }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           const imageRatio = Math.floor((cropWidth / cropHeight) * 100) / 100
@@ -852,6 +880,7 @@ export default function Editor() {
           setThumbHeight(tHeight)
           setMainHeight(initialMainHeight)
           setDrawerHeight(initialDrawerHeight)
+          setHashModifier('#' + performance.now())
           resolve()
         })
       })
@@ -887,7 +916,10 @@ export default function Editor() {
 
         const keepImages = images.filter((el, i) => deleteIndices.indexOf(i) === -1)
         const deleteImages = originalPaths.filter((el, i) => deleteIndices.indexOf(i) !== -1)
-        const newProject = { ...gifData, frames: keepImages }
+        const newProject = {
+          ...gifData,
+          frames: keepImages
+        }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           resolve()
@@ -934,9 +966,7 @@ export default function Editor() {
     async function update() {
       return new Promise(async resolve => {
         const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-        const newFrames = images.slice().map((el, i) => {
-          return { ...el, path: originalPaths[i] }
-        })
+        const newFrames = images.slice()
 
         for (const [i, originalPath] of originalPaths.reverse().entries()) {
           const dstPath = path.join(projectFolder, createYoyoName(i))
@@ -949,7 +979,10 @@ export default function Editor() {
         }
 
         const projectPath = path.join(projectFolder, 'project.json')
-        const newProject = { ...gifData, frames: newFrames }
+        const newProject = {
+          ...gifData,
+          frames: newFrames
+        }
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
@@ -968,10 +1001,7 @@ export default function Editor() {
       return new Promise(resolve => {
         const newFrames = []
         for (const [i, bool] of selected.toArray().entries()) {
-          var newFrame = {
-            ...images[i],
-            path: originalPaths[i]
-          }
+          var newFrame = images[i]
           if (bool) {
             newFrame.time = overrideMS
           }
@@ -1004,10 +1034,7 @@ export default function Editor() {
       return new Promise(resolve => {
         const newFrames = []
         for (const [i, bool] of selected.toArray().entries()) {
-          var newFrame = {
-            ...images[i],
-            path: originalPaths[i]
-          }
+          const newFrame = images[i]
 
           if (bool) {
             var newTime
@@ -1024,6 +1051,7 @@ export default function Editor() {
           }
           newFrames.push(newFrame)
         }
+
         const newProject = {
           ...gifData,
           frames: newFrames
@@ -1047,46 +1075,59 @@ export default function Editor() {
   }
 
   // create a new title frame image file and update project.json
-  function onTitleAccept() {
-    setLoading(true)
-    const reader = new FileReader()
+  async function onTitleAccept() {
     const filepath = path.join(RECORDINGS_DIRECTORY, gifData.relative, createTFName())
 
-    reader.onload = () => {
-      const buffer = Buffer.from(reader.result)
-      writeFileAsync(filepath, buffer).then(() => {})
+    async function draw() {
+      return new Promise(resolve => {
+        const reader = new FileReader()
+
+        reader.onload = () => {
+          const buffer = Buffer.from(reader.result)
+          writeFileAsync(filepath, buffer).then(() => {
+            resolve()
+          })
+        }
+
+        const c1 = document.createElement('canvas')
+        c1.width = gifData.width
+        c1.height = gifData.height
+        const ctx1 = c1.getContext('2d')
+        ctx1.textBaseline = 'middle'
+        ctx1.fillStyle = titleBackground
+        ctx1.fillRect(0, 0, c1.width, c1.height)
+        ctx1.fillStyle = titleColor
+        ctx1.font = `${titleStyle} ${titleSize}px ${titleFont}`
+        const { x, y } = getTextXY(c1, titleVertical, titleHorizontal, titleSize, titleText, 1)
+        ctx1.fillText(titleText, x, y)
+        c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+      })
     }
-    //create full size canvas in memory
-    const canvas = document.createElement('canvas')
-    canvas.width = gifData.width
-    canvas.height = gifData.height
-    const ctx = canvas.getContext('2d')
-    ctx.textBaseline = 'middle'
-    ctx.fillStyle = titleBackground
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    ctx.fillStyle = titleColor
-    ctx.font = `${titleStyle} ${titleSize}px ${titleFont}`
-    const { x, y } = getTextXY(canvas, titleVertical, titleHorizontal, titleSize, titleText, 1)
-    ctx.fillText(titleText, x, y)
-    canvas.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
-    // update project.json and overwrite
-    const newImages = images.slice()
-    newImages.splice(imageIndex, 0, {
-      path: filepath,
-      time: titleDelay
-    })
-    const newProject = {
-      ...gifData,
-      frames: newImages
+
+    async function update() {
+      return new Promise(resolve => {
+        const newImages = images.slice()
+        newImages.splice(imageIndex, 0, {
+          path: filepath,
+          time: titleDelay
+        })
+        const newProject = {
+          ...gifData,
+          frames: newImages
+        }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+      })
     }
-    const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-    writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
-      // after new project.json is saved
-      // re-initialize editor to include new title frame and close drawer
-      initialize(imageIndex)
-      setShowDrawer(false)
-      setLoading(false)
-    })
+
+    setLoading(true)
+    await draw()
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(imageIndex)
   }
 
   // cancel title frame creation
@@ -1098,62 +1139,60 @@ export default function Editor() {
   // add free drawing to selected frames
   async function onDrawAccept() {
     // handle highlighter effect
-    // capture imageData from highlight layer
     const ctx3 = canvas3.current.getContext('2d')
     const data = ctx3.getImageData(0, 0, gifData.width, gifData.height).data
-    const length = data.length
-    // if alpha has a value change it to 52 aka .2 opacity
-    for (let i = 3; i < length; i += 4) {
+
+    // change alpha values to 52 - equivilant to 52/255 or .2 opacity
+    for (let i = 3; i < data.length; i += 4) {
       if (data[i] !== 0) {
         data[i] = 52
       }
     }
-    // create a new image data object and put it on a canvas
+    // create new ImageData with opacity
     const imageData = new ImageData(data, gifData.width, gifData.height)
-    const canvas1 = document.createElement('canvas')
-    canvas1.width = gifData.width
-    canvas1.height = gifData.height
-    const cxt1 = canvas1.getContext('2d')
+
+    const c1 = document.createElement('canvas')
+    c1.width = gifData.width
+    c1.height = gifData.height
+    const cxt1 = c1.getContext('2d')
     cxt1.putImageData(imageData, 0, 0)
-    // draw function returns promise to ensure all selected frames are drawn to
+
     async function draw() {
       return new Promise(resolve => {
-        // last selected index
         const lastIndex = selected.findLastIndex(el => el)
-        // loop over array entries to get index and value in for of loop
+
         for (const [i, bool] of selected.toArray().entries()) {
           if (bool) {
             const reader = new FileReader()
-            // read file and hash path to force ui update
+
             reader.onload = () => {
               const filepath = originalPaths[i]
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
-                images[i].path = createHashPath(images[i].path)
-                // wait for last selection to be saved to resolve
                 if (i === lastIndex) {
+                  setHashModifier('#' + performance.now())
                   resolve()
                 }
               })
             }
-            // create new canvas draw image and then draw on top of it
-            const canvas2 = document.createElement('canvas')
-            canvas2.width = gifData.width
-            canvas2.height = gifData.height
-            const ctx2 = canvas2.getContext('2d')
-            const image = new Image()
-            image.onload = () => {
-              ctx2.drawImage(image, 0, 0)
-              ctx2.drawImage(canvas1, 0, 0)
+
+            const c2 = document.createElement('canvas')
+            c2.width = gifData.width
+            c2.height = gifData.height
+            const ctx2 = c2.getContext('2d')
+            const image1 = new Image()
+            image1.onload = () => {
+              ctx2.drawImage(image1, 0, 0)
+              ctx2.drawImage(c1, 0, 0)
               ctx2.drawImage(canvas4.current, 0, 0)
-              canvas2.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+              c2.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
             }
-            image.src = images[i].path
+            image1.src = images[i].path
           }
         }
       })
     }
-    // wait for draw to resolve to close drawer and reset zoom
+
     setLoading(true)
     await draw()
     setLoading(false)
@@ -1180,17 +1219,18 @@ export default function Editor() {
     setDrawing(false)
   }
 
+  // handle free drawing on canvas5
   // handle mouse movement over canvas in drawing mode
   function onDrawMouseMove(e) {
     const x = e.nativeEvent.offsetX
     const y = e.nativeEvent.offsetY
-    // make the cursor match the size and color of pen
+    // create a cursor effect to match pen size/color or eraser
     if (drawType === 'pen') {
       drawBrush(canvas5.current, x, y, drawShape, drawPenColor, drawPenWidth, drawPenHeight)
     } else if (drawType === 'eraser') {
       drawEraser(canvas5.current, x, y, drawEraserWidth, drawEraserHeight)
     }
-    // if in drawing mode draw to canvas
+
     if (drawing) {
       if (drawType === 'pen') {
         drawFree(
@@ -1231,6 +1271,7 @@ export default function Editor() {
         c1.height = gifData.height
         const ctx1 = c1.getContext('2d')
 
+        // draw shape based on parameters
         for (const shape of shapeArray) {
           ctx1.beginPath()
 
@@ -1255,8 +1296,8 @@ export default function Editor() {
               const filepath = originalPaths[i]
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
-                images[i].path = createHashPath(images[i].path)
                 if (i === lastIndex) {
+                  setHashModifier('#' + performance.now())
                   resolve()
                 }
               })
@@ -1292,28 +1333,25 @@ export default function Editor() {
 
   // add configured border to selected frames
   async function onBorderAccept() {
-    // draw function returns promise to make sure all borders are created
     async function draw() {
       return new Promise(resolve => {
-        // last selected index
         const lastIndex = selected.findLastIndex(el => el)
-        // loop over array entries to get index and value in for of loop
+
         for (const [i, bool] of selected.toArray().entries()) {
           if (bool) {
             const reader = new FileReader()
-            // read file and hash path to force ui update
+
             reader.onload = () => {
               const filepath = originalPaths[i]
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
-                images[i].path = createHashPath(images[i].path)
-                // wait for last selection to be saved to resolve
                 if (i === lastIndex) {
+                  setHashModifier('#' + performance.now())
                   resolve()
                 }
               })
             }
-            // create new canvas draw image and then border on top of it
+
             const c1 = document.createElement('canvas')
             c1.width = gifData.width
             c1.height = gifData.height
@@ -1329,7 +1367,7 @@ export default function Editor() {
         }
       })
     }
-    // wait for draw to resolve to close drawer and reset zoom
+
     setLoading(true)
     await draw()
     setLoading(false)
@@ -1337,7 +1375,7 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
-  // cancel adding border
+  // close border drawer
   function onBorderCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1345,9 +1383,7 @@ export default function Editor() {
 
   // add configured progress to all frames
   async function onProgressAccept() {
-    // use function to help time actions
     async function draw() {
-      // wait 1 second for ui updates - loading bar / message
       await new Promise(resolve => {
         setTimeout(() => {
           resolve()
@@ -1357,28 +1393,26 @@ export default function Editor() {
       return new Promise(resolve => {
         const times = []
         var t = 0
-        // get elapsed time for each image
+
         for (let i = 0; i < images.length; i++) {
           times.push(t)
           t += images[i].time
         }
-        // loop over each image and draw progress overlay
+
         for (let i = 0; i < images.length; i++) {
           const reader = new FileReader()
-          // overwrite each image file with new image
+
           reader.onload = () => {
             const filepath = originalPaths[i]
             const buffer = Buffer.from(reader.result)
             writeFileAsync(filepath, buffer).then(() => {
-              // hash image path to trick browser cache
-              images[i].path = createHashPath(images[i].path)
-              // resolve after last image is wrote to disk
               if (i === images.length - 1) {
+                setHashModifier('#' + performance.now())
                 resolve()
               }
             })
           }
-          // draw image then progress on top of it
+
           const c1 = document.createElement('canvas')
           c1.width = gifData.width
           c1.height = gifData.height
@@ -1424,7 +1458,7 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
-  // cancel adding progress bar
+  // close progress drawer
   function onProgressCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1444,8 +1478,8 @@ export default function Editor() {
               const filepath = originalPaths[i]
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
-                images[i].path = createHashPath(images[i].path)
                 if (i === lastIndex) {
+                  setHashModifier('#' + performance.now())
                   resolve()
                 }
               })
@@ -1484,6 +1518,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // close clicks drawer
   function onClicksCancel() {
     setShowDrawer(false)
   }
@@ -1502,8 +1537,8 @@ export default function Editor() {
               const filepath = originalPaths[i]
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
-                images[i].path = createHashPath(images[i].path)
                 if (i === lastIndex) {
+                  setHashModifier('#' + performance.now())
                   resolve1()
                 }
               })
@@ -1614,6 +1649,7 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
+  //close obfuscate drawer
   function onObfuscateCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1626,7 +1662,12 @@ export default function Editor() {
       title: 'Select an Image',
       defaultPath: remote.app.getPath('pictures'),
       buttonLabel: 'Open',
-      filters: [{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] }],
+      filters: [
+        {
+          name: 'Image',
+          extensions: ['png', 'jpg', 'jpeg']
+        }
+      ],
       properties: ['openFile']
     }
     const callback = filepath => {
@@ -1641,24 +1682,23 @@ export default function Editor() {
   async function onWatermarkAccept() {
     async function draw() {
       return new Promise(async resolve1 => {
-        // use last truthy index to resolve draw promise
         const lastIndex = selected.findLastIndex(el => el)
-        // loop over selected List
+
         for (const [i, bool] of selected.toArray().entries()) {
           if (bool) {
             const reader = new FileReader()
-            // overwrite file and hash state path to trick cache
+
             reader.onload = () => {
               const filepath = originalPaths[i]
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
-                images[i].path = createHashPath(images[i].path)
                 if (i === lastIndex) {
+                  setHashModifier('#' + performance.now())
                   resolve1()
                 }
               })
             }
-            // create a new canvas and image
+
             const c1 = document.createElement('canvas')
             c1.width = gifData.width
             c1.height = gifData.height
@@ -1698,6 +1738,7 @@ export default function Editor() {
     setScale(zoomToFit)
   }
 
+  // close watermark drawer
   function onWatermarkCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1706,7 +1747,10 @@ export default function Editor() {
   // open options window
   function onOptionsClick() {
     if (!optionsOpen) {
-      dispatch({ type: SET_OPTIONS_OPEN, payload: true })
+      dispatch({
+        type: SET_OPTIONS_OPEN,
+        payload: true
+      })
       initializeOptions(remote.getCurrentWindow(), dispatch)
     }
   }
@@ -1855,6 +1899,7 @@ export default function Editor() {
         selected={selected}
         images={images}
         imageIndex={imageIndex}
+        hashModifier={hashModifier}
         onClick={onThumbnailClick}
       />
       <BottomBar

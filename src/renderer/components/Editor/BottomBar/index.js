@@ -86,7 +86,7 @@ export default function BottomBar({
   return (
     <Container>
       <Progress show={show || loading}>
-        <Bar value={progress} />
+        <Bar value={progress >= 100 ? 100 : progress} />
       </Progress>
       <div />
       <ZoomInput show={scale !== null}>

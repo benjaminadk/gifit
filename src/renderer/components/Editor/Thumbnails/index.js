@@ -9,6 +9,7 @@ export default function Thumbnails({
   selected,
   images,
   imageIndex,
+  hashModifier,
   onClick
 }) {
   function onContextMenu() {
@@ -35,7 +36,7 @@ export default function Thumbnails({
               onClick={e => onClick(e, i)}
               onContextMenu={onContextMenu}
             >
-              <img src={el.path} />
+              <img src={el.path + hashModifier} />
               <div className='bottom'>
                 <div className='index'>{i + 1}</div>
                 <div className='time'>{el.time}ms</div>

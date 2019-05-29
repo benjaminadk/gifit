@@ -2,7 +2,7 @@ import GIFEncoder from '../../lib/gifencoder/GIFEncoder'
 import { createWriteStream } from 'fs'
 
 // 39 seconds for 91 frame test 7.09 MB
-export default async (images, originalPaths, gifData, dstPath) => {
+export default async (images, gifData, dstPath) => {
   return new Promise(async resolve1 => {
     const { width, height } = gifData
     // create write stream to path where GIF will be saved
@@ -31,7 +31,7 @@ export default async (images, originalPaths, gifData, dstPath) => {
           encoder.addFrame(ctx)
           resolve2()
         }
-        img.src = originalPaths[index]
+        img.src = images[index].path
       })
     }
     // loop over each image
