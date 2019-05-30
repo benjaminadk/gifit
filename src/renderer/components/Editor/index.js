@@ -428,10 +428,12 @@ export default function Editor() {
 
       // clear interval when playing is set to false
     } else {
-      clearInterval(pid)
-      setSelected(selected.map((el, i) => i === imageIndex))
+      if (pid) {
+        clearInterval(pid)
+        setSelected(selected.map((el, i) => i === imageIndex))
+      }
     }
-    return () => clearInterval(playingId)
+    return () => clearInterval(pid)
   }, [playing, imageIndex])
 
   // register keyboard listeners
@@ -1006,6 +1008,40 @@ export default function Editor() {
     await update()
     setLoading(false)
     initialize(imageIndex)
+  }
+
+  async function onMoveFrameLeft() {
+    async function update() {
+      return new Promise(resolve => {
+        const newFrames = images.slice()
+        const newIndices = []
+
+        for (const [i, bool] of selected.toArray().entries()) {
+          if (bool) {
+            var newIndex = i === 0 ? newFrames.length - 1 : i - 1
+            var temp = newFrames[i]
+            newFrames[i] = newFrames[newIndex]
+            newFrames[newIndex] = temp
+            newIndices.push(newIndex)
+          }
+        }
+
+        const newImageIndex = imageIndex === 0 ? images.length - 1 : imageIndex - 1
+        const newSelected = selected.map((el, i) => newIndices.includes(i))
+        const newProject = { ...gifData, frames: newFrames }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          setImages(newFrames)
+          setImageIndex(newImageIndex)
+          setSelected(newSelected)
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
   }
 
   // move selected frames 1 frame to the right
@@ -1904,6 +1940,7 @@ export default function Editor() {
         onFrameDeleteClick={onFrameDeleteClick}
         onReverseClick={onReverseClick}
         onYoyoClick={onYoyoClick}
+        onMoveFrameLeft={onMoveFrameLeft}
         onMoveFrameRight={onMoveFrameRight}
         onOptionsClick={onOptionsClick}
         onSelectClick={onSelectClick}
