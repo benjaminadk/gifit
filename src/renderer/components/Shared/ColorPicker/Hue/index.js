@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react'
 import throttle from 'lodash.throttle'
-import { Container, Canvas, Handle } from '../styles'
+import { TriangleLeft } from 'styled-icons/octicons/TriangleLeft'
+import { TriangleRight } from 'styled-icons/octicons/TriangleRight'
+import { Bar, Canvas, Handle } from '../styles'
 import paint from './paint'
 import config from 'common/config'
 
@@ -9,7 +11,7 @@ const {
 } = config
 
 export default function Hue({ hueY, setHueY, setHue }) {
-  const container = useRef(null)
+  const bar = useRef(null)
   const canvas = useRef(null)
 
   useEffect(() => {
@@ -17,16 +19,13 @@ export default function Hue({ hueY, setHueY, setHue }) {
   }, [])
 
   useEffect(() => {
-    const element = container.current
-    const offsetTop = element.offsetTop
+    const offsetTop = bar.current.offsetTop
 
     function computePosition(e) {
-      const p = Math.max(
+      return Math.max(
         handleOffsetY * -1,
         Math.min(e.offsetY - offsetTop, squareSize - handleOffsetY)
       )
-
-      return p
     }
 
     function computeHue(y) {
@@ -54,17 +53,20 @@ export default function Hue({ hueY, setHueY, setHue }) {
       document.body.addEventListener('mouseup', onMouseUp)
     }
 
-    element.addEventListener('mousedown', onMouseDown)
+    bar.current.addEventListener('mousedown', onMouseDown)
 
     return () => {
-      element.removeEventListener('mousedown', onMouseDown)
+      bar.current.removeEventListener('mousedown', onMouseDown)
     }
   }, [])
 
   return (
-    <Container ref={container}>
-      <Handle top={hueY} />
+    <Bar ref={bar}>
+      <Handle top={hueY}>
+        <TriangleRight />
+        <TriangleLeft />
+      </Handle>
       <Canvas ref={canvas} />
-    </Container>
+    </Bar>
   )
 }

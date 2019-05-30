@@ -450,10 +450,10 @@ export default function Editor() {
       }
     }
 
-    remote.globalShortcut.register('Delete', onDelete)
+    remote.globalShortcut.register('Ctrl+Delete', onDelete)
     remote.globalShortcut.register('Ctrl+A', onSelectAll)
     return () => {
-      remote.globalShortcut.unregister('Delete', onDelete)
+      remote.globalShortcut.unregister('Ctrl+Delete', onDelete)
       remote.globalShortcut.unregister('Ctrl+A', onSelectAll)
     }
   }, [selected, showDrawer])

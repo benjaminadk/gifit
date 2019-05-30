@@ -1,66 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import convertHEXtoHSL from '../../../lib/convertHEXtoHSL'
 import Modal from '../Modal'
 import Hue from './Hue'
 import Square from './Square'
 import Svg from '../../Svg'
-import styled from 'styled-components'
-
-export const Container = styled.div`
-  width: 400px;
-  height: 400px;
-  display: grid;
-  grid-template-rows: 30px 1fr;
-`
-
-export const TitleBar = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 120px;
-  background: #3d3d3d;
-  .left {
-    display: grid;
-    grid-template-columns: 30px 1fr;
-    .icon {
-    }
-    .text {
-      font-size: 1.2rem;
-      color: white;
-    }
-  }
-  .right {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, 40px);
-    .icon {
-      width: 100%;
-      height: 100%;
-      display: grid;
-      justify-items: center;
-      align-items: center;
-      svg {
-        width: 15px;
-        height: 15px;
-      }
-    }
-  }
-`
-
-export const Main = styled.div`
-  display: grid;
-  grid-template-columns: 220px 60px 1fr;
-  background: #ffffff;
-  .square {
-    display: grid;
-    justify-items: center;
-  }
-  .hue {
-    display: grid;
-    justify-items: center;
-  }
-`
+import { Container, TitleBar, Main } from './styles'
 
 export default function ColorPicker({ show, initialColor, onChange, onClose }) {
+  const modal = useRef(null)
+
   const [hue, setHue] = useState(0)
   const [hueY, setHueY] = useState(0)
   const [square, setSquare] = useState([0, 0])
@@ -68,6 +16,16 @@ export default function ColorPicker({ show, initialColor, onChange, onClose }) {
   const [alpha, setAlpha] = useState(1)
   const [alphaY, setAlphaY] = useState(0)
   const [color, setColor] = useState(null)
+
+  const [offsetTop, setOffsetTop] = useState(null)
+  const [offsetLeft, setOffsetLeft] = useState(null)
+
+  useEffect(() => {
+    if (show) {
+      setOffsetTop(modal.current.offsetTop)
+      setOffsetLeft(modal.current.offsetLeft)
+    }
+  }, [show])
 
   useEffect(() => {
     const [h, s, l, a] = convertHEXtoHSL(initialColor)
@@ -77,7 +35,7 @@ export default function ColorPicker({ show, initialColor, onChange, onClose }) {
   }, [initialColor])
 
   return (
-    <Modal show={show} onClose={onClose}>
+    <Modal modal={modal} show={show} onClose={onClose}>
       <Container>
         <TitleBar>
           <div className='left'>
@@ -94,7 +52,14 @@ export default function ColorPicker({ show, initialColor, onChange, onClose }) {
         </TitleBar>
         <Main>
           <div className='square'>
-            <Square hue={hue} squareXY={squareXY} />
+            <Square
+              hue={hue}
+              squareXY={squareXY}
+              setSquare={setSquare}
+              offsetTop={offsetTop}
+              offsetLeft={offsetLeft}
+              setSquareXY={setSquareXY}
+            />
           </div>
           <div className='hue'>
             <Hue hueY={hueY} setHueY={setHueY} setHue={setHue} />

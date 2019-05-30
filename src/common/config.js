@@ -24,13 +24,13 @@ const editor = {
 }
 
 const picker = {
-  squareSize: 200,
+  squareSize: 300,
   barWidth: 40,
   crossSize: 15,
   crossOffset: 7.5,
-  handleWidth: 50,
+  handleWidth: 52,
   handleHeight: 10,
-  handleOffsetX: -5,
+  handleOffsetX: -6,
   handleOffsetY: 5,
   checkerSize: 5,
   checkerFill: 'rgba(0, 0, 0, .05)',
