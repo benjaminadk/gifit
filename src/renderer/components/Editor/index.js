@@ -5,7 +5,6 @@ import path from 'path'
 import { readFile, writeFile, readdir, rmdir, unlink, copyFile } from 'fs'
 import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
-import createHashPath from '../../lib/createHashPath'
 import createTFName from '../../lib/createTFName'
 import createYoyoName from '../../lib/createYoyoName'
 import initializeOptions from '../Options/initializeOptions'
@@ -73,7 +72,6 @@ export default function Editor() {
   const [hashModifier, setHashModifier] = useState('#' + performance.now())
 
   const [gifData, setGifData] = useState(null)
-  const [originalPaths, setOriginalPaths] = useState(null)
   const [totalDuration, setTotalDuration] = useState(null)
   const [averageDuration, setAverageDuration] = useState(null)
 
@@ -239,7 +237,6 @@ export default function Editor() {
           height: project.height,
           frameRate: project.frameRate
         })
-        setOriginalPaths(project.frames.map(el => el.path))
         setTotalDuration(totalDur)
         setAverageDuration(averageDur)
         setMainHeight(initialMainHeight)
@@ -423,31 +420,37 @@ export default function Editor() {
 
   // play gif frame by frame when playing is set to true
   useEffect(() => {
-    var playingId
+    var pid
     if (playing) {
-      // use function version of useState setter
-      playingId = setInterval(() => {
-        setImageIndex(index => (index === images.length - 1 ? 0 : index + 1))
-      }, Math.round(1000 / gifData.frameRate))
+      pid = setTimeout(() => {
+        setImageIndex(x => (x === images.length - 1 ? 0 : x + 1))
+      }, images[imageIndex].time)
+
       // clear interval when playing is set to false
     } else {
-      clearInterval(playingId)
+      clearInterval(pid)
       setSelected(selected.map((el, i) => i === imageIndex))
     }
     return () => clearInterval(playingId)
-  }, [playing])
+  }, [playing, imageIndex])
 
-  // listen for keypress events
+  // register keyboard listeners
   useEffect(() => {
-    // listen for delete key
-    function onKeyDown({ keyCode }) {
-      if (keyCode === 46 && !showDrawer) {
+    function onDelete() {
+      if (!showDrawer) {
         onFrameDeleteClick('selection')
       }
     }
-    window.addEventListener('keydown', onKeyDown)
+
+    function onSelectAll() {
+      setSelected(selected.map(el => true))
+    }
+
+    remote.globalShortcut.register('Delete', onDelete)
+    remote.globalShortcut.register('Ctrl+A', onSelectAll)
     return () => {
-      window.removeEventListener('keydown', onKeyDown)
+      remote.globalShortcut.unregister('Delete', onDelete)
+      remote.globalShortcut.unregister('Ctrl+A', onSelectAll)
     }
   }, [selected, showDrawer])
 
@@ -617,18 +620,15 @@ export default function Editor() {
     }
     const callback = result => {
       if (result === 0) {
-        var deletePaths, keepPaths, keepImages
+        var deleteImages, keepImages
         if (type === 'selection') {
-          deletePaths = originalPaths.filter((el, i) => selected.get(i))
-          keepPaths = originalPaths.filter((el, i) => !selected.get(i))
+          deleteImages = images.filter((el, i) => selected.get(i))
           keepImages = images.filter((el, i) => !selected.get(i))
         } else if (type === 'previous') {
-          deletePaths = originalPaths.filter((el, i) => i < imageIndex)
-          keepPaths = originalPaths.filter((el, i) => i >= imageIndex)
+          deleteImages = images.filter((el, i) => i < imageIndex)
           keepImages = images.filter((el, i) => i >= imageIndex)
         } else {
-          deletePaths = originalPaths.filter((el, i) => i > imageIndex)
-          keepPaths = originalPaths.filter((el, i) => i <= imageIndex)
+          deleteImages = images.filter((el, i) => i > imageIndex)
           keepImages = images.filter((el, i) => i <= imageIndex)
         }
         // overwrite project.json with new images
@@ -641,13 +641,12 @@ export default function Editor() {
           const totalDur = keepImages.reduce((acc, val) => (acc += val.time), 0)
           const averageDur = Math.round((totalDur / keepImages.length) * 10) / 10
           setImages(keepImages)
-          setOriginalPaths(keepPaths)
           setTotalDuration(totalDur)
           setAverageDuration(averageDur)
         })
         // delete old images
-        for (const deletePath of deletePaths) {
-          unlinkAsync(deletePath)
+        for (const img of deleteImages) {
+          unlinkAsync(img.path)
         }
       }
     }
@@ -739,7 +738,7 @@ export default function Editor() {
           const reader = new FileReader()
 
           reader.onload = () => {
-            const filepath = originalPaths[i]
+            const filepath = img.path
             const buffer = Buffer.from(reader.result)
             writeFileAsync(filepath, buffer).then(() => {
               if (i === images.length - 1) {
@@ -788,6 +787,7 @@ export default function Editor() {
           const initialDrawerHeight = initialMainHeight - 40 - 50
           const heightRatio = Math.floor((initialMainHeight / newHeight) * 100) / 100
           const initialScale = heightRatio < 1 ? heightRatio : 1
+          setGifData(newGifData)
           setScale(initialScale)
           setZoomToFit(initialScale)
           setThumbWidth(tWidth)
@@ -803,7 +803,12 @@ export default function Editor() {
     setLoading(true)
     await draw()
     await update()
-    setGifData(newGifData)
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setShowDrawer(false)
   }
@@ -827,7 +832,7 @@ export default function Editor() {
           const reader = new FileReader()
 
           reader.onload = () => {
-            const filepath = originalPaths[i]
+            const filepath = img.path
             const buffer = Buffer.from(reader.result)
             writeFileAsync(filepath, buffer).then(() => {
               if (i === images.length - 1) {
@@ -874,13 +879,13 @@ export default function Editor() {
           const initialDrawerHeight = initialMainHeight - 40 - 50
           const heightRatio = Math.floor((initialMainHeight / cropHeight) * 100) / 100
           const initialScale = heightRatio < 1 ? heightRatio : 1
+          setGifData(newGifData)
           setScale(initialScale)
           setZoomToFit(initialScale)
           setThumbWidth(tWidth)
           setThumbHeight(tHeight)
           setMainHeight(initialMainHeight)
           setDrawerHeight(initialDrawerHeight)
-          setHashModifier('#' + performance.now())
           resolve()
         })
       })
@@ -889,7 +894,12 @@ export default function Editor() {
     setLoading(true)
     await draw()
     await update()
-    setGifData(newGifData)
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setShowDrawer(false)
   }
@@ -915,7 +925,7 @@ export default function Editor() {
         }
 
         const keepImages = images.filter((el, i) => deleteIndices.indexOf(i) === -1)
-        const deleteImages = originalPaths.filter((el, i) => deleteIndices.indexOf(i) !== -1)
+        const deleteImages = images.filter((el, i) => deleteIndices.indexOf(i) !== -1)
         const newProject = {
           ...gifData,
           frames: keepImages
@@ -925,8 +935,8 @@ export default function Editor() {
           resolve()
         })
 
-        for (const p of deleteImages) {
-          unlinkAsync(p)
+        for (const img of deleteImages) {
+          unlinkAsync(img.path)
         }
       })
     }
@@ -968,11 +978,14 @@ export default function Editor() {
         const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
         const newFrames = images.slice()
 
-        for (const [i, originalPath] of originalPaths.reverse().entries()) {
+        for (const [i, img] of images
+          .slice()
+          .reverse()
+          .entries()) {
           const dstPath = path.join(projectFolder, createYoyoName(i))
-          await copyFileAsync(originalPath, dstPath)
+          await copyFileAsync(img.path, dstPath)
           const newFrame = {
-            ...images.reverse()[i],
+            ...images.slice().reverse()[i],
             path: dstPath
           }
           newFrames.push(newFrame)
@@ -995,11 +1008,53 @@ export default function Editor() {
     initialize(imageIndex)
   }
 
+  // move selected frames 1 frame to the right
+  async function onMoveFrameRight() {
+    async function update() {
+      return new Promise(resolve => {
+        const newFrames = images.slice()
+        const newIndices = []
+
+        // reverse selected List makes process easier due to consecutive selected frames
+        for (const [i, bool] of selected
+          .toArray()
+          .reverse()
+          .entries()) {
+          if (bool) {
+            const realIndex = newFrames.length - 1 - i
+            // wrap last frame around to begining if selected
+            var newIndex = realIndex + 1 === newFrames.length ? 0 : realIndex + 1
+            var temp = newFrames[realIndex]
+            newFrames[realIndex] = newFrames[newIndex]
+            newFrames[newIndex] = temp
+            newIndices.push(newIndex)
+          }
+        }
+
+        const newImageIndex = imageIndex === images.length - 1 ? 0 : imageIndex + 1
+        const newSelected = selected.map((el, i) => newIndices.includes(i))
+        const newProject = { ...gifData, frames: newFrames }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          setImages(newFrames)
+          setImageIndex(newImageIndex)
+          setSelected(newSelected)
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+  }
+
   // override duration for selected frames to new value
   async function onOverrideAccept() {
     async function update() {
       return new Promise(resolve => {
         const newFrames = []
+
         for (const [i, bool] of selected.toArray().entries()) {
           var newFrame = images[i]
           if (bool) {
@@ -1007,6 +1062,7 @@ export default function Editor() {
           }
           newFrames.push(newFrame)
         }
+
         const newProject = {
           ...gifData,
           frames: newFrames
@@ -1166,11 +1222,10 @@ export default function Editor() {
             const reader = new FileReader()
 
             reader.onload = () => {
-              const filepath = originalPaths[i]
+              const filepath = images[i].path
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
                 if (i === lastIndex) {
-                  setHashModifier('#' + performance.now())
                   resolve()
                 }
               })
@@ -1195,6 +1250,12 @@ export default function Editor() {
 
     setLoading(true)
     await draw()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1293,11 +1354,10 @@ export default function Editor() {
             const reader = new FileReader()
 
             reader.onload = () => {
-              const filepath = originalPaths[i]
+              const filepath = images[i].path
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
                 if (i === lastIndex) {
-                  setHashModifier('#' + performance.now())
                   resolve()
                 }
               })
@@ -1321,6 +1381,12 @@ export default function Editor() {
 
     setLoading(true)
     await draw()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1342,11 +1408,10 @@ export default function Editor() {
             const reader = new FileReader()
 
             reader.onload = () => {
-              const filepath = originalPaths[i]
+              const filepath = images[i].path
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
                 if (i === lastIndex) {
-                  setHashModifier('#' + performance.now())
                   resolve()
                 }
               })
@@ -1370,6 +1435,12 @@ export default function Editor() {
 
     setLoading(true)
     await draw()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1403,11 +1474,10 @@ export default function Editor() {
           const reader = new FileReader()
 
           reader.onload = () => {
-            const filepath = originalPaths[i]
+            const filepath = images[i].path
             const buffer = Buffer.from(reader.result)
             writeFileAsync(filepath, buffer).then(() => {
               if (i === images.length - 1) {
-                setHashModifier('#' + performance.now())
                 resolve()
               }
             })
@@ -1454,6 +1524,12 @@ export default function Editor() {
     setShowDrawer(false)
     setLoading(true)
     await draw()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setScale(zoomToFit)
   }
@@ -1470,16 +1546,15 @@ export default function Editor() {
       return new Promise(resolve => {
         const lastIndex = List(images).findLastIndex(el => el.clicked)
 
-        for (const [i, image] of images.entries()) {
-          if (image.clicked) {
+        for (const [i, img] of images.entries()) {
+          if (img.clicked) {
             const reader = new FileReader()
 
             reader.onload = () => {
-              const filepath = originalPaths[i]
+              const filepath = img.path
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
                 if (i === lastIndex) {
-                  setHashModifier('#' + performance.now())
                   resolve()
                 }
               })
@@ -1495,8 +1570,8 @@ export default function Editor() {
               ctx1.fillStyle = clicksColor + '80'
               ctx1.beginPath()
               ctx1.ellipse(
-                image.cursorX,
-                image.cursorY,
+                img.cursorX,
+                img.cursorY,
                 clicksWidth / 2,
                 clicksHeight / 2,
                 0,
@@ -1506,7 +1581,7 @@ export default function Editor() {
               ctx1.fill()
               c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
             }
-            image1.src = image.path
+            image1.src = img.path
           }
         }
       })
@@ -1514,6 +1589,12 @@ export default function Editor() {
 
     setLoading(true)
     await draw()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setShowDrawer(false)
   }
@@ -1534,11 +1615,10 @@ export default function Editor() {
             const reader = new FileReader()
 
             reader.onload = () => {
-              const filepath = originalPaths[i]
+              const filepath = images[i].path
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
                 if (i === lastIndex) {
-                  setHashModifier('#' + performance.now())
                   resolve1()
                 }
               })
@@ -1644,6 +1724,12 @@ export default function Editor() {
 
     setLoading(true)
     await draw()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1689,11 +1775,10 @@ export default function Editor() {
             const reader = new FileReader()
 
             reader.onload = () => {
-              const filepath = originalPaths[i]
+              const filepath = images[i].path
               const buffer = Buffer.from(reader.result)
               writeFileAsync(filepath, buffer).then(() => {
                 if (i === lastIndex) {
-                  setHashModifier('#' + performance.now())
                   resolve1()
                 }
               })
@@ -1733,6 +1818,12 @@ export default function Editor() {
     }
     setLoading(true)
     await draw()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        setHashModifier('#' + Math.round(performance.now()))
+        resolve()
+      }, 500)
+    })
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
@@ -1813,6 +1904,7 @@ export default function Editor() {
         onFrameDeleteClick={onFrameDeleteClick}
         onReverseClick={onReverseClick}
         onYoyoClick={onYoyoClick}
+        onMoveFrameRight={onMoveFrameRight}
         onOptionsClick={onOptionsClick}
         onSelectClick={onSelectClick}
       />

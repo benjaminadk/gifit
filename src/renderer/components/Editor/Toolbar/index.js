@@ -63,6 +63,7 @@ export default function Toolbar({
   onFrameDeleteClick,
   onReverseClick,
   onYoyoClick,
+  onMoveFrameRight,
   onOptionsClick,
   onSelectClick
 }) {
@@ -218,7 +219,7 @@ export default function Toolbar({
                   <Svg name='move-left' />
                   <div className='text'>Move Left</div>
                 </Action>
-                <Action>
+                <Action onClick={onMoveFrameRight}>
                   <Svg name='move-right' />
                   <div className='text'>Move Right</div>
                 </Action>
