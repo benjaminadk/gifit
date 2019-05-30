@@ -429,23 +429,25 @@ export default function Editor() {
       // clear interval when playing is set to false
     } else {
       if (pid) {
-        clearInterval(pid)
+        clearTimeout(pid)
         setSelected(selected.map((el, i) => i === imageIndex))
       }
     }
-    return () => clearInterval(pid)
+    return () => clearTimeout(pid)
   }, [playing, imageIndex])
 
   // register keyboard listeners
   useEffect(() => {
     function onDelete() {
-      if (!showDrawer) {
+      if (!showDrawer && remote.getCurrentWindow().isFocused()) {
         onFrameDeleteClick('selection')
       }
     }
 
     function onSelectAll() {
-      setSelected(selected.map(el => true))
+      if (remote.getCurrentWindow().isFocused()) {
+        setSelected(selected.map(el => true))
+      }
     }
 
     remote.globalShortcut.register('Delete', onDelete)

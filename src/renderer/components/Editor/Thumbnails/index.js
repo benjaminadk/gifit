@@ -14,6 +14,7 @@ export default function Thumbnails({
 }) {
   function onContextMenu() {
     const template = [
+      { label: 'Open Image', click: () => shell.openExternal(images[imageIndex].path) },
       {
         label: 'Explore Folder',
         click: () => shell.showItemInFolder(images[imageIndex].path)

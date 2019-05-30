@@ -23,6 +23,20 @@ const editor = {
   precisionOptions: ['Minutes', 'Seconds', 'Milliseconds']
 }
 
+const picker = {
+  squareSize: 200,
+  barWidth: 40,
+  crossSize: 15,
+  crossOffset: 7.5,
+  handleWidth: 50,
+  handleHeight: 10,
+  handleOffsetX: -5,
+  handleOffsetY: 5,
+  checkerSize: 5,
+  checkerFill: 'rgba(0, 0, 0, .05)',
+  delay: 100
+}
+
 const defaultOptions = {
   optionsPath: '',
   ffmpegPath: '',
@@ -96,6 +110,7 @@ export default {
   optionsWindow,
   recorder,
   editor,
+  picker,
   defaultOptions,
   theme,
   appActions,
