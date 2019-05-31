@@ -1,9 +1,9 @@
 export default hex => {
   const rgba = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex)
-  var r = parseInt(rgba[0], 16)
-  var g = parseInt(rgba[1], 16)
-  var b = parseInt(rgba[2], 16)
-  var a = rgba[3] ? Math.ceil((parseInt(rgba[3], 16) / 255) * 100) / 100 : 1
+  var r = parseInt(rgba[1], 16) / 255
+  var g = parseInt(rgba[2], 16) / 255
+  var b = parseInt(rgba[3], 16) / 255
+  var a = rgba[4] ? Math.ceil((parseInt(rgba[4], 16) / 255) * 100) / 100 : 1
 
   const min = Math.min(r, g, b)
   const max = Math.max(r, g, b)

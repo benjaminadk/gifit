@@ -10,13 +10,13 @@ const {
   picker: { squareSize, handleOffsetY, delay }
 } = config
 
-export default function Hue({ hueY, offsetTop, setHueY, setHue }) {
+export default function Alpha({ alphaY, hue, offsetTop, setAlpha, setAlphaY }) {
   const bar = useRef(null)
   const canvas = useRef(null)
 
   useEffect(() => {
-    paint(canvas)
-  }, [])
+    paint(canvas, hue)
+  }, [hue])
 
   useEffect(() => {
     function computePosition(e) {
@@ -26,22 +26,20 @@ export default function Hue({ hueY, offsetTop, setHueY, setHue }) {
       )
     }
 
-    function computeHue(y) {
-      return Math.round((y + handleOffsetY) * (360 / squareSize))
+    function computeAlpha(y) {
+      return Math.abs(Math.round((y + handleOffsetY) / (squareSize * 0.01)) - 100) / 100
     }
 
     const onMouseMove = throttle(e => {
       const y = computePosition(e)
-      const hue = computeHue(y)
-      setHueY(y)
-      setHue(hue)
+      setAlphaY(y)
+      setAlpha(computeAlpha(y))
     }, delay)
 
     function onMouseUp(e) {
       const y = computePosition(e)
-      const hue = computeHue(y)
-      setHueY(y)
-      setHue(hue)
+      setAlphaY(y)
+      setAlpha(computeAlpha(y))
       document.body.removeEventListener('mousemove', onMouseMove)
       document.body.removeEventListener('mouseup', onMouseUp)
     }
@@ -60,7 +58,7 @@ export default function Hue({ hueY, offsetTop, setHueY, setHue }) {
 
   return (
     <Bar ref={bar}>
-      <Handle top={hueY}>
+      <Handle top={alphaY}>
         <TriangleRight />
         <TriangleLeft />
       </Handle>

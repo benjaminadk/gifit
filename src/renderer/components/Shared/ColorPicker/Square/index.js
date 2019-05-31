@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react'
 import throttle from 'lodash.throttle'
 import convertRGBtoHSL from '../../../../lib/convertRGBtoHSL'
 import { Container, Canvas, Cross } from './styles'
+import Svg from '../../../Svg'
 import paint from './paint'
 import config from 'common/config'
 
@@ -23,12 +24,13 @@ export default function Square({ hue, squareXY, setSquare, offsetTop, offsetLeft
     function computePosition(e) {
       const x = Math.max(
         crossOffset * -1,
-        Math.min(e.clientX - offsetLeft + 237, squareSize - crossOffset)
+        Math.min(e.clientX - offsetLeft + 262, squareSize - crossOffset)
       )
       const y = Math.max(
         crossOffset * -1,
-        Math.min(e.clientY - offsetTop + 137, squareSize - crossOffset)
+        Math.min(e.clientY - offsetTop + 133, squareSize - crossOffset)
       )
+
       return [x, y]
     }
 
@@ -66,7 +68,9 @@ export default function Square({ hue, squareXY, setSquare, offsetTop, offsetLeft
 
   return (
     <Container ref={square}>
-      <Cross top={squareXY[1]} left={squareXY[0]} />
+      <Cross top={squareXY[1]} left={squareXY[0]}>
+        <Svg name='cross' />
+      </Cross>
       <Canvas ref={canvas} />
     </Container>
   )

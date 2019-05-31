@@ -9,35 +9,30 @@ export const Container = styled.div`
   position: relative;
   width: ${squareSize + 'px'};
   height: ${squareSize + 'px'};
-  outline: ${p => p.theme.outline};
   cursor: crosshair;
+  box-shadow: -1px -1px 2px rgba(0, 0, 0, 0.5);
 `
 
-export const Canvas = styled.canvas.attrs(props => ({
+export const Canvas = styled.canvas.attrs(p => ({
   width: squareSize,
   height: squareSize
 }))``
 
-export const Cross = styled.div.attrs(props => ({
+export const Cross = styled.div.attrs(p => ({
   style: {
-    top: props.top + 'px',
-    left: props.left + 'px',
+    top: p.top + 'px',
+    left: p.left + 'px',
     width: crossSize + 'px',
     height: crossSize + 'px',
-    transition: props.animate ? 'top .75s ease-out, left .75s ease-out' : '0s'
+    transition: p.animate ? 'top .75s ease-out, left .75s ease-out' : '0s'
   }
 }))`
   position: absolute;
-  display: flex;
-  justify-content: center;
+  display: grid;
+  justify-items: center;
   align-items: center;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
-  pointer-events: none;
   svg {
-    width: ${crossSize + 'px'};
-    height: ${crossSize + 'px'};
-    color: ${p => p.theme.black};
+    width: 15px;
+    height: 15px;
   }
 `
