@@ -3,6 +3,7 @@ import { remote } from 'electron'
 import { AppContext } from '../App'
 import initializeRecorder from '../Recorder/initializeRecorder'
 import initializeWebcam from '../Webcam/initializeWebcam'
+import initializeBoard from '../Board/initializeBoard'
 import initializeOptions from '../Options/initializeOptions'
 import Svg from '../Svg'
 import { Container, Action } from './styles'
@@ -40,6 +41,10 @@ export default function Landing() {
     initializeWebcam(state, dispatch)
   }
 
+  function onBoardClick() {
+    initializeBoard(state,dispatch)
+  }
+
   function onEditorClick() {
     dispatch({ type: SET_APP_MODE, payload: 1 })
   }
@@ -62,7 +67,7 @@ export default function Landing() {
           <Svg name='camera-new' />
           <div>Webcam</div>
         </Action>
-        <Action>
+        <Action onClick={onBoardClick}>
           <Svg name='board-new' />
           <div>Board</div>
         </Action>

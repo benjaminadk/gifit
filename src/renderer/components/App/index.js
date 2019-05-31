@@ -5,6 +5,7 @@ import initialize from './initialize'
 import Landing from '../Landing'
 import Recorder from '../Recorder'
 import Webcam from '../Webcam'
+import Board from '../Board'
 import Editor from '../Editor'
 import Scale from '../Scale'
 import Options from '../Options'
@@ -56,6 +57,12 @@ export default function App() {
       return (
         <AppContext.Provider value={{ state, dispatch }}>
           <Webcam />
+        </AppContext.Provider>
+      )
+    } else if (windowTitle === 'GifIt - Board') {
+      return (
+        <AppContext.Provider value={{ state, dispatch }}>
+          <Board />
         </AppContext.Provider>
       )
     } else if (windowTitle === 'GifIt - Options') {

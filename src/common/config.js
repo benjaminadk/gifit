@@ -14,6 +14,11 @@ const recorder = {
   zoomSize: 130
 }
 
+const board = {
+  width: 504,
+  height: 410
+}
+
 const editor = {
   drawerWidth: 300,
   styleOptions: ['Normal', 'Italic', 'Bold'],
@@ -94,6 +99,8 @@ const ipcActions = {
   WEBCAM_STOP: 'WEBCAM_STOP',
   WEBCAM_CLOSE: 'WEBCAM_CLOSE',
   WEBCAM_SCALE: 'WEBCAM_SCALE',
+  BOARD_STOP: 'BOARD_STOP',
+  BOARD_CLOSE: 'BOARD_CLOSE',
   OPTIONS_UPDATE: 'OPTIONS_UPDATE'
 }
 
@@ -109,6 +116,7 @@ export default {
   mainWindow,
   optionsWindow,
   recorder,
+  board,
   editor,
   picker,
   defaultOptions,
