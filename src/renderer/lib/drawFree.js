@@ -8,8 +8,8 @@ function angleBetween(p1, p2) {
 }
 
 export default (
-  canvas3,
-  canvas4,
+  canvas1,
+  canvas2,
   drawXY,
   x,
   y,
@@ -21,20 +21,20 @@ export default (
 ) => {
   const dist = distanceBetween(drawXY, [x, y])
   const angle = angleBetween(drawXY, [x, y])
-  const ctx3 = canvas3.getContext('2d')
-  const ctx4 = canvas4.getContext('2d')
+  const ctx1 = canvas1.getContext('2d')
+  const ctx2 = canvas2.getContext('2d')
   // fill in extra points
-  for (var i = 0; i < dist; i += 5) {
+  for (var i = 0; i < dist; i += 1) {
     let x1 = drawXY[0] + Math.sin(angle) * i
     let y1 = drawXY[1] + Math.cos(angle) * i
     // draw to highlight layer
     if (drawHighlight) {
-      ctx3.fillStyle = drawPenColor
+      ctx1.fillStyle = drawPenColor
       if (drawShape === 'rectangle') {
-        ctx3.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+        ctx1.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
       } else if (drawShape === 'ellipsis') {
-        ctx3.beginPath()
-        ctx3.ellipse(
+        ctx1.beginPath()
+        ctx1.ellipse(
           x1 - drawPenWidth / 2,
           y1 - drawPenHeight / 2,
           drawPenWidth / 2,
@@ -43,16 +43,16 @@ export default (
           0,
           Math.PI * 2
         )
-        ctx3.fill()
+        ctx1.fill()
       }
       // draw to pen layer
     } else {
-      ctx4.fillStyle = drawPenColor
+      ctx2.fillStyle = drawPenColor
       if (drawShape === 'rectangle') {
-        ctx4.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+        ctx2.fillRect(x1 - drawPenWidth / 2, y1 - drawPenHeight / 2, drawPenWidth, drawPenHeight)
       } else if (drawShape === 'ellipsis') {
-        ctx4.beginPath()
-        ctx4.ellipse(
+        ctx2.beginPath()
+        ctx2.ellipse(
           x1 - drawPenWidth / 2,
           y1 - drawPenHeight / 2,
           drawPenWidth / 2,
@@ -61,7 +61,7 @@ export default (
           0,
           Math.PI * 2
         )
-        ctx4.fill()
+        ctx2.fill()
       }
     }
   }

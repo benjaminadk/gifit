@@ -37,7 +37,6 @@ export default (state, dispatch) => {
     alwaysOnTop: false,
     resizable: false,
     maximizable: false,
-    center: true,
     webPreferences: { nodeIntegration: true }
   })
 

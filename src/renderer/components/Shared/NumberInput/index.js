@@ -1,17 +1,23 @@
 import React, { useRef, useState } from 'react'
 import { Container } from './styles'
 
-export default function NumberInput({ width, value, max, min, fallback, setter }) {
+export default function NumberInput({ width, value, max, min, fallback, disabled, setter }) {
   const input = useRef(null)
 
   const [focused, setFocused] = useState(false)
 
   function onFocus() {
+    if (disabled) {
+      return
+    }
     setFocused(true)
     input.current.select()
   }
 
   function onBlur(e) {
+    if (disabled) {
+      return
+    }
     if (e.target.value === '') {
       setter(fallback)
     } else if (e.target.value < min) {
@@ -21,6 +27,9 @@ export default function NumberInput({ width, value, max, min, fallback, setter }
   }
 
   function onChange(e) {
+    if (disabled) {
+      return
+    }
     const isDigit = /^\d*$/
     var newValue
     if (isDigit.test(e.target.value)) {
@@ -36,6 +45,9 @@ export default function NumberInput({ width, value, max, min, fallback, setter }
   }
 
   function onArrowClick(inc) {
+    if (disabled) {
+      return
+    }
     var currentValue = value
     var newValue
     if (inc) {
@@ -59,6 +71,7 @@ export default function NumberInput({ width, value, max, min, fallback, setter }
       <input
         ref={input}
         value={value}
+        readOnly={disabled}
         onChange={onChange}
         onBlur={onBlur}
         onFocus={onFocus}

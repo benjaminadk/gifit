@@ -15,7 +15,7 @@ const {
 
 const writeFileAsync = promisify(writeFile)
 
-export default function FrameRate() {
+export default function FrameRate({ disabled }) {
   const { state, dispatch } = useContext(AppContext)
   const { options } = state
   const frameRate = options.get('frameRate')
@@ -72,6 +72,7 @@ export default function FrameRate() {
         min={1}
         max={60}
         fallback={10}
+        disabled={disabled}
         setter={x => dispatch({ type: SET_OPTIONS, payload: options.set('frameRate', x) })}
       />
       <Label>fps</Label>
