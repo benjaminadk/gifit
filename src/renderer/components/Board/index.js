@@ -8,6 +8,8 @@ import { AppContext } from '../App'
 import createFolderName from '../../lib/createFolderName'
 import drawBrush from '../../lib/drawBrush'
 import drawFree from '../../lib/drawFree'
+import drawEraser from '../../lib/drawEraser'
+import drawErase from '../../lib/drawErase'
 import Svg from '../Svg'
 import NumberInput from '../Shared/NumberInput'
 import ColorSwatch from '../Shared/ColorSwatch/generic'
@@ -48,7 +50,7 @@ export default function Board() {
   const source = sources[sourceIndex]
   const { width: screenWidth, height: screenHeight } = source.display.bounds
 
-  const [mode, setMode] = useState(0)
+  const [autoRecord, setAutoRecord] = useState(true)
   const [count, setCount] = useState(0)
   const [frames, setFrames] = useState(List([]))
   const [times, setTimes] = useState(List([]))
@@ -59,9 +61,11 @@ export default function Board() {
   const [drawType, setDrawType] = useState('pen')
   const [drawHighlight, setDrawHighlight] = useState(false)
   const [drawPenColor, setDrawPenColor] = useState('#FFFF00')
-  const [drawPenWidth, setDrawPenWidth] = useState(10)
-  const [drawPenHeight, setDrawPenHeight] = useState(10)
+  const [drawPenWidth, setDrawPenWidth] = useState(20)
+  const [drawPenHeight, setDrawPenHeight] = useState(20)
   const [drawShape, setDrawShape] = useState('rectangle')
+  const [drawEraserWidth, setDrawEraserWidth] = useState(10)
+  const [drawEraserHeight, setDrawEraserHeight] = useState(10)
 
   const main = useRef(null)
   const canvas1 = useRef(null)
@@ -166,14 +170,25 @@ export default function Board() {
     remote.getCurrentWindow().close()
   }
 
+  function onDiscard() {
+    setCount(0)
+    setFrames(List([]))
+    const ctx1 = canvas1.current.getContext('2d')
+    const ctx2 = canvas2.current.getContext('2d')
+    ctx1.clearRect(0, 0, canvas1.current.width, canvas1.current.height)
+    ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
+  }
+
   function onMouseDown(e) {
     const x = e.nativeEvent.offsetX
     const y = e.nativeEvent.offsetY
     setDrawing(true)
     setDrawXY([x, y])
 
-    t1.current = performance.now()
-    captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+    if ((autoRecord && !e.ctrlKey) || (!autoRecord && e.ctrlKey)) {
+      t1.current = performance.now()
+      captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+    }
   }
 
   function onMouseUp() {
@@ -187,6 +202,8 @@ export default function Board() {
 
     if (drawType === 'pen') {
       drawBrush(canvas3.current, x, y, drawShape, drawPenColor, drawPenWidth, drawPenHeight)
+    } else if (drawType === 'eraser') {
+      drawEraser(canvas3.current, x, y, drawEraserWidth, drawEraserHeight)
     }
 
     if (drawing) {
@@ -203,6 +220,8 @@ export default function Board() {
           drawPenWidth,
           drawPenHeight
         )
+      } else if (drawType === 'eraser') {
+        drawErase(canvas1.current, canvas2.current, drawXY, x, y, drawEraserWidth, drawEraserHeight)
       }
     }
 
@@ -272,46 +291,73 @@ export default function Board() {
 
   return (
     <Container>
-      <Top>
+      <Top pen={drawType === 'pen'}>
         <Action selected={drawType === 'pen'} onClick={() => setDrawType('pen')}>
           <Svg name='pen' />
         </Action>
         <Action selected={drawType === 'eraser'} onClick={() => setDrawType('eraser')}>
           <Svg name='eraser' />
         </Action>
-        <ColorSwatch width={60} color={drawPenColor} onChange={setDrawPenColor} />
-        <NumberInput
-          width={60}
-          value={drawPenWidth}
-          min={1}
-          max={100}
-          fallback={10}
-          setter={setDrawPenWidth}
-        />
-        <NumberInput
-          width={60}
-          value={drawPenHeight}
-          min={1}
-          max={100}
-          fallback={10}
-          setter={setDrawPenHeight}
-        />
-        <Action selected={drawShape === 'rectangle'} onClick={() => setDrawShape('rectangle')}>
-          <Svg name='rectangle' />
-        </Action>
-        <Action selected={drawShape === 'ellipsis'} onClick={() => setDrawShape('ellipsis')}>
-          <Svg name='shape' />
-        </Action>
-        <Checkbox
-          value={drawHighlight}
-          primary='Highlighter'
-          style={{ height: '100%', marginBottom: 0 }}
-          onClick={() => setDrawHighlight(!drawHighlight)}
-        />
-        <Status show={!!count}>
-          {count} {!drawing ? '(Paused)' : ''}
-        </Status>
-        <div />
+        {drawType === 'pen' ? (
+          <>
+            <ColorSwatch width={60} color={drawPenColor} onChange={setDrawPenColor} />
+            <NumberInput
+              width={60}
+              value={drawPenWidth}
+              min={1}
+              max={100}
+              fallback={20}
+              setter={setDrawPenWidth}
+            />
+            <NumberInput
+              width={60}
+              value={drawPenHeight}
+              min={1}
+              max={100}
+              fallback={20}
+              setter={setDrawPenHeight}
+            />
+            <Action selected={drawShape === 'rectangle'} onClick={() => setDrawShape('rectangle')}>
+              <Svg name='rectangle' />
+            </Action>
+            <Action selected={drawShape === 'ellipsis'} onClick={() => setDrawShape('ellipsis')}>
+              <Svg name='shape' />
+            </Action>
+            <Checkbox
+              value={drawHighlight}
+              primary='Highlighter'
+              style={{ height: '100%', marginBottom: 0 }}
+              onClick={() => setDrawHighlight(!drawHighlight)}
+            />
+            <div />
+            <Status show={!!count}>
+              {count} {!drawing ? '(Paused)' : ''}
+            </Status>
+          </>
+        ) : (
+          <>
+            <NumberInput
+              width={60}
+              value={drawEraserWidth}
+              min={1}
+              max={100}
+              fallback={10}
+              setter={setDrawEraserWidth}
+            />
+            <NumberInput
+              width={60}
+              value={drawEraserHeight}
+              min={1}
+              max={100}
+              fallback={10}
+              setter={setDrawEraserHeight}
+            />
+            <div />
+            <Status show={!!count}>
+              {count} {!drawing ? '(Paused)' : ''}
+            </Status>
+          </>
+        )}
       </Top>
       <Main ref={main}>
         <Canvas1 ref={canvas1} />
@@ -327,7 +373,9 @@ export default function Board() {
       </Main>
       <Bottom discard={!!count}>
         <div />
-        <Svg name='settings' />
+        <Action>
+          <Svg name='settings' />
+        </Action>
         <FrameRate disabled={!!count} />
         <Dimensions>
           <input
@@ -348,12 +396,12 @@ export default function Board() {
           <div className='label'>px</div>
         </Dimensions>
         {!!count && (
-          <Discard>
+          <Discard onClick={onDiscard}>
             <Svg name='close' />
             <div className='text'>Discard</div>
           </Discard>
         )}
-        <Control width={80}>
+        <Control width={80} active={autoRecord} onClick={() => setAutoRecord(!autoRecord)}>
           <Svg name='record' />
           <div className='text'>
             <div className='primary'>Record</div>

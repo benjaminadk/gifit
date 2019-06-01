@@ -11,7 +11,8 @@ export const Container = styled.div`
 
 export const Top = styled.div`
   display: grid;
-  grid-template-columns: 30px 30px 70px 70px 70px 30px 30px 80px 70px 1fr;
+  grid-template-columns: ${p =>
+    p.pen ? '30px 30px 70px 70px 70px 30px 30px 80px 1fr 70px' : '30px 30px 70px 70px 1fr 70px'};
   align-items: center;
   justify-items: center;
 `
@@ -71,7 +72,7 @@ export const Canvas3 = styled.canvas`
 
 export const Bottom = styled.div`
   display: grid;
-  grid-template-columns: 1fr 30px 120px 115px ${p => p.discard && '80px'} 80px 60px;
+  grid-template-columns: 1fr 30px 120px 115px ${p => p.discard && '80px'} 84px 64px;
   align-items: center;
   justify-items: center;
 `
@@ -105,13 +106,11 @@ export const Dimensions = styled.div`
 `
 
 export const Discard = styled.div`
-  width: 80px;
+  width: 90%;
   height: 90%;
   display: grid;
   grid-template-columns: 30px 1fr;
   align-items: center;
-  border-left: ${p => p.theme.border};
-  border-right: ${p => p.theme.border};
   &:hover {
     background: ${p => lighten(0.4, p.theme.primary)};
   }
@@ -130,10 +129,11 @@ export const Control = styled.div`
   width: ${p => p.width}px;
   height: 90%;
   display: grid;
-  grid-template-columns: 30px 1fr;
+  grid-template-columns: 25px 1fr;
   align-items: center;
+  background: ${p => (p.active ? lighten(0.35, p.theme.primary) : '#FFFFFF')};
   &:hover {
-    background: ${p => lighten(0.4, p.theme.primary)};
+    background: ${p => (p.active ? lighten(0.35, p.theme.primary) : lighten(0.4, p.theme.primary))};
   }
   svg {
     justify-self: center;
@@ -150,7 +150,7 @@ export const Control = styled.div`
     .secondary {
       align-self: flex-end;
       font-size: 1rem;
-      color: ${p => p.theme.grey[5]};
+      color: ${p => p.theme.grey[8]};
     }
   }
 `

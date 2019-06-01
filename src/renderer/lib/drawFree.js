@@ -23,7 +23,7 @@ export default (
   const angle = angleBetween(drawXY, [x, y])
   const ctx1 = canvas1.getContext('2d')
   const ctx2 = canvas2.getContext('2d')
-  // fill in extra points
+  // increase x in i+=x to fill in less points - lower x = smoother lines
   for (var i = 0; i < dist; i += 1) {
     let x1 = drawXY[0] + Math.sin(angle) * i
     let y1 = drawXY[1] + Math.cos(angle) * i

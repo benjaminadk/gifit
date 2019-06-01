@@ -12,8 +12,8 @@ export default (canvas3, canvas4, drawXY, x, y, drawEraserWidth, drawEraserHeigh
   const angle = angleBetween(drawXY, [x, y])
   const ctx3 = canvas3.getContext('2d')
   const ctx4 = canvas4.getContext('2d')
-
-  for (var i = 0; i < dist; i += 5) {
+  // increase x in i+=x to fill in less points - lower x = smoother lines
+  for (var i = 0; i < dist; i += 1) {
     let x1 = drawXY[0] + Math.sin(angle) * i
     let y1 = drawXY[1] + Math.cos(angle) * i
     ctx3.clearRect(
