@@ -248,8 +248,8 @@ export default function Toolbar({
           </>
         ) : menuIndex === 4 ? (
           <>
-            <Section width={150}>
-              <GenericGrid columns={2}>
+            <Section width={225}>
+              <GenericGrid columns={3}>
                 <Action onClick={() => onOpenDrawer('resize')}>
                   <Svg name='scale' />
                   <div className='text'>Resize</div>
@@ -257,6 +257,10 @@ export default function Toolbar({
                 <Action onClick={() => onOpenDrawer('crop')}>
                   <Svg name='crop' />
                   <div className='text'>Crop</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('flip')}>
+                  <Svg name='flip' />
+                  <div className='text'>Flip/Rotate</div>
                 </Action>
               </GenericGrid>
               <SectionText>Size and Rotation</SectionText>

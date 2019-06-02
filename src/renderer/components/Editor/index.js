@@ -222,7 +222,10 @@ export default function Editor() {
           true
         )
         // add time of all frames to determine total duration
-        const totalDur = project.frames.reduce((acc, val) => (acc += val.time), 0)
+        const totalDur = project.frames.reduce((acc, val) => {
+          acc += val.time ? val.time : 0
+          return acc
+        }, 0)
         // divide total by number of frames to get average duration
         const averageDur = Math.round((totalDur / project.frames.length) * 10) / 10
         // set state

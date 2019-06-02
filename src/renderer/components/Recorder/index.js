@@ -242,6 +242,16 @@ export default function Recorder() {
   function onCaptureFrame() {
     // increase total frame count by 1
     setCount(cur => cur + 1)
+    // calculate time elapsed since last frame and update time
+    const t2 = performance.now()
+    const diff = Math.round(t2 - t1.current)
+    t1.current = t2
+    setTimes(cur => cur.push(diff))
+    // get and save cursor position
+    const { x, y } = remote.screen.getCursorScreenPoint()
+    setXCursors(cur => cur.push(x))
+    setYCursors(cur => cur.push(y))
+    setCursors(cur => cur.push(isClicked.current))
     var frame
     // draw full screen image
     ctx1.current.clearRect(0, 0, screenWidth, screenHeight)
@@ -267,16 +277,6 @@ export default function Recorder() {
     }
     // add frame to frames state
     setFrames(cur => cur.push(frame))
-    // calculate time elapsed since last frame and update time
-    const t2 = performance.now()
-    const diff = Math.round(t2 - t1.current)
-    t1.current = t2
-    setTimes(cur => cur.push(diff))
-    // get and save cursor position
-    const { x, y } = remote.screen.getCursorScreenPoint()
-    setXCursors(cur => cur.push(x))
-    setYCursors(cur => cur.push(y))
-    setCursors(cur => cur.push(isClicked.current))
   }
 
   // stop recording and process frames into project
