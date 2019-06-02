@@ -23,29 +23,37 @@ export default function BottomBar({
   const [show, setShow] = useState(false)
   const [progress, setProgress] = useState(0)
 
-  const timer = useRef(null)
+  const interval = useRef(null)
+  const timeout = useRef(null)
 
   useEffect(() => {
     var id
     if (loading) {
       setShow(true)
-      id = setInterval(() => {
+      interval.current = setInterval(() => {
         setProgress(state => state + 1)
       }, 250)
-      timer.current = id
     }
     if (!loading && show) {
       setProgress(100)
+    }
+
+    return () => {
+      clearInterval(interval.current)
     }
   }, [loading])
 
   useEffect(() => {
     if (progress === 100) {
-      clearInterval(timer.current)
-      setTimeout(() => {
+      clearInterval(interval.current)
+      timeout.current = setTimeout(() => {
         setProgress(0)
         setShow(false)
       }, 1000)
+    }
+
+    return () => {
+      clearTimeout(timeout.current)
     }
   }, [progress])
 

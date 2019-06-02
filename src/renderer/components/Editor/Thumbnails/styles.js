@@ -43,11 +43,13 @@ export const Thumbnail = styled.div.attrs(p => ({
     .index {
       align-self: center;
       justify-self: center;
+      font-weight: bold;
     }
     .time {
       align-self: center;
       justify-self: center;
       font-style: italic;
+      color: ${p => p.theme.grey[10]};
     }
   }
 `

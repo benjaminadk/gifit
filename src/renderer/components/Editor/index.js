@@ -972,7 +972,40 @@ export default function Editor() {
               image1.src = images[i].path
             }
           }
-        } else {
+        } else if (['left', 'right'].includes(flipMode)) {
+          for (const [i, img] of images.entries()) {
+            const reader = new FileReader()
+
+            reader.onload = () => {
+              const filepath = img.path
+              const buffer = Buffer.from(reader.result)
+              writeFileAsync(filepath, buffer).then(() => {
+                if (i === images.length - 1) {
+                  resolve()
+                }
+              })
+            }
+
+            const c1 = document.createElement('canvas')
+            c1.width = gifData.height
+            c1.height = gifData.width
+            const ctx1 = c1.getContext('2d')
+
+            const image1 = new Image()
+            image1.onload = () => {
+              if (flipMode === 'right') {
+                ctx1.translate(c1.width, c1.height / c1.width)
+                ctx1.rotate(90 * (Math.PI / 180))
+              } else if (flipMode === 'left') {
+                ctx1.translate(c1.height / c1.width, c1.width)
+                ctx1.rotate(270 * (Math.PI / 180))
+              }
+
+              ctx1.drawImage(image1, 0, 0)
+              c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            }
+            image1.src = img.path
+          }
         }
       })
     }
@@ -981,6 +1014,17 @@ export default function Editor() {
       return new Promise(resolve => {
         if (['horizontal', 'vertical'].includes(flipMode)) {
           resolve()
+        } else if (['left', 'right'].includes(flipMode)) {
+          const newProject = {
+            ...gifData,
+            width: gifData.height,
+            height: gifData.width,
+            frames: images
+          }
+          const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+          writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+            resolve()
+          })
         }
       })
     }
@@ -995,6 +1039,9 @@ export default function Editor() {
       }, 500)
     })
     setLoading(false)
+    if (['left', 'right'].includes(flipMode)) {
+      initialize(imageIndex)
+    }
     setFlipMode('')
     setShowDrawer(false)
   }
