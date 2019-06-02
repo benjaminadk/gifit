@@ -259,7 +259,7 @@ export default function Toolbar({
                   <div className='text'>Crop</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('flip')}>
-                  <Svg name='flip' />
+                  <Svg name='flip-h' />
                   <div className='text'>Flip/Rotate</div>
                 </Action>
               </GenericGrid>

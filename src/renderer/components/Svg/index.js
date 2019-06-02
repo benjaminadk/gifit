@@ -323,12 +323,23 @@ export default function Svg({ name, ...rest }) {
             />
           </>
         )
-      case 'flip':
+      case 'flip-h':
         return (
           <>
             <path d='M23.687 3.0025l-.0035 40.474-23.684-.002L23.687 3.0025z' fill='gray' />
             <path
               d='M26.7108 5.002l.0033 38.012 22.289-.002-22.2923-38.01z'
+              stroke='gray'
+              fill='#fff'
+            />
+          </>
+        )
+      case 'flip-v':
+        return (
+          <>
+            <path d='M45.4137 23.684l-40.474.0035-.002-23.684 40.476 23.6805z' fill='gray' />
+            <path
+              d='M43.8688 26.9243l-38.486-.0033-.002 22.289 38.488-22.2857z'
               stroke='gray'
               fill='#fff'
             />

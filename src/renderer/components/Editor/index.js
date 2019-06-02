@@ -29,6 +29,7 @@ import ObfuscateOverlay from './Obfuscate/ObfuscateOverlay'
 import Drawer from './Drawer'
 import Resize from './Resize'
 import Crop from './Crop'
+import Flip from './Flip'
 import TitleFrame from './TitleFrame'
 import FreeDrawing from './FreeDrawing'
 import Shape from './Shape'
@@ -148,6 +149,8 @@ export default function Editor() {
   const [cropHeight, setCropHeight] = useState(0)
   const [cropX, setCropX] = useState(0)
   const [cropY, setCropY] = useState(0)
+
+  const [flipMode, setFlipMode] = useState('')
 
   const [reduceFactor, setReduceFactor] = useState(1)
   const [reduceCount, setReduceCount] = useState(1)
@@ -916,15 +919,98 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // close crop drawer
   function onCropCancel() {
     setShowDrawer(false)
   }
 
+  // flip selected frames or rotate all frames
+  async function onFlipAccept() {
+    if (!flipMode) {
+      return
+    }
+
+    async function draw() {
+      return new Promise(resolve => {
+        const lastIndex = selected.findLastIndex(el => el)
+
+        if (['horizontal', 'vertical'].includes(flipMode)) {
+          for (const [i, bool] of selected.toArray().entries()) {
+            if (bool) {
+              const reader = new FileReader()
+
+              reader.onload = () => {
+                const filepath = images[i].path
+                const buffer = Buffer.from(reader.result)
+                writeFileAsync(filepath, buffer).then(() => {
+                  if (i === lastIndex) {
+                    resolve()
+                  }
+                })
+              }
+
+              const c1 = document.createElement('canvas')
+              c1.width = gifData.width
+              c1.height = gifData.height
+              const ctx1 = c1.getContext('2d')
+
+              if (flipMode === 'horizontal') {
+                ctx1.scale(-1, 1)
+              } else if (flipMode === 'vertical') {
+                ctx1.scale(1, -1)
+              }
+
+              const image1 = new Image()
+              image1.onload = () => {
+                if (flipMode === 'horizontal') {
+                  ctx1.drawImage(image1, gifData.width * -1, 0)
+                } else if (flipMode === 'vertical') {
+                  ctx1.drawImage(image1, 0, gifData.height * -1)
+                }
+                c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+              }
+              image1.src = images[i].path
+            }
+          }
+        } else {
+        }
+      })
+    }
+
+    async function update() {
+      return new Promise(resolve => {
+        if (['horizontal', 'vertical'].includes(flipMode)) {
+          resolve()
+        }
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    await update()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        updateHashModifier()
+        resolve()
+      }, 500)
+    })
+    setLoading(false)
+    setFlipMode('')
+    setShowDrawer(false)
+  }
+
+  // close flip drawer
+  function onFlipCancel() {
+    setShowDrawer(false)
+  }
+
+  // reduce number of frames based on user input
   async function onReduceAccept() {
     async function update() {
       return new Promise(resolve => {
+        // gather indices of images to delete
         const deleteIndices = []
-
+        // delete reduceCount images for every reduceFactor (not counting deleted frames)
         for (let i = 0; i < images.length; i += reduceFactor) {
           if (i) {
             var j = 0
@@ -935,9 +1021,10 @@ export default function Editor() {
             i += reduceCount
           }
         }
-
+        // filter images to separate keepers and deletes
         const keepImages = images.filter((el, i) => deleteIndices.indexOf(i) === -1)
         const deleteImages = images.filter((el, i) => deleteIndices.indexOf(i) !== -1)
+        // rewrite project data
         const newProject = {
           ...gifData,
           frames: keepImages
@@ -946,7 +1033,7 @@ export default function Editor() {
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
-
+        // delete images
         for (const img of deleteImages) {
           unlinkAsync(img.path)
         }
@@ -960,10 +1047,12 @@ export default function Editor() {
     initialize(0)
   }
 
+  // close reduce drawer
   function onReduceCancel() {
     setShowDrawer(false)
   }
 
+  // reverse the order of frames
   async function onReverseClick() {
     async function update() {
       return new Promise(resolve => {
@@ -984,6 +1073,7 @@ export default function Editor() {
     initialize(imageIndex)
   }
 
+  // add yoyo effect - doubles frames by adding reversed original frames to the end or original frames
   async function onYoyoClick() {
     async function update() {
       return new Promise(async resolve => {
@@ -1020,12 +1110,13 @@ export default function Editor() {
     initialize(imageIndex)
   }
 
+  // move selected frames an index to the left - account for wrap arounds
   async function onMoveFrameLeft() {
     async function update() {
       return new Promise(resolve => {
         const newFrames = images.slice()
         const newIndices = []
-
+        // use a temp variable to swap frames
         for (const [i, bool] of selected.toArray().entries()) {
           if (bool) {
             var newIndex = i === 0 ? newFrames.length - 1 : i - 1
@@ -2079,6 +2170,14 @@ export default function Editor() {
             setCropY={setCropY}
             onAccept={onCropAccept}
             onCancel={onCropCancel}
+          />
+        ) : drawerMode === 'flip' ? (
+          <Flip
+            drawerHeight={drawerHeight}
+            flipMode={flipMode}
+            setFlipMode={setFlipMode}
+            onAccept={onFlipAccept}
+            onCancel={onFlipCancel}
           />
         ) : drawerMode === 'reduce' ? (
           <ReduceFrames
