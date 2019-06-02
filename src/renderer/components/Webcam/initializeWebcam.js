@@ -32,7 +32,7 @@ export default (state, dispatch) => {
     title: 'GifIt - Webcam',
     width: 0,
     height: 0,
-    center: true,
+    useContentSize: true,
     show: false,
     webPreferences: { nodeIntegration: true }
   })

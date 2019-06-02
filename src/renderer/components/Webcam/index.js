@@ -14,7 +14,7 @@ import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
 const {
-  ipcActions: { WEBCAM_CLOSE, WEBCAM_STOP },
+  ipcActions: { WEBCAM_STOP },
   constants: { IMAGE_TYPE, IMAGE_REGEX, MAX_LENGTH }
 } = config
 
@@ -23,13 +23,17 @@ const writeFileAsync = promisify(writeFile)
 
 export default function Webcam() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, videoInputs } = state
+  const { options, videoInputs, sources } = state
 
   const videoInputIndex = options.get('videoInputIndex')
+  const sourceIndex = options.get('sourceIndex')
   const frameRate = options.get('frameRate')
 
   const videoInput = videoInputs[videoInputIndex]
+  const source = sources[sourceIndex]
+  const { width: screenWidth, height: screenHeight } = source.display.bounds
 
+  const [windowID, setWindowID] = useState(null)
   const [mode, setMode] = useState(0)
   const [scale, setScale] = useState(0.5)
   const [width, setWidth] = useState(0)
@@ -59,13 +63,16 @@ export default function Webcam() {
       video.current.onloadedmetadata = () => {
         const w = Math.ceil(video.current.videoWidth * scale)
         const h = Math.ceil(video.current.videoHeight * scale)
+        const h1 = h + 40
+        const x = Math.round(screenWidth / 2 - w / 2)
+        const y1 = Math.round(screenHeight / 2 - h1 / 2)
         video.current.width = w
         video.current.height = h
         setWidth(w)
-        setHeight(h)
+        setHeight(h1)
+        setWindowID(remote.getCurrentWindow().id)
+        remote.getCurrentWindow().setContentBounds({ width: w, height: h1, x: x, y: y1 })
         remote.getCurrentWindow().show()
-        remote.getCurrentWindow().setSize(w + 16, h + 40)
-        remote.getCurrentWindow().center()
       }
     }
 
@@ -77,14 +84,29 @@ export default function Webcam() {
   }, [])
 
   useEffect(() => {
-    const w = Math.ceil(video.current.videoWidth * scale)
-    const h = Math.ceil(video.current.videoHeight * scale)
-    video.current.width = w
-    video.current.height = h
-    setWidth(w)
-    setHeight(h)
-    remote.getCurrentWindow().setSize(w + 16, h + 40)
-  }, [scale])
+    if (windowID) {
+      var w = Math.ceil(video.current.videoWidth * scale)
+      var h = Math.ceil(video.current.videoHeight * scale)
+
+      if (w > screenWidth) {
+        w = screenWidth
+        h = Math.round((screenWidth * h) / w)
+      }
+      if (h > screenHeight - 40) {
+        h = screenHeight - 40
+        w = Math.round((screenHeight * w) / h)
+      }
+
+      const h1 = h + 40
+      const x = Math.round(screenWidth / 2 - w / 2)
+      const y1 = Math.round(screenHeight / 2 - h1 / 2)
+      video.current.width = w
+      video.current.height = h
+      setWidth(w)
+      setHeight(h1)
+      remote.BrowserWindow.fromId(windowID).setContentBounds({ width: w, height: h1, x: x, y: y1 })
+    }
+  }, [scale, windowID])
 
   function onShowScale() {
     initializeScale(scale, setScale)
@@ -167,11 +189,6 @@ export default function Webcam() {
     setMode(1)
     t1.current = performance.now()
     captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
-  }
-
-  function onCloseClick() {
-    remote.BrowserWindow.fromId(1).webContents.send(WEBCAM_CLOSE, null)
-    remote.getCurrentWindow().close()
   }
 
   return (

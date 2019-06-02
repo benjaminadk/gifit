@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { lighten } from 'polished'
+import { lighten, darken } from 'polished'
 
 export const Container = styled.div.attrs(p => ({
   style: {
@@ -13,7 +13,7 @@ export const Container = styled.div.attrs(p => ({
 `
 
 export const Video = styled.video`
-  object-fit: contain;
+  object-fit: cover;
 `
 
 export const Controls = styled.div.attrs(p => ({
@@ -32,7 +32,8 @@ export const Controls = styled.div.attrs(p => ({
     display: grid;
     align-items: center;
     justify-items: center;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    color: ${p => darken(0.1, p.theme.primary)};
   }
   .action {
     width: 100%;
