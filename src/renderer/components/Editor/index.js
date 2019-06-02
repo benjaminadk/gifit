@@ -10,6 +10,7 @@ import createYoyoName from '../../lib/createYoyoName'
 import initializeOptions from '../Options/initializeOptions'
 import initializeRecorder from '../Recorder/initializeRecorder'
 import initializeWebcam from '../Webcam/initializeWebcam'
+import initializeBoard from '../Board/initializeBoard'
 import drawBorder from './Border/drawBorder'
 import drawProgressBar from './Progress/drawProgressBar'
 import drawProgressText from './Progress/drawProgressText'
@@ -69,7 +70,7 @@ export default function Editor() {
   const [imageIndex, setImageIndex] = useState(null)
   const [selected, setSelected] = useState(List())
 
-  const [hashModifier, setHashModifier] = useState('#' + performance.now())
+  const [hashModifier, setHashModifier] = useState('#' + Math.round(performance.now()))
 
   const [gifData, setGifData] = useState(null)
   const [totalDuration, setTotalDuration] = useState(null)
@@ -486,22 +487,27 @@ export default function Editor() {
     }
   }, [watermarkPath, gifData])
 
-  // navigate back recorder
-  function onNewRecordingClick() {
-    initializeRecorder(state, dispatch)
-    dispatch({
-      type: SET_APP_MODE,
-      payload: 0
-    })
+  // trick cache for images
+  function updateHashModifier() {
+    setHashModifier('#' + Math.round(performance.now()))
   }
 
-  // navigate to webcam
+  // open recorder
+  function onNewRecordingClick() {
+    initializeRecorder(state, dispatch)
+    dispatch({ type: SET_APP_MODE, payload: 0 })
+  }
+
+  // open webcam
   function onNewWebcamClick() {
     initializeWebcam(state, dispatch)
-    dispatch({
-      type: SET_APP_MODE,
-      payload: 0
-    })
+    dispatch({ type: SET_APP_MODE, payload: 0 })
+  }
+
+  // open board
+  function onNewBoardClick() {
+    initializeBoard(state, dispatch)
+    dispatch({ type: SET_APP_MODE, payload: 0 })
   }
 
   // save project as a GIF
@@ -798,7 +804,6 @@ export default function Editor() {
           setThumbHeight(tHeight)
           setMainHeight(initialMainHeight)
           setDrawerHeight(initialDrawerHeight)
-          setHashModifier('#' + performance.now())
           resolve()
         })
       })
@@ -809,7 +814,7 @@ export default function Editor() {
     await update()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -900,7 +905,7 @@ export default function Editor() {
     await update()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -1290,7 +1295,7 @@ export default function Editor() {
     await draw()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -1421,7 +1426,7 @@ export default function Editor() {
     await draw()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -1475,7 +1480,7 @@ export default function Editor() {
     await draw()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -1564,7 +1569,7 @@ export default function Editor() {
     await draw()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -1629,7 +1634,7 @@ export default function Editor() {
     await draw()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -1764,7 +1769,7 @@ export default function Editor() {
     await draw()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -1858,7 +1863,7 @@ export default function Editor() {
     await draw()
     await new Promise(resolve => {
       setTimeout(() => {
-        setHashModifier('#' + Math.round(performance.now()))
+        updateHashModifier()
         resolve()
       }, 500)
     })
@@ -1876,10 +1881,7 @@ export default function Editor() {
   // open options window
   function onOptionsClick() {
     if (!optionsOpen) {
-      dispatch({
-        type: SET_OPTIONS_OPEN,
-        payload: true
-      })
+      dispatch({ type: SET_OPTIONS_OPEN, payload: true })
       initializeOptions(remote.getCurrentWindow(), dispatch)
     }
   }
@@ -1936,6 +1938,7 @@ export default function Editor() {
         onOpenDrawer={onOpenDrawer}
         onNewRecordingClick={onNewRecordingClick}
         onNewWebcamClick={onNewWebcamClick}
+        onNewBoardClick={onNewBoardClick}
         onSaveClick={onSaveClick}
         onDiscardProjectClick={onDiscardProjectClick}
         onPlaybackClick={onPlaybackClick}

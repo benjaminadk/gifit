@@ -5,6 +5,7 @@ import path from 'path'
 import { mkdir, writeFile } from 'fs'
 import { promisify } from 'util'
 import { AppContext } from '../App'
+import initializeOptions from '../Options/initializeOptions'
 import createFolderName from '../../lib/createFolderName'
 import drawBrush from '../../lib/drawBrush'
 import drawFree from '../../lib/drawFree'
@@ -33,6 +34,7 @@ import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
 const {
+  appActions: { SET_OPTIONS_OPEN },
   ipcActions: { BOARD_STOP },
   constants: { IMAGE_TYPE, IMAGE_REGEX }
 } = config
@@ -42,7 +44,7 @@ const mkdirAsync = promisify(mkdir)
 
 export default function Board() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, sources } = state
+  const { options, optionsOpen, sources } = state
 
   const sourceIndex = options.get('sourceIndex')
   const frameRate = options.get('frameRate')
@@ -185,6 +187,59 @@ export default function Board() {
     setDrawing(true)
     setDrawXY([x, y])
 
+    const ctx1 = canvas1.current.getContext('2d')
+    const ctx2 = canvas2.current.getContext('2d')
+    if (drawType === 'pen') {
+      if (drawHighlight) {
+        ctx1.fillStyle = drawPenColor
+        if (drawShape === 'rectangle') {
+          ctx1.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+        } else {
+          ctx1.beginPath()
+          ctx1.ellipse(
+            x - drawPenWidth / 2,
+            y - drawPenHeight / 2,
+            drawPenWidth / 2,
+            drawPenHeight / 2,
+            0,
+            0,
+            Math.PI * 2
+          )
+          ctx1.fill()
+        }
+      } else {
+        ctx2.fillStyle = drawPenColor
+        if (drawShape === 'rectangle') {
+          ctx2.fillRect(x - drawPenWidth / 2, y - drawPenHeight / 2, drawPenWidth, drawPenHeight)
+        } else {
+          ctx2.beginPath()
+          ctx2.ellipse(
+            x - drawPenWidth / 2,
+            y - drawPenHeight / 2,
+            drawPenWidth / 2,
+            drawPenHeight / 2,
+            0,
+            0,
+            Math.PI * 2
+          )
+          ctx2.fill()
+        }
+      }
+    } else {
+      ctx1.clearRect(
+        x - drawEraserWidth / 2,
+        y - drawEraserHeight / 2,
+        drawEraserWidth,
+        drawEraserHeight
+      )
+      ctx2.clearRect(
+        x - drawEraserWidth / 2,
+        y - drawEraserHeight / 2,
+        drawEraserWidth,
+        drawEraserHeight
+      )
+    }
+
     if ((autoRecord && !e.ctrlKey) || (!autoRecord && e.ctrlKey)) {
       t1.current = performance.now()
       captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
@@ -289,6 +344,13 @@ export default function Board() {
     resize(canvasWidth, newValue)
   }
 
+  function onOptionsClick() {
+    if (!optionsOpen) {
+      dispatch({ type: SET_OPTIONS_OPEN, payload: true })
+      initializeOptions(remote.getCurrentWindow(), dispatch)
+    }
+  }
+
   return (
     <Container>
       <Top pen={drawType === 'pen'}>
@@ -373,7 +435,7 @@ export default function Board() {
       </Main>
       <Bottom discard={!!count}>
         <div />
-        <Action>
+        <Action onClick={onOptionsClick}>
           <Svg name='settings' />
         </Action>
         <FrameRate disabled={!!count} />

@@ -57,6 +57,7 @@ export default function Toolbar({
   onOpenDrawer,
   onNewRecordingClick,
   onNewWebcamClick,
+  onNewBoardClick,
   onSaveClick,
   onDiscardProjectClick,
   onPlaybackClick,
@@ -93,8 +94,8 @@ export default function Toolbar({
         </Collapse>
         {menuIndex === 0 ? (
           <>
-            <Section width={150}>
-              <GenericGrid columns={2}>
+            <Section width={225}>
+              <GenericGrid columns={3}>
                 <Action onClick={onNewRecordingClick}>
                   <Svg name='record-new' />
                   <div className='text'>Recording</div>
@@ -102,6 +103,10 @@ export default function Toolbar({
                 <Action onClick={onNewWebcamClick}>
                   <Svg name='camera-new' />
                   <div className='text'>Webcam</div>
+                </Action>
+                <Action onClick={onNewBoardClick}>
+                  <Svg name='board-new' />
+                  <div className='text'>Board</div>
                 </Action>
               </GenericGrid>
               <SectionText>New</SectionText>
