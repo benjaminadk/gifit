@@ -194,12 +194,12 @@ export default function Editor() {
       const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
       const data = await readFileAsync(projectPath)
       const project = JSON.parse(data)
-      // isolate current project by matching projectFolder app state
+      // find dir that matches projectFolder app state aka the open project in editor
       if (dir === projectFolder) {
         // calcuate ratios for image w:h and h:w
         const imageRatio = Math.floor((project.width / project.height) * 100) / 100
         const inverseRatio = Math.floor((project.height / project.width) * 100) / 100
-        // set longer dimension to 100px and calculate other dimension based on ratio
+        // set larger dimension to 100px and calculate other dimension based on ratio
         var tWidth, tHeight
         if (imageRatio >= 1) {
           tWidth = 100
@@ -208,23 +208,24 @@ export default function Editor() {
           tWidth = 100 * imageRatio
           tHeight = 100
         }
-        // calculate main editor section height
-        // total height - toolbar height - thumbnails height - bottom bar height
+        // calculate main editor height
+        // full screen height - toolbar height - thumbnail image height - thumb bottom height - bottom bar height
         const initialMainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
-        // drawer height = main height - drawer header height - drawer buttons height
+        // calculate drawer height
+        // main height - drawer header height - drawer buttons height
         const initialDrawerHeight = initialMainHeight - 40 - 50
-        // ratio of available height to height of image
+        // ratio of main height to project image height
         const heightRatio = Math.floor((initialMainHeight / project.height) * 100) / 100
-        // if ratio less than 1 image is taller than editor and height ratio is intial scale 0 - 1
-        // if ratio greater than 1 image is shorter than editor and set scale to 1 or actual size
+        // if ratio less than 1 image is taller than editor and height ratio is intial scale between 0 - 1
+        // if ratio greater than 1 image is shorter than editor and set scale to 1 aka actual size
         const initialScale = heightRatio < 1 ? heightRatio : 1
-        // use immutable list to manage selected frames true=selected
-        // initialIndex default is 0 but other value can be used
+        // use immutable list to manage selected frames true=selected false=unselected
+        // initialIndex default is 0 but other value can be used as function parameter
         const initialSelected = List(Array(project.frames.length).fill(false)).set(
           initialIndex,
           true
         )
-        // add time of all frames to determine total duration
+        // add time of all frames to determine total duration of GIF
         const totalDur = project.frames.reduce((acc, val) => {
           acc += val.time ? val.time : 0
           return acc
@@ -266,14 +267,14 @@ export default function Editor() {
     remote.getCurrentWindow().setTitle('GifIt - Editor')
   }, [])
 
-  // call initialize onload and when projectFolder changes
+  // call initialize projectFolder changes
   useEffect(() => {
     initialize()
   }, [projectFolder])
 
   // manage main canvas
   useEffect(() => {
-    // only run if state variables are set
+    // only run if project is open in editor
     if (images.length && scale && gifData) {
       // set w:h to project size and adjust for scale
       wrapper.current.style.width = gifData.width * scale + 'px'
@@ -289,7 +290,7 @@ export default function Editor() {
       canvas5.current.width = gifData.width * scale
       canvas5.current.height = gifData.height * scale
       const ctx1 = canvas1.current.getContext('2d')
-      // title frame replaces image when in title drawerMode
+      // title frame replaces image when in title drawer is open
       if (drawerMode === 'title') {
         ctx1.textBaseline = 'middle'
         ctx1.fillStyle = titleBackground
@@ -305,7 +306,7 @@ export default function Editor() {
           scale
         )
         ctx1.fillText(titleText, x, y)
-        // create image, set scale on context and draw image
+        // draw image at imageIndex - the normal behavior
       } else {
         if (imageIndex !== null) {
           ctx1.scale(scale, scale)
@@ -313,7 +314,8 @@ export default function Editor() {
           image.onload = () => {
             ctx1.drawImage(image, 0, 0)
           }
-          // add hashModifier to trick cache on image updates
+          // add hashModifier to trick cache on image changes
+          // needed because filename remains the same but imagedata is overwritten
           image.src = images[imageIndex].path + hashModifier
         }
       }
@@ -372,6 +374,7 @@ export default function Editor() {
         )
       }
     } else {
+      // clear canvas 2 if no overlay drawers are open
       const ctx2 = canvas2.current.getContext('2d')
       ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
     }
@@ -425,11 +428,12 @@ export default function Editor() {
     }
   }, [imageIndex])
 
-  // play gif frame by frame when playing is set to true
+  // play GIF frame by frame when playing is set to true
   useEffect(() => {
     var pid
     if (playing) {
       pid = setTimeout(() => {
+        // account for looping
         setImageIndex(x => (x === images.length - 1 ? 0 : x + 1))
       }, images[imageIndex].time)
 
@@ -493,7 +497,7 @@ export default function Editor() {
     }
   }, [watermarkPath, gifData])
 
-  // trick cache for images
+  // trick cache
   function updateHashModifier() {
     setHashModifier('#' + Math.round(performance.now()))
   }
@@ -518,6 +522,9 @@ export default function Editor() {
 
   // save project as a GIF
   function onSaveClick() {
+    if (!gifData || loading) {
+      return
+    }
     const win = remote.getCurrentWindow()
     // default to downloads directory with random filename.gif
     const opts = {
@@ -553,6 +560,9 @@ export default function Editor() {
 
   // remove a project and delete all associated files
   function onDiscardProjectClick() {
+    if (!gifData || loading) {
+      return
+    }
     const win = remote.getCurrentWindow()
     const opts = {
       type: 'question',
@@ -589,7 +599,7 @@ export default function Editor() {
   // playback interface
   // index refers to button order 0=first 1=previous 2=play/pause 3=next 4=last
   function onPlaybackClick(index) {
-    if (!gifData) {
+    if (!gifData || loading) {
       return
     }
     if (index === 2) {
@@ -612,6 +622,9 @@ export default function Editor() {
 
   // delete selected frames from project
   function onFrameDeleteClick(type) {
+    if (!gifData || loading) {
+      return
+    }
     // number of frames to delete
     var count
     if (type === 'selection') {
@@ -621,7 +634,7 @@ export default function Editor() {
     } else {
       count = images.length - imageIndex - 1
     }
-    // if not deleting any frames delete
+    // if not deleting any frames exit function
     if (count === 0) {
       return
     }
@@ -660,7 +673,7 @@ export default function Editor() {
           setTotalDuration(totalDur)
           setAverageDuration(averageDur)
         })
-        // delete old images
+        // delete images
         for (const img of deleteImages) {
           unlinkAsync(img.path)
         }
@@ -687,17 +700,22 @@ export default function Editor() {
 
   // open drawer, adjust scale, side effects, and assign drawer mode
   function onOpenDrawer(mode) {
+    if (loading) {
+      return
+    }
     if (mode === 'recent') {
     } else {
       if (!gifData) {
         return
       }
-      if (mode === 'title') {
+      if (['border', 'shape', 'watermark', 'drawing', 'obfuscate'].includes(mode)) {
+        setScale(1)
+      } else if (mode === 'title') {
         setScale(zoomToFit)
-      } else if (mode === 'border') {
+      } else if (mode === 'crop') {
         setScale(1)
-      } else if (mode === 'shape') {
-        setScale(1)
+        setCropWidth(gifData.width)
+        setCropHeight(gifData.height)
       } else if (mode === 'progress') {
         setScale(1)
         setTimeout(() => {
@@ -709,17 +727,6 @@ export default function Editor() {
           }
           main.current.scrollTop = height
         }, 500)
-      } else if (mode === 'watermark') {
-        setScale(1)
-      } else if (mode === 'drawing') {
-        setScale(1)
-      } else if (mode === 'obfuscate') {
-        setScale(1)
-      } else if (mode === 'resize') {
-      } else if (mode === 'crop') {
-        setScale(1)
-        setCropWidth(gifData.width)
-        setCropHeight(gifData.height)
       }
     }
     setDrawerMode(mode)
@@ -728,10 +735,7 @@ export default function Editor() {
 
   // open a recent project
   function onRecentAccept(folder) {
-    dispatch({
-      type: SET_PROJECT_FOLDER,
-      payload: folder
-    })
+    dispatch({ type: SET_PROJECT_FOLDER, payload: folder })
   }
 
   // close recent project drawer
@@ -926,14 +930,14 @@ export default function Editor() {
 
   // flip selected frames or rotate all frames
   async function onFlipAccept() {
-    if (!flipMode) {
+    if (!flipMode || loading) {
       return
     }
-
+    // apply image transformations and overwrite files
     async function draw() {
-      return new Promise(resolve => {
+      return new Promise(async resolve => {
         const lastIndex = selected.findLastIndex(el => el)
-
+        //  horizontal and vertical flips are applied to only selected frames
         if (['horizontal', 'vertical'].includes(flipMode)) {
           for (const [i, bool] of selected.toArray().entries()) {
             if (bool) {
@@ -953,7 +957,7 @@ export default function Editor() {
               c1.width = gifData.width
               c1.height = gifData.height
               const ctx1 = c1.getContext('2d')
-
+              // apply negative scale to flip context around axis
               if (flipMode === 'horizontal') {
                 ctx1.scale(-1, 1)
               } else if (flipMode === 'vertical') {
@@ -962,6 +966,7 @@ export default function Editor() {
 
               const image1 = new Image()
               image1.onload = () => {
+                // account for flipped context by negating dimension with negative scale
                 if (flipMode === 'horizontal') {
                   ctx1.drawImage(image1, gifData.width * -1, 0)
                 } else if (flipMode === 'vertical') {
@@ -972,6 +977,7 @@ export default function Editor() {
               image1.src = images[i].path
             }
           }
+          // left and right rotations are applied to all frames
         } else if (['left', 'right'].includes(flipMode)) {
           for (const [i, img] of images.entries()) {
             const reader = new FileReader()
@@ -990,36 +996,41 @@ export default function Editor() {
             c1.width = gifData.height
             c1.height = gifData.width
             const ctx1 = c1.getContext('2d')
-
-            const image1 = new Image()
-            image1.onload = () => {
-              if (flipMode === 'right') {
-                ctx1.translate(c1.width, c1.height / c1.width)
-                ctx1.rotate(90 * (Math.PI / 180))
-              } else if (flipMode === 'left') {
-                ctx1.translate(c1.height / c1.width, c1.width)
-                ctx1.rotate(270 * (Math.PI / 180))
-              }
-
-              ctx1.drawImage(image1, 0, 0)
-              c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            // translate and rotate to applied desired rotations
+            // 270 degrees is equivilant to -90 degrees
+            if (flipMode === 'right') {
+              ctx1.translate(c1.width, 0)
+              ctx1.rotate(90 * (Math.PI / 180))
+            } else if (flipMode === 'left') {
+              ctx1.translate(0, c1.height)
+              ctx1.rotate(270 * (Math.PI / 180))
             }
-            image1.src = img.path
+            // wrap image load in Promise to make sure file is overwritten correctly
+            const image1 = new Image()
+            await new Promise(resolve2 => {
+              image1.onload = () => {
+                ctx1.drawImage(image1, 0, 0)
+                c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+                resolve2()
+              }
+              image1.src = img.path
+            })
           }
         }
       })
     }
-
+    // rotations require an update to project dimensions and a re initialization
     async function update() {
       return new Promise(resolve => {
         if (['horizontal', 'vertical'].includes(flipMode)) {
           resolve()
         } else if (['left', 'right'].includes(flipMode)) {
+          // width and height are switched
           const newProject = {
             ...gifData,
             width: gifData.height,
             height: gifData.width,
-            frames: images
+            frames: images.slice()
           }
           const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
           writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
@@ -2011,12 +2022,27 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
+    onResetWatermark()
   }
 
   // close watermark drawer
   function onWatermarkCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
+    onResetWatermark()
+  }
+
+  // reset watermark state to defaults
+  function onResetWatermark() {
+    setWatermarkPath('')
+    setWatermarkWidth(0)
+    setWatermarkHeight(0)
+    setWatermarkX(0)
+    setWatermarkY(0)
+    setWatermarkOpacity(0.7)
+    setWatermarkScale(1)
+    setWatermarkRealWidth(0)
+    setWatermarkRealHeight(0)
   }
 
   // open options window

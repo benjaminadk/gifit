@@ -8,6 +8,8 @@ export const Filename = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-top: 3px;
+  padding-bottom: 3px;
 `
 
 export const FileInput = styled.div`
