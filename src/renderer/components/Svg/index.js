@@ -109,6 +109,46 @@ export default function Svg({ name, ...rest }) {
             />
           </>
         )
+      case 'clock':
+        return (
+          <>
+            <circle
+              cx='24.881'
+              cy='25.039'
+              r='21.381'
+              stroke='#407eb5'
+              strokeWidth='2'
+              fill='#fff'
+            />
+            <path
+              stroke='#000'
+              strokeWidth='2'
+              d='M24.734 8.455v17.319M40.1445 25.112l-15.5563-.2929'
+            />
+          </>
+        )
+      case 'clock-average':
+        return (
+          <>
+            <circle
+              cx='24.881'
+              cy='25.039'
+              r='21.381'
+              stroke='#407eb5'
+              strokeWidth='2'
+              fill='#fff'
+            />
+            <path
+              d='M23.7006 5.2416a20.4724 20.4724 0 0 1 20.9376 21.0316l-20.4646-.5647z'
+              fill='#f57070'
+            />
+            <path
+              stroke='#000'
+              strokeWidth='2'
+              d='M24.734 8.455v17.319M40.1445 25.112l-15.5563-.2929'
+            />
+          </>
+        )
       case 'clock-increase':
         return (
           <>
@@ -321,6 +361,15 @@ export default function Svg({ name, ...rest }) {
               d='M34.491 1.277L46.858 12.32c1.547 1.382 1.681 3.756.299 5.303L25.352 42.041 7.651 25.693 29.188 1.576c1.381-1.547 3.756-1.681 5.303-.299zM20.439 47.543c-1.381 1.548-3.756 1.682-5.303.3L2.769 36.8c-1.547-1.382-1.681-3.756-.3-5.304l3.941-4.413 17.701 16.348z'
               fill='#fba7b1'
             />
+          </>
+        )
+      case 'fade':
+        return (
+          <>
+            <path fill='#407eb5' fillOpacity='.25' d='M7.503 6.95h26v26h-26z' />
+            <path stroke='#333' fill='none' d='M13.578 13.341H46.2v32.622H13.578z' />
+            <path fill='#407eb5' fillOpacity='.25' d='M16.934 16.618h26v26h-26z' />
+            <path stroke='#333' fill='none' d='M4.147 3.673h32.622v32.622H4.147z' />
           </>
         )
       case 'flip-h':

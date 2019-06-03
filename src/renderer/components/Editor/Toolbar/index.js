@@ -1,18 +1,15 @@
 import React, { useState } from 'react'
 import { format } from 'date-fns'
-import { Transfer } from 'styled-icons/boxicons-regular/Transfer'
-import { Stats } from 'styled-icons/boxicons-regular/Stats'
 import { Hashtag } from 'styled-icons/fa-solid/Hashtag'
 import { PhotoSizeSelectLarge } from 'styled-icons/material/PhotoSizeSelectLarge'
-import { AccessTime } from 'styled-icons/material/AccessTime'
 import { ChevronDown } from 'styled-icons/boxicons-regular/ChevronDown'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
+import Extras from './Extras'
 import {
   Container,
   Tabs,
   Tab,
-  Extras,
   Menu,
   Collapse,
   Section,
@@ -31,7 +28,7 @@ const tabs = [
   { icon: <Svg name='play' />, text: 'Playback' },
   { icon: <Svg name='pen' />, text: 'Edit' },
   { icon: <Svg name='image' />, text: 'Image' },
-  { icon: <Transfer />, text: 'Transitions' },
+  { icon: <Svg name='fade' />, text: 'Transitions' },
   { icon: <Svg name='info' />, text: 'Statistics' }
 ]
 
@@ -86,7 +83,7 @@ export default function Toolbar({
           </Tab>
         ))}
         <div />
-        <Extras onClick={onOptionsClick}>Extras</Extras>
+        <Extras onOptionsClick={onOptionsClick} />
       </Tabs>
       <Menu show={showToolbar}>
         <Collapse onClick={() => setShowToolbar(false)}>
@@ -328,14 +325,14 @@ export default function Toolbar({
                 </Statistic>
                 <Statistic>
                   <div className='top'>
-                    <AccessTime />
+                    <Svg name='clock' />
                     <div>Total duration</div>
                   </div>
                   <div className='bottom'>{format(new Date(totalDuration), 'mm:ss.SS')} m</div>
                 </Statistic>
                 <Statistic>
                   <div className='top'>
-                    <AccessTime />
+                    <Svg name='clock-average' />
                     <div>Average duration</div>
                   </div>
                   <div className='bottom'>{averageDuration} ms</div>

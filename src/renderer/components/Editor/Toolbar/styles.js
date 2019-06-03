@@ -13,7 +13,7 @@ export const Container = styled.div`
 export const Tabs = styled.div`
   height: 100%;
   display: grid;
-  grid-template-columns: 80px 90px 105px 80px 85px 100px 100px 1fr 100px;
+  grid-template-columns: 80px 90px 105px 80px 85px 110px 100px 1fr 80px;
   justify-items: center;
   align-items: center;
   background: ${p => p.theme.grey[1]};
@@ -52,8 +52,23 @@ export const Tab = styled.div`
   }
 `
 
-export const Extras = styled.div`
-  font-size: 1.2rem;
+export const ExtrasWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  &:hover {
+    background: ${p => lighten(0.4, p.theme.primary)};
+  }
+  svg {
+    justify-self: center;
+    width: 15px;
+    height: 15px;
+  }
+  .text {
+    font-size: 1.3rem;
+  }
 `
 
 export const Menu = styled.div`
