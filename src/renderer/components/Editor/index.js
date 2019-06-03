@@ -68,29 +68,28 @@ export default function Editor() {
 
   const [loading, setLoading] = useState(false)
   const [images, setImages] = useState([])
+  const [scale, setScale] = useState(null)
+  const [zoomToFit, setZoomToFit] = useState(null)
   const [imageIndex, setImageIndex] = useState(null)
   const [selected, setSelected] = useState(List())
-
   const [hashModifier, setHashModifier] = useState('#' + Math.round(performance.now()))
 
   const [gifData, setGifData] = useState(null)
   const [totalDuration, setTotalDuration] = useState(null)
   const [averageDuration, setAverageDuration] = useState(null)
 
-  const [thumbWidth, setThumbWidth] = useState(100)
-  const [thumbHeight, setThumbHeight] = useState(56)
-
-  const [scale, setScale] = useState(null)
-  const [zoomToFit, setZoomToFit] = useState(null)
-
   const [recentProjects, setRecentProjects] = useState(null)
   const [playing, setPlaying] = useState(false)
 
+  const [containerHeight, setContainerHeight] = useState(0)
+  const [containerWidth, setContainerWidth] = useState(0)
   const [mainHeight, setMainHeight] = useState(0)
   const [showToolbar, setShowToolbar] = useState(true)
   const [showDrawer, setShowDrawer] = useState(false)
   const [drawerMode, setDrawerMode] = useState('')
   const [drawerHeight, setDrawerHeight] = useState(0)
+  const [thumbWidth, setThumbWidth] = useState(100)
+  const [thumbHeight, setThumbHeight] = useState(56)
 
   const [drawXY, setDrawXY] = useState(null)
   const [drawing, setDrawing] = useState(false)
@@ -208,9 +207,11 @@ export default function Editor() {
           tWidth = 100 * imageRatio
           tHeight = 100
         }
+        // height of windows web content
+        const initialContainerHeight = container.current.clientHeight
         // calculate main editor height
         // full screen height - toolbar height - thumbnail image height - thumb bottom height - bottom bar height
-        const initialMainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
+        const initialMainHeight = initialContainerHeight - 120 - tHeight - 40 - 20
         // calculate drawer height
         // main height - drawer header height - drawer buttons height
         const initialDrawerHeight = initialMainHeight - 40 - 50
@@ -247,6 +248,8 @@ export default function Editor() {
         })
         setTotalDuration(totalDur)
         setAverageDuration(averageDur)
+        setContainerWidth(container.current.clientWidth)
+        setContainerHeight(initialContainerHeight)
         setMainHeight(initialMainHeight)
         setDrawerHeight(initialDrawerHeight)
         setThumbWidth(tWidth)
@@ -2197,6 +2200,8 @@ export default function Editor() {
         thumbnail={thumbnail}
         thumbWidth={thumbWidth}
         thumbHeight={thumbHeight}
+        containerWidth={containerWidth}
+        containerHeight={containerHeight}
         selected={selected}
         images={images}
         imageIndex={imageIndex}
