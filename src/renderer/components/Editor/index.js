@@ -67,7 +67,8 @@ export default function Editor() {
   const { options, optionsOpen, fontOptions, projectFolder } = state
 
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
+  const [messageTemp, setMessageTemp] = useState('')
+  const [messagePerm, setMessagePerm] = useState('')
 
   const [images, setImages] = useState([])
   const [scale, setScale] = useState(null)
@@ -238,7 +239,7 @@ export default function Editor() {
         // set state
         setSelected(initialSelected)
         setScale(initialScale)
-        setMessage(`Zoom set to ${Math.round(initialScale * 100)}%`)
+        setMessageTemp(`Zoom set to ${Math.round(initialScale * 100)}%`)
         setZoomToFit(initialScale)
         setImages(project.frames)
         setImageIndex(initialIndex)
@@ -424,6 +425,7 @@ export default function Editor() {
   useEffect(() => {
     if (!showDrawer) {
       setDrawerMode('')
+      setMessagePerm('')
     }
   }, [showDrawer])
 
@@ -683,7 +685,7 @@ export default function Editor() {
         for (const img of deleteImages) {
           unlinkAsync(img.path)
         }
-        setMessage(`${deleteImages.length} frame(s) deleted`)
+        setMessageTemp(`${deleteImages.length} frame(s) deleted`)
       }
     }
     remote.dialog.showMessageBox(win, opts, callback)
@@ -715,6 +717,7 @@ export default function Editor() {
       if (!gifData) {
         return
       }
+      // apply scale and other side effects
       if (['border', 'shape', 'watermark', 'drawing', 'obfuscate'].includes(mode)) {
         setScale(1)
       } else if (mode === 'title') {
@@ -734,6 +737,22 @@ export default function Editor() {
           }
           main.current.scrollTop = height
         }, 500)
+      }
+      // set message for current drawer
+      if (
+        ['border', 'shape', 'watermark', 'drawing', 'obfuscate', 'increase', 'override'].includes(
+          mode
+        )
+      ) {
+        setMessagePerm('This action applies to selected frames')
+      } else if (['crop', 'resize', 'progress', 'reduce'].includes(mode)) {
+        setMessagePerm('This action applies to all frames')
+      } else if (mode === 'title') {
+        setMessagePerm('The title frame will be inserted before the selected frame')
+      } else if (mode === 'flip') {
+        setMessagePerm(
+          'The flip action applies to selected frames and rotate applies to all frames'
+        )
       }
     }
     setDrawerMode(mode)
@@ -839,6 +858,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // close the resize drawer
   function onResizeCancel() {
     setShowDrawer(false)
   }
@@ -1949,7 +1969,7 @@ export default function Editor() {
     setShowDrawer(false)
     setScale(zoomToFit)
     onResetObfuscate()
-    setMessage(`Obfuscate overlay applied`)
+    setMessageTemp(`Obfuscate overlay applied`)
   }
 
   // close obfuscate drawer
@@ -2242,10 +2262,11 @@ export default function Editor() {
         total={images.length}
         selected={selected.count(el => el)}
         index={imageIndex + 1}
-        message={message}
+        messageTemp={messageTemp}
+        messagePerm={messagePerm}
         scale={scale}
         setScale={setScale}
-        setMessage={setMessage}
+        setMessageTemp={setMessageTemp}
         onPlaybackClick={onPlaybackClick}
       />
       <Drawer show={showDrawer} shiftUp={showToolbar} thumbHeight={thumbHeight}>

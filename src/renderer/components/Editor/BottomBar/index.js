@@ -16,10 +16,11 @@ export default function BottomBar({
   total,
   selected,
   index,
-  message,
+  messageTemp,
+  messagePerm,
   scale,
   setScale,
-  setMessage,
+  setMessageTemp,
   onPlaybackClick
 }) {
   const [showProgress, setShowProgress] = useState(false)
@@ -66,20 +67,20 @@ export default function BottomBar({
   // show message for 5 seconds
   useEffect(() => {
     var id
-    if (message) {
+    if (messageTemp) {
       // if two messages happen quickly overwrite old settimeout
       clearTimeout(id)
       setShowMessage(true)
       id = setTimeout(() => {
         setShowMessage(false)
-        setMessage('')
+        setMessageTemp('')
       }, 5000)
     }
 
     return () => {
       clearTimeout(id)
     }
-  }, [message])
+  }, [messageTemp])
 
   // make sure input is numeric and below 500
   function onScaleChange({ target: { value } }) {
@@ -122,9 +123,9 @@ export default function BottomBar({
       <Progress show={showProgress || loading}>
         <Bar value={progress >= 100 ? 100 : progress} />
       </Progress>
-      <Message show={showMessage}>
+      <Message show={showMessage || messagePerm}>
         <Svg name='info' />
-        <div className='text'>{message}</div>
+        <div className='text'>{messagePerm || messageTemp}</div>
       </Message>
       <ZoomInput show={scale !== null}>
         <div className='divider' />
