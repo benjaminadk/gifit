@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
 import { format } from 'date-fns'
-import { Hashtag } from 'styled-icons/fa-solid/Hashtag'
-import { PhotoSizeSelectLarge } from 'styled-icons/material/PhotoSizeSelectLarge'
 import { ChevronDown } from 'styled-icons/boxicons-regular/ChevronDown'
 import NumberInput from '../../Shared/NumberInput'
 import Svg from '../../Svg'
@@ -311,14 +309,14 @@ export default function Toolbar({
               <General>
                 <Statistic>
                   <div className='top'>
-                    <Hashtag />
+                    <Svg name='count' />
                     <div>Frame count</div>
                   </div>
                   <div className='bottom'>{totalFrames}</div>
                 </Statistic>
                 <Statistic>
                   <div className='top'>
-                    <PhotoSizeSelectLarge />
+                    <Svg name='size' />
                     <div>Frame size</div>
                   </div>
                   <div className='bottom'>{gifData.width + ' x ' + gifData.height}</div>

@@ -179,6 +179,7 @@ export const Statistic = styled.div`
     justify-items: center;
     align-items: center;
     color: ${p => darken(0.1, p.theme.primary)};
+    font-weight: bold;
     margin-left: 20px;
   }
 `
