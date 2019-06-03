@@ -122,7 +122,7 @@ export default function Webcam() {
     canvas.current = document.createElement('canvas')
     ctx.current = canvas.current.getContext('2d')
     canvas.current.width = width
-    canvas.current.height = height
+    canvas.current.height = height - 40
     ctx.current.scale(scale, scale)
     t1.current = performance.now()
 
@@ -132,7 +132,7 @@ export default function Webcam() {
   function onCaptureFrame() {
     setCount(cur => cur + 1)
 
-    ctx.current.clearRect(0, 0, width, height)
+    ctx.current.clearRect(0, 0, width, height - 40)
     ctx.current.drawImage(video.current, 0, 0)
     const frame = canvas.current.toDataURL(IMAGE_TYPE)
     setFrames(cur => cur.push(frame))
@@ -171,7 +171,7 @@ export default function Webcam() {
       relative: folder,
       date: new Date().getTime(),
       width,
-      height,
+      height: height - 40,
       frameRate,
       frames: data
     }
