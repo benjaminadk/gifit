@@ -32,6 +32,20 @@ export const Bar = styled.div.attrs(p => ({
   background: ${p => p.theme.primary};
 `
 
+export const Message = styled.div`
+  visibility: ${p => (p.show ? 'visible' : 'hidden')};
+  display: grid;
+  grid-template-columns: 25px 1fr;
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+  .text {
+    font-size: 1.3rem;
+    color: ${darken(0.2, '#00FF00')};
+  }
+`
+
 export const ZoomInput = styled.div`
   visibility: ${p => (p.show ? 'visible' : 'hidden')};
   display: grid;

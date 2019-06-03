@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Svg from '../../Svg'
-import { Container, Progress, Bar, ZoomInput, Stats, Stat, Playback } from './styles'
+import { Container, Progress, Bar, Message, ZoomInput, Stats, Stat, Playback } from './styles'
 
 const playback = [
   { icon: <Svg name='arrow-start' />, text: 'First' },
@@ -16,40 +16,46 @@ export default function BottomBar({
   total,
   selected,
   index,
+  message,
   scale,
   setScale,
+  setMessage,
   onPlaybackClick
 }) {
-  const [show, setShow] = useState(false)
+  const [showProgress, setShowProgress] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [showMessage, setShowMessage] = useState(false)
 
   const interval = useRef(null)
   const timeout = useRef(null)
 
+  // when loading is set to true show progress bar
   useEffect(() => {
-    var id
     if (loading) {
-      setShow(true)
+      setShowProgress(true)
+      // increment 4% per second to simulate progress
       interval.current = setInterval(() => {
         setProgress(state => state + 1)
       }, 250)
     }
-    if (!loading && show) {
+    // simulate progress complete when loading is done
+    if (!loading && showProgress) {
       setProgress(100)
     }
-
+    // clean up
     return () => {
       clearInterval(interval.current)
     }
   }, [loading])
 
+  // when progress is set to 100% show bar for 2 more seconds
   useEffect(() => {
     if (progress === 100) {
       clearInterval(interval.current)
       timeout.current = setTimeout(() => {
         setProgress(0)
-        setShow(false)
-      }, 1000)
+        setShowProgress(false)
+      }, 2000)
     }
 
     return () => {
@@ -57,6 +63,25 @@ export default function BottomBar({
     }
   }, [progress])
 
+  // show message for 5 seconds
+  useEffect(() => {
+    var id
+    if (message) {
+      // if two messages happen quickly overwrite old settimeout
+      clearTimeout(id)
+      setShowMessage(true)
+      id = setTimeout(() => {
+        setShowMessage(false)
+        setMessage('')
+      }, 5000)
+    }
+
+    return () => {
+      clearTimeout(id)
+    }
+  }, [message])
+
+  // make sure input is numeric and below 500
   function onScaleChange({ target: { value } }) {
     const isDigit = /^\d*$/
     var newValue
@@ -72,6 +97,7 @@ export default function BottomBar({
     setScale(newValue / 100)
   }
 
+  // handle increment decrement arrows
   function onScaleArrowClick(inc) {
     var currentValue = scale * 100
     var newValue
@@ -93,10 +119,13 @@ export default function BottomBar({
 
   return (
     <Container>
-      <Progress show={show || loading}>
+      <Progress show={showProgress || loading}>
         <Bar value={progress >= 100 ? 100 : progress} />
       </Progress>
-      <div />
+      <Message show={showMessage}>
+        <Svg name='info' />
+        <div className='text'>{message}</div>
+      </Message>
       <ZoomInput show={scale !== null}>
         <div className='divider' />
         <Svg name='search' />

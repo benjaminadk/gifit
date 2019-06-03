@@ -151,7 +151,7 @@ export default function ObfuscateOverlay({
                 }
               }}
             >
-              <Dimensions show={obfuscateWidth > 100 && obfuscateHeight > 100}>
+              <Dimensions show={obfuscateWidth > 100 && obfuscateHeight > 40}>
                 {obfuscateWidth} x {obfuscateHeight}
               </Dimensions>
             </Rnd>

@@ -67,6 +67,8 @@ export default function Editor() {
   const { options, optionsOpen, fontOptions, projectFolder } = state
 
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
   const [images, setImages] = useState([])
   const [scale, setScale] = useState(null)
   const [zoomToFit, setZoomToFit] = useState(null)
@@ -236,6 +238,7 @@ export default function Editor() {
         // set state
         setSelected(initialSelected)
         setScale(initialScale)
+        setMessage(`Zoom set to ${Math.round(initialScale * 100)}%`)
         setZoomToFit(initialScale)
         setImages(project.frames)
         setImageIndex(initialIndex)
@@ -680,6 +683,7 @@ export default function Editor() {
         for (const img of deleteImages) {
           unlinkAsync(img.path)
         }
+        setMessage(`${deleteImages.length} frame(s) deleted`)
       }
     }
     remote.dialog.showMessageBox(win, opts, callback)
@@ -1867,9 +1871,9 @@ export default function Editor() {
               }
             }
 
-            // loop over array of image data arrays
+            // loop over array of imageData arrays
             // find average rgba value for each square - obfuscatePixels x obfuscatePixels
-            const averages = []
+            const pixelColors = []
             var r = 0
             var g = 0
             var b = 0
@@ -1878,19 +1882,32 @@ export default function Editor() {
             var divide = 0
 
             for (const d of data) {
-              for (var j = 0; j < d.length; j += 4) {
-                r += d[j]
-                g += d[j + 1]
-                b += d[j + 2]
-                a += d[j + 3]
-                divide += 1
+              // if use average is checked get totals for red, green, blue, alpha
+              if (obfuscateAverage) {
+                for (var j = 0; j < d.length; j += 4) {
+                  r += d[j]
+                  g += d[j + 1]
+                  b += d[j + 2]
+                  a += d[j + 3]
+                  divide += 1
+                }
+              } else {
+                // if not average just take first pixel's values
+                r = d[0]
+                g = d[1]
+                b = d[2]
+                a = d[3]
+                divide = 1
               }
 
+              // find average values for red, green, blue alpha
               r1 = Math.round(r / divide)
               g1 = Math.round(g / divide)
               b1 = Math.round(b / divide)
               a1 = Math.ceil((a / divide / 255) * 100) / 100
-              averages.push(`rgba(${r1},${g1},${b1},${a1})`)
+              // combine values into rgba color string
+              pixelColors.push(`rgba(${r1},${g1},${b1},${a1})`)
+              // reset variables for next imageData array
               r = 0
               g = 0
               b = 0
@@ -1904,15 +1921,15 @@ export default function Editor() {
             c3.height = adjustedHeight
             const ctx3 = c3.getContext('2d')
 
-            var averageIndex = 0
+            var pixelIndex = 0
             for (let y = 0; y < adjustedHeight; y += obfuscatePixels) {
               for (let x = 0; x < adjustedWidth; x += obfuscatePixels) {
-                ctx3.fillStyle = averages[averageIndex]
+                ctx3.fillStyle = pixelColors[pixelIndex]
                 ctx3.fillRect(x, y, obfuscatePixels, obfuscatePixels)
-                averageIndex += 1
+                pixelIndex += 1
               }
             }
-
+            // draw pixelated section on top of original
             ctx1.drawImage(c3, obfuscateX, obfuscateY)
             c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
           }
@@ -1931,12 +1948,23 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
+    onResetObfuscate()
+    setMessage(`Obfuscate overlay applied`)
   }
 
-  //close obfuscate drawer
+  // close obfuscate drawer
   function onObfuscateCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
+    onResetObfuscate()
+  }
+
+  // reset obfuscate overlay square dimensions
+  function onResetObfuscate() {
+    setObfuscateWidth(0)
+    setObfuscateHeight(0)
+    setObfuscateX(0)
+    setObfuscateY(0)
   }
 
   // open file dialog for watermark image file
@@ -2214,8 +2242,10 @@ export default function Editor() {
         total={images.length}
         selected={selected.count(el => el)}
         index={imageIndex + 1}
+        message={message}
         scale={scale}
         setScale={setScale}
+        setMessage={setMessage}
         onPlaybackClick={onPlaybackClick}
       />
       <Drawer show={showDrawer} shiftUp={showToolbar} thumbHeight={thumbHeight}>
