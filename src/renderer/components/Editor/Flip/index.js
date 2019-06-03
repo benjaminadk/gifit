@@ -43,16 +43,16 @@ export default function Flip({ drawerHeight, flipMode, setFlipMode, onAccept, on
               <div className='row'>
                 <Choice
                   selected={flipMode === 'left'}
-                  icon={<Svg name='flip-h' />}
-                  label='Rotate Left 90'
+                  icon={<Svg name='rotate-l' />}
+                  label='Rotate Left 90°'
                   onClick={() => setFlipMode('left')}
                 />
               </div>
               <div className='row'>
                 <Choice
                   selected={flipMode === 'right'}
-                  icon={<Svg name='flip-h' />}
-                  label='Rotate Right 90'
+                  icon={<Svg name='rotate-r' />}
+                  label='Rotate Right 90°'
                   onClick={() => setFlipMode('right')}
                 />
               </div>
