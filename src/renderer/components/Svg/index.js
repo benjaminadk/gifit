@@ -219,6 +219,17 @@ export default function Svg({ name, ...rest }) {
             />
           </>
         )
+      case 'color':
+        return (
+          <>
+            <path fill='#407eb5' fillOpacity='.75' d='M2 2h13v21H2z' />
+            <path fill='#f65008' fillOpacity='.75' d='M18 2h13v21H18z' />
+            <path fill='#c812f0' fillOpacity='.75' d='M34 2h13v21H34z' />
+            <path fill='#e53f3f' fillOpacity='.75' d='M2.013 27h13v21h-13z' />
+            <path fill='#38c93d' fillOpacity='.75' d='M18 27h13v21H18z' />
+            <path fill='#fcce00' fillOpacity='.75' d='M34.013 27h13v21h-13z' />
+          </>
+        )
       case 'count':
         return (
           <>

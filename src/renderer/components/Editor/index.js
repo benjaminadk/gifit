@@ -45,6 +45,7 @@ import ReduceFrames from './ReduceFrames'
 import Duplicate from './Duplicate'
 import Override from './Override'
 import IncreaseDecrease from './IncreaseDecrease'
+import Fade from './Fade'
 import Slide from './Slide'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
@@ -190,6 +191,11 @@ export default function Editor() {
   const [shapeStrokeWidth, setShapeStrokeWidth] = useState(10)
   const [shapeStrokeColor, setShapeStrokeColor] = useState('#000000')
   const [shapeFillColor, setShapeFillColor] = useState('#FFFFFF00')
+
+  const [fadeOption, setFadeOption] = useState('frame')
+  const [fadeLength, setFadeLength] = useState(1)
+  const [fadeDelay, setFadeDelay] = useState(100)
+  const [fadeColor, setFadeColor] = useState('#000000')
 
   const [slideLength, setSlideLength] = useState(1)
   const [slideDelay, setSlideDelay] = useState(100)
@@ -762,7 +768,7 @@ export default function Editor() {
       // apply scale and other side effects
       if (['border', 'shape', 'watermark', 'drawing', 'obfuscate', 'text'].includes(mode)) {
         setScale(1)
-      } else if (['title', 'slide'].includes(mode)) {
+      } else if (['title', 'fade', 'slide'].includes(mode)) {
         setScale(zoomToFit)
       } else if (mode === 'crop') {
         setScale(1)
@@ -795,7 +801,7 @@ export default function Editor() {
         setMessagePerm(
           'The flip action applies to selected frames and rotate applies to all frames'
         )
-      } else if (mode === 'slide') {
+      } else if (['fade', 'slide'].includes(mode)) {
         setMessagePerm('The transition will be applied between the selected frame and the next one')
       }
     }
@@ -2367,6 +2373,98 @@ export default function Editor() {
     setWatermarkRealHeight(0)
   }
 
+  async function onFadeAccept() {
+    const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+    const fadeImages = []
+
+    async function draw() {
+      return new Promise(async resolve1 => {
+        for (let i = 0; i < fadeLength; i += 1) {
+          const reader = new FileReader()
+
+          const filepath = path.join(projectFolder, createFileName('FD', i))
+          fadeImages.push({ path: filepath, time: fadeDelay })
+
+          reader.onload = () => {
+            const buffer = Buffer.from(reader.result)
+            writeFileAsync(filepath, buffer).then(() => {
+              if (i === fadeLength - 1) {
+                resolve1()
+              }
+            })
+          }
+
+          const c1 = document.createElement('canvas')
+          c1.width = gifData.width
+          c1.height = gifData.height
+          const ctx1 = c1.getContext('2d')
+          const image1 = new Image()
+          const image2 = new Image()
+          const alphaColor = Math.round(((i + 1) / fadeLength) * 100) / 100
+          const alphaFrame = 1 - alphaColor
+
+          await new Promise(resolve2 => {
+            image1.onload = () => {
+              ctx1.drawImage(image1, 0, 0)
+              resolve2()
+            }
+            image1.src = images[imageIndex + 1].path
+          })
+
+          await new Promise(resolve3 => {
+            image2.onload = () => {
+            
+              if (fadeOption === 'frame') {
+                ctx1.globalAlpha = alphaFrame
+                ctx1.drawImage(image2, 0, 0)
+              } else if (fadeOption === 'color') {
+                ctx1.globalAlpha = alphaColor
+                ctx1.fillStyle = fadeColor
+                ctx1.fillRect(0, 0, c1.width, c1.height)
+              }
+
+              c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+              resolve3()
+            }
+            image2.src = images[imageIndex].path
+          })
+        }
+      })
+    }
+
+    async function update() {
+      await new Promise(resolve => {
+        setTimeout(() => {
+          resolve()
+        }, 1000)
+      })
+      return new Promise(resolve => {
+        const newImages = images.slice()
+        newImages.splice(imageIndex + 1, 0, ...fadeImages)
+        const newProject = {
+          ...gifData,
+          frames: newImages
+        }
+        const projectPath = path.join(projectFolder, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(imageIndex)
+    setMessageTemp('Transition inserted')
+  }
+
+  function onFadeCancel() {
+    setShowDrawer(false)
+  }
+
   // apply slide transition
   async function onSlideAccept() {
     const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
@@ -2449,6 +2547,7 @@ export default function Editor() {
     setMessageTemp('Transition inserted')
   }
 
+  // close slide transition drawer
   function onSlideCancel() {
     setShowDrawer(false)
   }
@@ -2902,6 +3001,20 @@ export default function Editor() {
             setSlideDelay={setSlideDelay}
             onAccept={onSlideAccept}
             onCancel={onSlideCancel}
+          />
+        ) : drawerMode === 'fade' ? (
+          <Fade
+            drawerHeight={drawerHeight}
+            fadeOption={fadeOption}
+            fadeLength={fadeLength}
+            fadeDelay={fadeDelay}
+            fadeColor={fadeColor}
+            setFadeOption={setFadeOption}
+            setFadeLength={setFadeLength}
+            setFadeDelay={setFadeDelay}
+            setFadeColor={setFadeColor}
+            onAccept={onFadeAccept}
+            onCancel={onFadeCancel}
           />
         ) : null}
       </Drawer>
