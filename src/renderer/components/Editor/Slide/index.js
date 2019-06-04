@@ -4,7 +4,19 @@ import RangeInput from '../../Shared/RangeInput'
 import Svg from '../../Svg'
 import { Header, Main, Section, Property, Label, Info, Footer, Button } from '../Drawer/styles'
 
-export default function Slide({ drawerHeight, slideLength, onAccept, onCancel }) {
+export default function Slide({
+  drawerHeight,
+  slideLength,
+  slideDelay,
+  setSlideLength,
+  setSlideDelay,
+  onAccept,
+  onCancel
+}) {
+  function onSlideLengthChange(values) {
+    setSlideLength(values[0])
+  }
+
   return (
     <>
       <Header>
@@ -23,7 +35,12 @@ export default function Slide({ drawerHeight, slideLength, onAccept, onCancel })
             <div className='divider' />
           </div>
           <div>
-            <RangeInput domain={[1, 20]} values={[slideLength]} tickCount={20} />
+            <RangeInput
+              domain={[1, 20]}
+              values={[slideLength]}
+              tickCount={20}
+              onChange={onSlideLengthChange}
+            />
           </div>
         </Section>
         <Section height={100}>
@@ -34,7 +51,14 @@ export default function Slide({ drawerHeight, slideLength, onAccept, onCancel })
           <div>
             <Property>
               <Label width={70}>Delay:</Label>
-              <NumberInput width={100} />
+              <NumberInput
+                width={100}
+                value={slideDelay}
+                max={25000}
+                min={10}
+                fallback={100}
+                setter={setSlideDelay}
+              />
             </Property>
             <Info>
               <Svg name='info' />

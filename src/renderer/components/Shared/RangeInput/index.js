@@ -23,10 +23,10 @@ function Handle({ handle: { id, value, percent }, isActive, getHandleProps }) {
   )
 }
 
-export default function RangeInput({ domain, values, tickCount }) {
+export default function RangeInput({ domain, values, tickCount, onChange }) {
   return (
     <Wrapper>
-      <Slider rootStyle={rootStyle} domain={domain} values={values} step={1}>
+      <Slider rootStyle={rootStyle} domain={domain} values={values} step={1} onChange={onChange}>
         <RailStyles />
         <Handles>
           {({ handles, activeHandleID, getHandleProps }) => (

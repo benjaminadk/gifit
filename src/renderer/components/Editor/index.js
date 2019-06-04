@@ -6,7 +6,7 @@ import { readFile, writeFile, readdir, rmdir, unlink, copyFile } from 'fs'
 import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
 import createTFName from '../../lib/createTFName'
-import createYoyoName from '../../lib/createYoyoName'
+import createFileName from '../../lib/createFileName'
 import initializeOptions from '../Options/initializeOptions'
 import initializeRecorder from '../Recorder/initializeRecorder'
 import initializeWebcam from '../Webcam/initializeWebcam'
@@ -192,6 +192,7 @@ export default function Editor() {
   const [shapeFillColor, setShapeFillColor] = useState('#FFFFFF00')
 
   const [slideLength, setSlideLength] = useState(1)
+  const [slideDelay, setSlideDelay] = useState(100)
 
   const container = useRef(null)
   const main = useRef(null)
@@ -1318,7 +1319,7 @@ export default function Editor() {
           .slice()
           .reverse()
           .entries()) {
-          const dstPath = path.join(projectFolder, createYoyoName(i))
+          const dstPath = path.join(projectFolder, createFileName('YY', i))
           await copyFileAsync(img.path, dstPath)
           const newFrame = {
             ...images.slice().reverse()[i],
@@ -2366,7 +2367,87 @@ export default function Editor() {
     setWatermarkRealHeight(0)
   }
 
-  function onSlideAccept() {}
+  // apply slide transition
+  async function onSlideAccept() {
+    const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+    // store new image objects created in draw to be used in update
+    const slideImages = []
+    // create new frames
+    async function draw() {
+      return new Promise(async resolve1 => {
+        // draw next image with .25 alpha on canvas
+        const c1 = document.createElement('canvas')
+        c1.width = gifData.width
+        c1.height = gifData.height
+        const ctx1 = c1.getContext('2d')
+        const image1 = new Image()
+        await new Promise(resolve2 => {
+          image1.onload = () => {
+            ctx1.globalAlpha = 0.25
+            ctx1.drawImage(image1, 0, 0)
+            resolve2()
+          }
+          image1.src = images[imageIndex + 1].path
+        })
+        // create a new frame for each user input slide length
+        for (let i = 0; i < slideLength; i += 1) {
+          const reader = new FileReader()
+          // add new frame to slide images array
+          const filepath = path.join(projectFolder, createFileName('SL', i))
+          slideImages.push({ path: filepath, time: slideDelay })
+
+          reader.onload = () => {
+            const buffer = Buffer.from(reader.result)
+            writeFileAsync(filepath, buffer).then(() => {
+              if (i === slideLength - 1) {
+                resolve1()
+              }
+            })
+          }
+          // draw first image the alpha next image on top
+          const c2 = document.createElement('canvas')
+          c2.width = gifData.width
+          c2.height = gifData.height
+          const ctx2 = c2.getContext('2d')
+          const image2 = new Image()
+          await new Promise(resolve3 => {
+            image2.onload = () => {
+              const x = gifData.width - (gifData.width / slideLength) * (i + 1)
+              ctx2.drawImage(image2, 0, 0)
+              ctx2.drawImage(c1, x, 0)
+              c2.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+              resolve3()
+            }
+            image2.src = images[imageIndex].path
+          })
+        }
+      })
+    }
+    // update project json file
+    async function update() {
+      return new Promise(resolve => {
+        // copy existing and splice in new images
+        const newImages = images.slice()
+        newImages.splice(imageIndex + 1, 0, ...slideImages)
+        const newProject = {
+          ...gifData,
+          frames: newImages
+        }
+        const projectPath = path.join(projectFolder, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(imageIndex)
+    setMessageTemp('Transition inserted')
+  }
 
   function onSlideCancel() {
     setShowDrawer(false)
@@ -2816,7 +2897,9 @@ export default function Editor() {
           <Slide
             drawerHeight={drawerHeight}
             slideLength={slideLength}
+            slideDelay={slideDelay}
             setSlideLength={setSlideLength}
+            setSlideDelay={setSlideDelay}
             onAccept={onSlideAccept}
             onCancel={onSlideCancel}
           />
