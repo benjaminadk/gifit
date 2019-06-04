@@ -311,6 +311,22 @@ export default function Toolbar({
               <SectionText>Overlay</SectionText>
             </Section>
           </>
+        ) : menuIndex === 5 && gifData ? (
+          <>
+            <Section width={150}>
+              <GenericGrid columns={2}>
+                <Action onClick={() => onOpenDrawer('fade')}>
+                  <Svg name='fade' />
+                  <div className='text'>Fade</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('slide')}>
+                  <Svg name='fade' />
+                  <div className='text'>Slide</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Styles</SectionText>
+            </Section>
+          </>
         ) : menuIndex === 6 && gifData ? (
           <>
             <Section width={450}>

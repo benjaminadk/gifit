@@ -45,6 +45,7 @@ import ReduceFrames from './ReduceFrames'
 import Duplicate from './Duplicate'
 import Override from './Override'
 import IncreaseDecrease from './IncreaseDecrease'
+import Slide from './Slide'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
 import BottomBar from './BottomBar'
@@ -189,6 +190,8 @@ export default function Editor() {
   const [shapeStrokeWidth, setShapeStrokeWidth] = useState(10)
   const [shapeStrokeColor, setShapeStrokeColor] = useState('#000000')
   const [shapeFillColor, setShapeFillColor] = useState('#FFFFFF00')
+
+  const [slideLength, setSlideLength] = useState(1)
 
   const container = useRef(null)
   const main = useRef(null)
@@ -758,7 +761,7 @@ export default function Editor() {
       // apply scale and other side effects
       if (['border', 'shape', 'watermark', 'drawing', 'obfuscate', 'text'].includes(mode)) {
         setScale(1)
-      } else if (mode === 'title') {
+      } else if (['title', 'slide'].includes(mode)) {
         setScale(zoomToFit)
       } else if (mode === 'crop') {
         setScale(1)
@@ -791,6 +794,8 @@ export default function Editor() {
         setMessagePerm(
           'The flip action applies to selected frames and rotate applies to all frames'
         )
+      } else if (mode === 'slide') {
+        setMessagePerm('The transition will be applied between the selected frame and the next one')
       }
     }
     setDrawerMode(mode)
@@ -1595,7 +1600,7 @@ export default function Editor() {
     async function draw() {
       return new Promise(resolve => {
         const lastIndex = selected.findLastIndex(el => el)
-
+        // draw user input text on canvas
         const c1 = document.createElement('canvas')
         c1.width = textWidth
         c1.height = textHeight
@@ -1604,11 +1609,11 @@ export default function Editor() {
         ctx1.fillStyle = textColor
         ctx1.font = `${textStyle} ${textSize}px ${textFont}`
         const textArray = textText.split('\n')
-
+        // account for multiline text
         for (const [i, text] of textArray.entries()) {
           ctx1.fillText(text, 0, i * textSize)
         }
-
+        // draw text canvas on top on frame image if selected
         for (const [i, bool] of selected.toArray().entries()) {
           if (bool) {
             const reader = new FileReader()
@@ -1650,12 +1655,27 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
+    onResetText()
     setMessageTemp('Overlay applied')
   }
 
   // close text drawer
   function onTextCancel() {
     setShowDrawer(false)
+    onResetText()
+  }
+
+  // reset all text state variables
+  function onResetText() {
+    setTextText('Free Text')
+    setTextFont('Segoe UI')
+    setTextSize(20)
+    setTextStyle('Normal')
+    setTextColor('#000000')
+    setTextX(0)
+    setTextY(0)
+    setTextWidth(0)
+    setTextHeight(0)
   }
 
   // add free drawing to selected frames
@@ -2346,6 +2366,12 @@ export default function Editor() {
     setWatermarkRealHeight(0)
   }
 
+  function onSlideAccept() {}
+
+  function onSlideCancel() {
+    setShowDrawer(false)
+  }
+
   // open options window
   function onOptionsClick() {
     if (!optionsOpen) {
@@ -2785,6 +2811,14 @@ export default function Editor() {
             onWatermarkFileClick={onWatermarkFileClick}
             onAccept={onWatermarkAccept}
             onCancel={onWatermarkCancel}
+          />
+        ) : drawerMode === 'slide' ? (
+          <Slide
+            drawerHeight={drawerHeight}
+            slideLength={slideLength}
+            setSlideLength={setSlideLength}
+            onAccept={onSlideAccept}
+            onCancel={onSlideCancel}
           />
         ) : null}
       </Drawer>
