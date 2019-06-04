@@ -846,6 +846,15 @@ export default function Svg({ name, ...rest }) {
             />
           </>
         )
+      case 'slide':
+        return (
+          <>
+            <path fill='#407eb5' fillOpacity='.25' d='M4.659 12.084h26v26h-26z' />
+            <path stroke='#333' fill='none' d='M15.948 8.76H48.57v32.622H15.948z' />
+            <path fill='#407eb5' fillOpacity='.25' d='M19.304 12.037h26v26h-26z' />
+            <path stroke='#333' fill='none' d='M1.303 8.807h32.622v32.622H1.303z' />
+          </>
+        )
       case 'stop':
         return <path fill='#407eb5' d='M2 2h46v46H2z' />
       case 'text':

@@ -320,7 +320,7 @@ export default function Toolbar({
                   <div className='text'>Fade</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('slide')}>
-                  <Svg name='fade' />
+                  <Svg name='slide' />
                   <div className='text'>Slide</div>
                 </Action>
               </GenericGrid>

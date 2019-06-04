@@ -21,7 +21,7 @@ export default function Slide({
     <>
       <Header>
         <div className='left'>
-          <Svg name='fade' />
+          <Svg name='slide' />
           <div className='text'>Slide Transition</div>
         </div>
         <div className='right'>
