@@ -26,11 +26,13 @@ import CropOverlay from './Crop/CropOverlay'
 import WatermarkOverlay from './Watermark/WatermarkOverlay'
 import ShapeOverlay from './Shape/ShapeOverlay'
 import ObfuscateOverlay from './Obfuscate/ObfuscateOverlay'
+import TextOverlay from './Text/TextOverlay'
 import Drawer from './Drawer'
 import Resize from './Resize'
 import Crop from './Crop'
 import Flip from './Flip'
 import TitleFrame from './TitleFrame'
+import Text from './Text'
 import FreeDrawing from './FreeDrawing'
 import Shape from './Shape'
 import Border from './Border'
@@ -147,6 +149,16 @@ export default function Editor() {
   const [titleVertical, setTitleVertical] = useState('Center')
   const [titleHorizontal, setTitleHorizontal] = useState('Center')
   const [titleBackground, setTitleBackground] = useState('#FFFF00')
+
+  const [textText, setTextText] = useState('Free Text')
+  const [textColor, setTextColor] = useState('#000000')
+  const [textSize, setTextSize] = useState(20)
+  const [textFont, setTextFont] = useState('Segoe UI')
+  const [textStyle, setTextStyle] = useState('Normal')
+  const [textWidth, setTextWidth] = useState(0)
+  const [textHeight, setTextHeight] = useState(0)
+  const [textX, setTextX] = useState(0)
+  const [textY, setTextY] = useState(0)
 
   const [cropWidth, setCropWidth] = useState(0)
   const [cropHeight, setCropHeight] = useState(0)
@@ -744,7 +756,7 @@ export default function Editor() {
         return
       }
       // apply scale and other side effects
-      if (['border', 'shape', 'watermark', 'drawing', 'obfuscate'].includes(mode)) {
+      if (['border', 'shape', 'watermark', 'drawing', 'obfuscate', 'text'].includes(mode)) {
         setScale(1)
       } else if (mode === 'title') {
         setScale(zoomToFit)
@@ -1578,6 +1590,74 @@ export default function Editor() {
     setTitleText('Title Frame')
   }
 
+  // draw text block on selected frames
+  async function onTextAccept() {
+    async function draw() {
+      return new Promise(resolve => {
+        const lastIndex = selected.findLastIndex(el => el)
+
+        const c1 = document.createElement('canvas')
+        c1.width = textWidth
+        c1.height = textHeight
+        const ctx1 = c1.getContext('2d')
+        ctx1.textBaseline = 'top'
+        ctx1.fillStyle = textColor
+        ctx1.font = `${textStyle} ${textSize}px ${textFont}`
+        const textArray = textText.split('\n')
+
+        for (const [i, text] of textArray.entries()) {
+          ctx1.fillText(text, 0, i * textSize)
+        }
+
+        for (const [i, bool] of selected.toArray().entries()) {
+          if (bool) {
+            const reader = new FileReader()
+
+            reader.onload = () => {
+              const filepath = images[i].path
+              const buffer = Buffer.from(reader.result)
+              writeFileAsync(filepath, buffer).then(() => {
+                if (i === lastIndex) {
+                  resolve()
+                }
+              })
+            }
+
+            const c2 = document.createElement('canvas')
+            c2.width = gifData.width
+            c2.height = gifData.height
+            const ctx2 = c2.getContext('2d')
+            const image1 = new Image()
+            image1.onload = () => {
+              ctx2.drawImage(image1, 0, 0)
+              ctx2.drawImage(c1, textX, textY)
+              c2.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
+            }
+            image1.src = images[i].path
+          }
+        }
+      })
+    }
+
+    setLoading(true)
+    await draw()
+    await new Promise(resolve => {
+      setTimeout(() => {
+        updateHashModifier()
+        resolve()
+      }, 500)
+    })
+    setLoading(false)
+    setShowDrawer(false)
+    setScale(zoomToFit)
+    setMessageTemp('Overlay applied')
+  }
+
+  // close text drawer
+  function onTextCancel() {
+    setShowDrawer(false)
+  }
+
   // add free drawing to selected frames
   async function onDrawAccept() {
     // handle highlighter effect
@@ -2372,18 +2452,21 @@ export default function Editor() {
             setCropX={setCropX}
             setCropY={setCropY}
           />
-          <WatermarkOverlay
-            show={drawerMode === 'watermark'}
-            watermarkPath={watermarkPath}
-            watermarkWidth={watermarkWidth}
-            watermarkHeight={watermarkHeight}
-            watermarkX={watermarkX}
-            watermarkY={watermarkY}
-            watermarkOpacity={watermarkOpacity}
-            setWatermarkWidth={setWatermarkWidth}
-            setWatermarkHeight={setWatermarkHeight}
-            setWatermarkX={setWatermarkX}
-            setWatermarkY={setWatermarkY}
+          <TextOverlay
+            show={drawerMode === 'text'}
+            textText={textText}
+            textFont={textFont}
+            textStyle={textStyle}
+            textSize={textSize}
+            textColor={textColor}
+            textWidth={textWidth}
+            textHeight={textHeight}
+            textX={textX}
+            textY={textY}
+            setTextWidth={setTextWidth}
+            setTextHeight={setTextHeight}
+            setTextX={setTextX}
+            setTextY={setTextY}
           />
           <ShapeOverlay
             show={drawerMode === 'shape'}
@@ -2411,6 +2494,19 @@ export default function Editor() {
             setObfuscateHeight={setObfuscateHeight}
             setObfuscateX={setObfuscateX}
             setObfuscateY={setObfuscateY}
+          />
+          <WatermarkOverlay
+            show={drawerMode === 'watermark'}
+            watermarkPath={watermarkPath}
+            watermarkWidth={watermarkWidth}
+            watermarkHeight={watermarkHeight}
+            watermarkX={watermarkX}
+            watermarkY={watermarkY}
+            watermarkOpacity={watermarkOpacity}
+            setWatermarkWidth={setWatermarkWidth}
+            setWatermarkHeight={setWatermarkHeight}
+            setWatermarkX={setWatermarkX}
+            setWatermarkY={setWatermarkY}
           />
         </Wrapper>
       </Main>
@@ -2539,6 +2635,30 @@ export default function Editor() {
             setTitleBackground={setTitleBackground}
             onAccept={onTitleAccept}
             onCancel={onTitleCancel}
+          />
+        ) : drawerMode === 'text' ? (
+          <Text
+            drawerHeight={drawerHeight}
+            gifData={gifData}
+            fontOptions={fontOptions}
+            textText={textText}
+            textFont={textFont}
+            textStyle={textStyle}
+            textSize={textSize}
+            textColor={textColor}
+            textWidth={textWidth}
+            textHeight={textHeight}
+            textX={textX}
+            textY={textY}
+            setTextText={setTextText}
+            setTextFont={setTextFont}
+            setTextStyle={setTextStyle}
+            setTextSize={setTextSize}
+            setTextColor={setTextColor}
+            setTextX={setTextX}
+            setTextY={setTextY}
+            onAccept={onTextAccept}
+            onCancel={onTextCancel}
           />
         ) : drawerMode === 'drawing' ? (
           <FreeDrawing

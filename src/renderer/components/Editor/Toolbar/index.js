@@ -265,10 +265,14 @@ export default function Toolbar({
               <SectionText>Size and Rotation</SectionText>
             </Section>
             <Section width={150}>
-              <GenericGrid columns={1}>
+              <GenericGrid columns={2}>
                 <Action onClick={() => onOpenDrawer('title')}>
                   <Svg name='title-frame' />
                   <div className='text'>Title Frame</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('text')}>
+                  <Svg name='text' />
+                  <div className='text'>Free Text</div>
                 </Action>
               </GenericGrid>
               <SectionText>Text</SectionText>
