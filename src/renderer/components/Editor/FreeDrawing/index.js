@@ -1,6 +1,4 @@
 import React from 'react'
-import { PenNib } from 'styled-icons/fa-solid/PenNib'
-import { Eraser } from 'styled-icons/boxicons-solid/Eraser'
 import Choice from '../../Shared/Choice'
 import NumberInput from '../../Shared/NumberInput'
 import ColorSwatch from '../../Shared/ColorSwatch'

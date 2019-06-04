@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { LockOutline } from 'styled-icons/material/LockOutline'
-import { LockOpen } from 'styled-icons/material/LockOpen'
 import Svg from '../../Svg'
 import NumberInput from '../../Shared/NumberInput'
 import Checkbox from '../../Shared/Checkbox'
@@ -95,7 +93,7 @@ export default function Resize({ drawerHeight, gifData, onAccept, onCancel }) {
               primary='Keep the aspect ratio.'
               onClick={() => setKeepRatio(!keepRatio)}
             />
-            <LockRatio>{keepRatio ? <LockOutline /> : <LockOpen />}</LockRatio>
+            <LockRatio>{keepRatio ? <Svg name='lock' /> : <Svg name='lock-open' />}</LockRatio>
           </div>
         </Section>
       </Main>

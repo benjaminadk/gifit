@@ -11,6 +11,7 @@ const playback = [
 ]
 
 export default function BottomBar({
+  showDrawer,
   loading,
   playing,
   total,
@@ -84,6 +85,9 @@ export default function BottomBar({
 
   // make sure input is numeric and below 500
   function onScaleChange({ target: { value } }) {
+    if (showDrawer) {
+      return
+    }
     const isDigit = /^\d*$/
     var newValue
     if (isDigit.test(value)) {
@@ -100,6 +104,9 @@ export default function BottomBar({
 
   // handle increment decrement arrows
   function onScaleArrowClick(inc) {
+    if (showDrawer) {
+      return
+    }
     var currentValue = scale * 100
     var newValue
     if (inc) {

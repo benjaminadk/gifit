@@ -1,7 +1,4 @@
 import React, { useRef } from 'react'
-import { Title } from 'styled-icons/material/Title'
-import { Check } from 'styled-icons/material/Check'
-import { Close } from 'styled-icons/material/Close'
 import Svg from '../../Svg'
 import ColorSwatch from '../../Shared/ColorSwatch'
 import NumberInput from '../../Shared/NumberInput'

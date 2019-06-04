@@ -601,6 +601,8 @@ export default function Editor() {
           setSelected(List())
           setImages([])
           setGifData(null)
+          setScale(null)
+          setZoomToFit(null)
           initialize(null)
         })
       }
@@ -722,10 +724,10 @@ export default function Editor() {
         return
       }
       // apply scale and other side effects
-      if (['border', 'shape', 'watermark', 'drawing', 'obfuscate'].includes(mode)) {
+      if (['border', 'shape', 'watermark', 'drawing', 'obfuscate', 'title'].includes(mode)) {
         setScale(1)
       } else if (mode === 'title') {
-        setScale(zoomToFit)
+        // setScale(zoomToFit)
       } else if (mode === 'crop') {
         setScale(1)
         setCropWidth(gifData.width)
@@ -1144,6 +1146,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // remove duplicate frames based on imageData similarity
   async function onDuplicateAccept() {
     async function update() {
       return new Promise(async resolve1 => {
@@ -1156,7 +1159,7 @@ export default function Editor() {
           c1.height = gifData.height
           const ctx1 = c1.getContext('2d')
           const image1 = new Image()
-
+          // get imageData from current frame
           const data1 = await new Promise(resolve2 => {
             image1.onload = () => {
               ctx1.drawImage(image1, 0, 0)
@@ -1170,7 +1173,7 @@ export default function Editor() {
           c2.height = gifData.height
           const ctx2 = c2.getContext('2d')
           const image2 = new Image()
-
+          // get imageData from next frame
           const data2 = await new Promise(resolve3 => {
             image2.onload = () => {
               ctx2.drawImage(image2, 0, 0)
@@ -1178,7 +1181,8 @@ export default function Editor() {
             }
             image2.src = images[i + 1].path
           })
-
+          // compare imageData pixel for pixel
+          // if r|g|b values differ increase different pixel count
           var diffPixelCount = 0
           for (let j = 0; j < data1.length; j += 4) {
             if (
@@ -1189,38 +1193,39 @@ export default function Editor() {
               diffPixelCount += 1
             }
           }
-
+          // divide imageData length by 4 to get number of pixels
           const totalPixels = data1.length / 4
+          // calculate in % how frame one matches frame two
           const percentMatch = 100 - Math.ceil((diffPixelCount / totalPixels) * 100)
-
+          // add image to keep or delete based on user input percentage
           if (percentMatch >= duplicatePercent) {
             if (duplicateRemove === 'Remove First Frame') {
               deleteImages.push(images[i])
             } else if (duplicateRemove === 'Remove Last Frame') {
-              deleteImages.push(images[i+1])
+              deleteImages.push(images[i + 1])
             }
           } else {
             if (duplicateRemove === 'Remove First Frame') {
               keepImages.push(images[i])
             } else if (duplicateRemove === 'Remove Last Frame') {
-              keepImages.push(images[i+1])
+              keepImages.push(images[i + 1])
             }
           }
         }
-
+        // tack on first or last image to keep depending on user input first/last remove setting
         if (duplicateRemove === 'Remove First Frame') {
           keepImages = [...keepImages, images[images.length - 1]]
         } else if (duplicateRemove === 'Remove Last Frame') {
           keepImages = [images[0], ...keepImages]
         }
-
+        // update project
         const newProject = {
           ...gifData,
           frames: keepImages
         }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         await writeFileAsync(projectPath, JSON.stringify(newProject))
-
+        // delete duplicate images
         for (const [i, img] of deleteImages.entries()) {
           unlinkAsync(img.path).then(() => {
             if (i === deleteImages.length - 1) {
@@ -1262,6 +1267,7 @@ export default function Editor() {
     await update()
     setLoading(false)
     initialize(imageIndex)
+    setMessageTemp('Frame order reversed')
   }
 
   // add yoyo effect - doubles frames by adding reversed original frames to the end or original frames
@@ -1299,6 +1305,7 @@ export default function Editor() {
     await update()
     setLoading(false)
     initialize(imageIndex)
+    setMessageTemp('Yoyo effect applied')
   }
 
   // move selected frames an index to the left - account for wrap arounds
@@ -2376,6 +2383,7 @@ export default function Editor() {
         onClick={onThumbnailClick}
       />
       <BottomBar
+        showDrawer={showDrawer}
         loading={loading}
         playing={playing}
         total={images.length}
