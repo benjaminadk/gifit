@@ -41,22 +41,6 @@ export default function TitleFrame({
     setTitleText(value)
   }
 
-  function onTitleFontSelect(font) {
-    setTitleFont(font)
-  }
-
-  function onTitleStyleSelect(style) {
-    setTitleStyle(style)
-  }
-
-  function onTitleVerticalSelect(vertical) {
-    setTitleVertical(vertical)
-  }
-
-  function onTitleHorizontalSelect(horizontal) {
-    setTitleHorizontal(horizontal)
-  }
-
   return (
     <>
       <Header>
@@ -96,7 +80,7 @@ export default function TitleFrame({
                 type='family'
                 value={titleFont}
                 options={fontOptions}
-                onClick={onTitleFontSelect}
+                onClick={setTitleFont}
               />
             </Property>
             <Property>
@@ -105,7 +89,7 @@ export default function TitleFrame({
                 width={100}
                 value={titleStyle}
                 options={styleOptions}
-                onClick={onTitleStyleSelect}
+                onClick={setTitleStyle}
               />
             </Property>
             <Property>
@@ -156,7 +140,7 @@ export default function TitleFrame({
                 width={100}
                 value={titleVertical}
                 options={verticalOptions}
-                onClick={onTitleVerticalSelect}
+                onClick={setTitleVertical}
               />
             </Property>
             <Property>
@@ -165,7 +149,7 @@ export default function TitleFrame({
                 width={100}
                 value={titleHorizontal}
                 options={horizontalOptions}
-                onClick={onTitleHorizontalSelect}
+                onClick={setTitleHorizontal}
               />
             </Property>
           </div>

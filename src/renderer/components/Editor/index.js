@@ -304,19 +304,39 @@ export default function Editor() {
       // title frame replaces image when in title drawer is open
       if (drawerMode === 'title') {
         ctx1.textBaseline = 'middle'
+        // draw background
         ctx1.fillStyle = titleBackground
         ctx1.fillRect(0, 0, canvas1.current.width, canvas1.current.height)
+        // split input on new line characters
+        const textArray = titleText.split('\n')
+        // find the longest line and its index
+        var longest = 0
+        var longestIndex
+        for (const [i, text] of textArray.entries()) {
+          const len = text.length
+          if (len > longest) {
+            longestIndex = i
+            longest = len
+          }
+        }
+        // draw text
         ctx1.fillStyle = titleColor
         ctx1.font = `${titleStyle} ${titleSize * scale}px ${titleFont}`
+        // get starting x,y coordinate
         const { x, y } = getTextXY(
           canvas1.current,
           titleVertical,
           titleHorizontal,
           titleSize,
-          titleText,
+          textArray[longestIndex],
+          textArray.length,
           scale
         )
-        ctx1.fillText(titleText, x, y)
+        // draw each line
+        // add size * scale to y for each new line
+        for (const [i, text] of textArray.entries()) {
+          ctx1.fillText(text, x, y + i * titleSize * scale)
+        }
         // draw image at imageIndex - the normal behavior
       } else {
         if (imageIndex !== null) {
@@ -724,10 +744,10 @@ export default function Editor() {
         return
       }
       // apply scale and other side effects
-      if (['border', 'shape', 'watermark', 'drawing', 'obfuscate', 'title'].includes(mode)) {
+      if (['border', 'shape', 'watermark', 'drawing', 'obfuscate'].includes(mode)) {
         setScale(1)
       } else if (mode === 'title') {
-        // setScale(zoomToFit)
+        setScale(zoomToFit)
       } else if (mode === 'crop') {
         setScale(1)
         setCropWidth(gifData.width)
@@ -1494,10 +1514,34 @@ export default function Editor() {
         ctx1.textBaseline = 'middle'
         ctx1.fillStyle = titleBackground
         ctx1.fillRect(0, 0, c1.width, c1.height)
+
+        const textArray = titleText.split('\n')
+        var longest = 0
+        var longestIndex
+        for (const [i, text] of textArray.entries()) {
+          const len = text.length
+          if (len > longest) {
+            longestIndex = i
+            longest = len
+          }
+        }
+
         ctx1.fillStyle = titleColor
         ctx1.font = `${titleStyle} ${titleSize}px ${titleFont}`
-        const { x, y } = getTextXY(c1, titleVertical, titleHorizontal, titleSize, titleText, 1)
-        ctx1.fillText(titleText, x, y)
+        const { x, y } = getTextXY(
+          c1,
+          titleVertical,
+          titleHorizontal,
+          titleSize,
+          textArray[longestIndex],
+          textArray.length,
+          1
+        )
+
+        for (const [i, text] of textArray.entries()) {
+          ctx1.fillText(text, x, y + i * titleSize * 1)
+        }
+
         c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
       })
     }
