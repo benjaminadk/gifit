@@ -40,6 +40,7 @@ import Progress from './Progress'
 import Obfuscate from './Obfuscate'
 import RecentProjects from './RecentProjects'
 import ReduceFrames from './ReduceFrames'
+import Duplicate from './Duplicate'
 import Override from './Override'
 import IncreaseDecrease from './IncreaseDecrease'
 import Toolbar from './Toolbar'
@@ -157,6 +158,9 @@ export default function Editor() {
   const [reduceFactor, setReduceFactor] = useState(1)
   const [reduceCount, setReduceCount] = useState(1)
 
+  const [duplicatePercent, setDuplicatePercent] = useState(90)
+  const [duplicateRemove, setDuplicateRemove] = useState('Remove First Frame')
+
   const [overrideMS, setOverrideMS] = useState(100)
   const [incDecValue, setIncDecValue] = useState(0)
 
@@ -239,7 +243,7 @@ export default function Editor() {
         // set state
         setSelected(initialSelected)
         setScale(initialScale)
-        setMessageTemp(`Zoom set to ${Math.round(initialScale * 100)}%`)
+        imageIndex === null && setMessageTemp(`Zoom set to ${Math.round(initialScale * 100)}%`)
         setZoomToFit(initialScale)
         setImages(project.frames)
         setImageIndex(initialIndex)
@@ -1092,7 +1096,7 @@ export default function Editor() {
   // reduce number of frames based on user input
   async function onReduceAccept() {
     async function update() {
-      return new Promise(resolve => {
+      return new Promise(async resolve => {
         // gather indices of images to delete
         const deleteIndices = []
         // delete reduceCount images for every reduceFactor (not counting deleted frames)
@@ -1115,12 +1119,14 @@ export default function Editor() {
           frames: keepImages
         }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
-          resolve()
-        })
+        await writeFileAsync(projectPath, JSON.stringify(newProject))
         // delete images
-        for (const img of deleteImages) {
-          unlinkAsync(img.path)
+        for (const [i, img] of deleteImages.entries()) {
+          unlinkAsync(img.path).then(() => {
+            if (i === deleteImages.length - 1) {
+              resolve()
+            }
+          })
         }
       })
     }
@@ -1130,10 +1136,110 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     initialize(0)
+    setMessageTemp('Frame count reduced')
   }
 
   // close reduce drawer
   function onReduceCancel() {
+    setShowDrawer(false)
+  }
+
+  async function onDuplicateAccept() {
+    async function update() {
+      return new Promise(async resolve1 => {
+        var keepImages = []
+        var deleteImages = []
+
+        for (let i = 0; i < images.length - 1; i += 1) {
+          const c1 = document.createElement('canvas')
+          c1.width = gifData.width
+          c1.height = gifData.height
+          const ctx1 = c1.getContext('2d')
+          const image1 = new Image()
+
+          const data1 = await new Promise(resolve2 => {
+            image1.onload = () => {
+              ctx1.drawImage(image1, 0, 0)
+              resolve2(ctx1.getImageData(0, 0, c1.width, c1.height).data)
+            }
+            image1.src = images[i].path
+          })
+
+          const c2 = document.createElement('canvas')
+          c2.width = gifData.width
+          c2.height = gifData.height
+          const ctx2 = c2.getContext('2d')
+          const image2 = new Image()
+
+          const data2 = await new Promise(resolve3 => {
+            image2.onload = () => {
+              ctx2.drawImage(image2, 0, 0)
+              resolve3(ctx2.getImageData(0, 0, c2.width, c2.height).data)
+            }
+            image2.src = images[i + 1].path
+          })
+
+          var diffPixelCount = 0
+          for (let j = 0; j < data1.length; j += 4) {
+            if (
+              data1[j] !== data2[j] ||
+              data1[j + 1] !== data2[j + 1] ||
+              data1[j + 2] !== data2[j + 2]
+            ) {
+              diffPixelCount += 1
+            }
+          }
+
+          const totalPixels = data1.length / 4
+          const percentMatch = 100 - Math.ceil((diffPixelCount / totalPixels) * 100)
+
+          if (percentMatch >= duplicatePercent) {
+            if (duplicateRemove === 'Remove First Frame') {
+              deleteImages.push(images[i])
+            } else if (duplicateRemove === 'Remove Last Frame') {
+              deleteImages.push(images[i+1])
+            }
+          } else {
+            if (duplicateRemove === 'Remove First Frame') {
+              keepImages.push(images[i])
+            } else if (duplicateRemove === 'Remove Last Frame') {
+              keepImages.push(images[i+1])
+            }
+          }
+        }
+
+        if (duplicateRemove === 'Remove First Frame') {
+          keepImages = [...keepImages, images[images.length - 1]]
+        } else if (duplicateRemove === 'Remove Last Frame') {
+          keepImages = [images[0], ...keepImages]
+        }
+
+        const newProject = {
+          ...gifData,
+          frames: keepImages
+        }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        await writeFileAsync(projectPath, JSON.stringify(newProject))
+
+        for (const [i, img] of deleteImages.entries()) {
+          unlinkAsync(img.path).then(() => {
+            if (i === deleteImages.length - 1) {
+              resolve1()
+            }
+          })
+        }
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(0)
+    setMessageTemp('Duplicates removed')
+  }
+
+  function onDuplicateCancel() {
     setShowDrawer(false)
   }
 
@@ -1228,6 +1334,7 @@ export default function Editor() {
     setLoading(true)
     await update()
     setLoading(false)
+    setMessageTemp(`Frame(s) moved to the left`)
   }
 
   // move selected frames 1 frame to the right
@@ -1269,6 +1376,7 @@ export default function Editor() {
     setLoading(true)
     await update()
     setLoading(false)
+    setMessageTemp(`Frame(s) moved to the right`)
   }
 
   // override duration for selected frames to new value
@@ -1301,12 +1409,15 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     initialize(imageIndex)
+    setMessageTemp(`Duration (delay) altered`)
   }
 
+  // close override drawer
   function onOverrideCancel() {
     setShowDrawer(false)
   }
 
+  // increase/decrease duration of selected frames
   async function onIncreaseAccept() {
     async function update() {
       return new Promise(resolve => {
@@ -1346,8 +1457,10 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     initialize(imageIndex)
+    setMessageTemp(`Duration (delay) altered`)
   }
 
+  // close increase drawer
   function onIncreaseCancel() {
     setShowDrawer(false)
   }
@@ -1426,9 +1539,9 @@ export default function Editor() {
         data[i] = 52
       }
     }
-    // create new ImageData with opacity
+    // create new imageData with opacity
     const imageData = new ImageData(data, gifData.width, gifData.height)
-
+    // create canvas with opacity imateData
     const c1 = document.createElement('canvas')
     c1.width = gifData.width
     c1.height = gifData.height
@@ -1458,6 +1571,7 @@ export default function Editor() {
             c2.height = gifData.height
             const ctx2 = c2.getContext('2d')
             const image1 = new Image()
+            // draw main image then opacity layer then regular drawing layer
             image1.onload = () => {
               ctx2.drawImage(image1, 0, 0)
               ctx2.drawImage(c1, 0, 0)
@@ -1481,6 +1595,7 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
+    setMessageTemp(`Overlay applied`)
   }
 
   // close drawer and restore scale when exit drawing mode
@@ -1612,6 +1727,7 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
+    setMessageTemp(`Overlay applied`)
   }
 
   function onShapeCancel() {
@@ -1666,6 +1782,7 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
+    setMessageTemp(`Overlay applied`)
   }
 
   // close border drawer
@@ -1754,6 +1871,7 @@ export default function Editor() {
     })
     setLoading(false)
     setScale(zoomToFit)
+    setMessageTemp(`Overlay applied`)
   }
 
   // close progress drawer
@@ -1969,7 +2087,7 @@ export default function Editor() {
     setShowDrawer(false)
     setScale(zoomToFit)
     onResetObfuscate()
-    setMessageTemp(`Obfuscate overlay applied`)
+    setMessageTemp(`Overlay applied`)
   }
 
   // close obfuscate drawer
@@ -2074,6 +2192,7 @@ export default function Editor() {
     setShowDrawer(false)
     setScale(zoomToFit)
     onResetWatermark()
+    setMessageTemp(`Overlay applied`)
   }
 
   // close watermark drawer
@@ -2317,6 +2436,16 @@ export default function Editor() {
             setReduceCount={setReduceCount}
             onAccept={onReduceAccept}
             onCancel={onReduceCancel}
+          />
+        ) : drawerMode === 'duplicate' ? (
+          <Duplicate
+            drawerHeight={drawerHeight}
+            duplicatePercent={duplicatePercent}
+            duplicateRemove={duplicateRemove}
+            setDuplicatePercent={setDuplicatePercent}
+            setDuplicateRemove={setDuplicateRemove}
+            onAccept={onDuplicateAccept}
+            onCancel={onDuplicateCancel}
           />
         ) : drawerMode === 'override' ? (
           <Override

@@ -185,11 +185,15 @@ export default function Toolbar({
           </>
         ) : menuIndex === 3 ? (
           <>
-            <Section width={300}>
-              <GenericGrid columns={4}>
+            <Section width={375}>
+              <GenericGrid columns={5}>
                 <Action onClick={() => onFrameDeleteClick('selection')}>
                   <Svg name='delete' />
                   <div className='text'>Delete</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('duplicate')}>
+                  <Svg name='delete' />
+                  <div className='text'>Remove Duplicates</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('reduce')}>
                   <Svg name='delete' />

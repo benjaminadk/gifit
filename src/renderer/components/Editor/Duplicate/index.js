@@ -1,14 +1,17 @@
 import React from 'react'
 import Svg from '../../Svg'
 import NumberInput from '../../Shared/NumberInput'
+import Select from '../../Shared/Select'
 import { Header, Main, Section, Property, Label, Info, Footer, Button } from '../Drawer/styles'
 
-export default function ReduceFrames({
+const duplicateRemoveOptions = ['Remove First Frame', 'Remove Last Frame']
+
+export default function Duplicate({
   drawerHeight,
-  reduceFactor,
-  reduceCount,
-  setReduceFactor,
-  setReduceCount,
+  duplicatePercent,
+  duplicateRemove,
+  setDuplicatePercent,
+  setDuplicateRemove,
   onAccept,
   onCancel
 }) {
@@ -17,7 +20,7 @@ export default function ReduceFrames({
       <Header>
         <div className='left'>
           <Svg name='delete' />
-          <div className='text'>Reduce Frame Count</div>
+          <div className='text'>Remove Duplicates</div>
         </div>
         <div className='right'>
           <Svg name='close' onClick={onCancel} />
@@ -26,37 +29,36 @@ export default function ReduceFrames({
       <Main height={drawerHeight}>
         <Section height={200}>
           <div className='title'>
-            <div className='text'>Reduce Framerate</div>
+            <div className='text'>Remove duplicates</div>
             <div className='divider' />
           </div>
           <div>
             <Property>
-              <Label width={100}>Factor:</Label>
+              <Label width={90}>Similarity (%):</Label>
               <NumberInput
                 width={80}
-                value={reduceFactor}
-                min={1}
-                max={20}
-                fallback={1}
-                setter={setReduceFactor}
+                value={duplicatePercent}
+                max={100}
+                min={10}
+                fallback={90}
+                setter={setDuplicatePercent}
               />
             </Property>
             <Property>
-              <Label width={100}>Remove Count:</Label>
-              <NumberInput
-                width={80}
-                value={reduceCount}
-                min={1}
-                max={20}
-                fallback={1}
-                setter={setReduceCount}
+              <Label width={90}>Frame removal:</Label>
+              <Select
+                width={140}
+                value={duplicateRemove}
+                options={duplicateRemoveOptions}
+                onClick={setDuplicateRemove}
               />
             </Property>
             <Info>
               <Svg name='info' />
               <div className='text'>
-                It will remove {reduceCount} frame(s) after every {reduceFactor} frame(s), without
-                counting the removed ones. Framerate will be adjusted.
+                This action analyzes each frame (pixel by pixel) and removes the ones that are at
+                least {duplicatePercent}% similar to its immediate neighbor. You can chose if you
+                want to adjust the delay (duration of exhibition) of the frames.
               </div>
             </Info>
           </div>
