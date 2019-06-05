@@ -28,6 +28,7 @@ import ShapeOverlay from './Shape/ShapeOverlay'
 import ObfuscateOverlay from './Obfuscate/ObfuscateOverlay'
 import TextOverlay from './Text/TextOverlay'
 import Drawer from './Drawer'
+import Clipboard from './Clipboard'
 import Resize from './Resize'
 import Crop from './Crop'
 import Flip from './Flip'
@@ -98,6 +99,9 @@ export default function Editor() {
   const [drawerHeight, setDrawerHeight] = useState(0)
   const [thumbWidth, setThumbWidth] = useState(100)
   const [thumbHeight, setThumbHeight] = useState(56)
+
+  const [clipboardItems, setClipboardItems] = useState([])
+  const [clipboardIndex, setClipboardIndex] = useState(null)
 
   const [drawXY, setDrawXY] = useState(null)
   const [drawing, setDrawing] = useState(false)
@@ -2413,7 +2417,6 @@ export default function Editor() {
 
           await new Promise(resolve3 => {
             image2.onload = () => {
-            
               if (fadeOption === 'frame') {
                 ctx1.globalAlpha = alphaFrame
                 ctx1.drawImage(image2, 0, 0)
@@ -2749,6 +2752,13 @@ export default function Editor() {
             recentProjects={recentProjects}
             onAccept={onRecentAccept}
             onCancel={onRecentCancel}
+          />
+        ) : drawerMode === 'clipboard' ? (
+          <Clipboard
+            drawerHeight={drawerHeight}
+            clipboardItems={clipboardItems}
+            clipboardIndex={clipboardIndex}
+            onCancel={() => setShowDrawer(false)}
           />
         ) : drawerMode === 'resize' ? (
           <Resize

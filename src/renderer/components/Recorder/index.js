@@ -295,6 +295,8 @@ export default function Recorder() {
     const folder = createFolderName()
     const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
     await mkdirAsync(folderPath)
+    const clipboardPath = path.join(folderPath, 'Clipboard')
+    await mkdirAsync(clipboardPath)
     const data = []
     // loop over frames and create data and image file
     for (const [i, frame] of frames.toArray().entries()) {

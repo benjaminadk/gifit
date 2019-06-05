@@ -12,6 +12,7 @@ import {
   Collapse,
   Section,
   SectionText,
+  Shortcut,
   GenericGrid,
   Action,
   Zoom,
@@ -126,6 +127,26 @@ export default function Toolbar({
           </>
         ) : menuIndex === 1 ? (
           <>
+            <Section width={225}>
+              <GenericGrid columns={3}>
+                <Action>
+                  <Svg name='paste' />
+                  <div className='text'>Cut</div>
+                </Action>
+                <Action>
+                  <Svg name='paste' />
+                  <div className='text'>Copy</div>
+                </Action>
+                <Action>
+                  <Svg name='paste' />
+                  <div className='text'>Paste</div>
+                </Action>
+              </GenericGrid>
+              <SectionText>Clipboard</SectionText>
+              <Shortcut onClick={() => onOpenDrawer('clipboard')}>
+                <Svg name='shortcut' />
+              </Shortcut>
+            </Section>
             <Section width={300}>
               <Zoom>
                 <Action onClick={() => setScale(1)}>

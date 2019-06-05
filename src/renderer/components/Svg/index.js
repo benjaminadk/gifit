@@ -635,6 +635,28 @@ export default function Svg({ name, ...rest }) {
             <path fill='none' stroke='gray' strokeWidth='2' d='M1 1h48.079v48.158H1z' />
           </>
         )
+      case 'paste':
+        return (
+          <>
+            <path fill='#f3da94' d='M3.363 7.937h34.999v38.847H3.363z' />
+            <path fill='#fff' d='M7.526 7.937h26.746v34.839H7.526z' />
+            <path
+              d='M15.002.845h12.179v7.092h7.09v5.008H7.526V7.937h7.476zm9.039 3.228h-5.812v3.864h5.812z'
+              fill='gray'
+            />
+            <path
+              strokeWidth='.5'
+              stroke='gray'
+              fill='#fff'
+              d='M19.721 24.915h23.961v23.961H19.721z'
+            />
+            <path
+              d='M25.744 32.116c.739-.907 1.481-.909 2.227-.003l4.601 5.581-.005.003 8.673 10.7H31.106v-.008l-10.927.025v-9.499zm10.925 2.233c.741-.907 1.485-.908 2.231-.005l4.313 5.236v8.817h-1.386l-8.284-10.223z'
+              fill='#407eb5'
+            />
+            <circle cx='39.392' cy='28.727' r='2.686' fill='#efc380' />
+          </>
+        )
       case 'pause':
         return <path fill='#407eb5' d='M5 2h15v46H5zM30 1.804h15v46H30z' />
       case 'pen':
@@ -832,6 +854,17 @@ export default function Svg({ name, ...rest }) {
               stroke='#333'
               strokeWidth='2'
               fill='#fff'
+            />
+          </>
+        )
+      case 'shortcut':
+        return (
+          <>
+            <path fill='gray' stroke='gray' strokeWidth='2' d='M2.562 46.457l.463-43.969' />
+            <path fill='none' stroke='gray' strokeWidth='2' d='M2.871 3.568l42.117.309' />
+            <path
+              d='M18.4972 12.9314l10.759 9.6581 7.362-8.532L44.428 43.517l-30.1283-4.5973 7.6903-8.236-10.7589-9.6581 7.266-8.0941z'
+              fill='gray'
             />
           </>
         )

@@ -153,6 +153,8 @@ export default function Webcam() {
     const folder = createFolderName()
     const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
     await mkdirAsync(folderPath)
+    const clipboardPath = path.join(folderPath, 'Clipboard')
+    await mkdirAsync(clipboardPath)
     const data = []
 
     for (const [i, frame] of frames.toArray().entries()) {

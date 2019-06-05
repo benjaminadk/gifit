@@ -89,6 +89,7 @@ export const Collapse = styled.div`
 `
 
 export const Section = styled.div`
+  position: relative;
   width: ${p => p.width}px;
   height: 100%;
   display: grid;
@@ -103,6 +104,24 @@ export const SectionText = styled.div`
   margin-bottom: -3px;
   font-size: 1.2rem;
   color: ${p => p.theme.grey[7]};
+`
+
+export const Shortcut = styled.div`
+  position: absolute;
+  bottom: -5px;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  &:hover {
+    background: ${p => lighten(0.4, p.theme.primary)};
+  }
+  svg {
+    width: 10px;
+    height: 10px;
+  }
 `
 
 export const GenericGrid = styled.div`
