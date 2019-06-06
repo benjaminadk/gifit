@@ -38,8 +38,8 @@ export const MenuItem = styled.div`
   align-items: center;
   border: 1px solid transparent;
   &:hover {
-    background: ${p => lighten(0.4, p.theme.primary)};
-    border: 1px solid ${p => p.theme.primary};
+    background: ${p => (p.inactive ? 'transparent' : lighten(0.4, p.theme.primary))};
+    border: 1px solid ${p => (p.inactive ? 'transparent' : p.theme.primary)};
   }
   svg {
     justify-self: center;

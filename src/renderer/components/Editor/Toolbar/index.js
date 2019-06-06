@@ -56,6 +56,9 @@ export default function Toolbar({
   onNewBoardClick,
   onSaveClick,
   onDiscardProjectClick,
+  onCutClick,
+  onCopyClick,
+  onPasteClick,
   onPlaybackClick,
   onFrameDeleteClick,
   onReverseClick,
@@ -129,15 +132,15 @@ export default function Toolbar({
           <>
             <Section width={225}>
               <GenericGrid columns={3}>
-                <Action>
-                  <Svg name='paste' />
+                <Action onClick={onCutClick}>
+                  <Svg name='cut' />
                   <div className='text'>Cut</div>
                 </Action>
-                <Action>
-                  <Svg name='paste' />
+                <Action onClick={onCopyClick}>
+                  <Svg name='copy' />
                   <div className='text'>Copy</div>
                 </Action>
-                <Action>
+                <Action onClick={onPasteClick}>
                   <Svg name='paste' />
                   <div className='text'>Paste</div>
                 </Action>

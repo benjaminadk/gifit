@@ -12,7 +12,11 @@ export default function PopupMenu({ width, rows, position, menuItems, onClose })
       >
         <Menu width={width} rows={rows}>
           {menuItems.map((el, i) => (
-            <MenuItem key={i} onClick={el.click}>
+            <MenuItem
+              key={i}
+              inactive={el.label === 'Clipboard Entry'}
+              onClick={e => el.click(e, i)}
+            >
               {el.icon}
               <div className='text'>{el.label}</div>
             </MenuItem>

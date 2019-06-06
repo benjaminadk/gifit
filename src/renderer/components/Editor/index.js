@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
+import { format } from 'date-fns'
 import { List } from 'immutable'
 import path from 'path'
-import { readFile, writeFile, readdir, rmdir, unlink, copyFile } from 'fs'
+import { readFile, writeFile, readdir, mkdir, rmdir, unlink, copyFile } from 'fs'
 import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
 import createTFName from '../../lib/createTFName'
@@ -64,6 +65,7 @@ const {
 const readFileAsync = promisify(readFile)
 const writeFileAsync = promisify(writeFile)
 const readdirAsync = promisify(readdir)
+const mkdirAsync = promisify(mkdir)
 const rmdirAsync = promisify(rmdir)
 const unlinkAsync = promisify(unlink)
 const copyFileAsync = promisify(copyFile)
@@ -100,8 +102,11 @@ export default function Editor() {
   const [thumbWidth, setThumbWidth] = useState(100)
   const [thumbHeight, setThumbHeight] = useState(56)
 
-  const [clipboardItems, setClipboardItems] = useState([])
+  const [clipboardDirectory, setClipboardDirectory] = useState('')
+  const [clipboardNextSub, setClipboardNextSub] = useState(0)
+  const [clipboardItems, setClipboardItems] = useState(List([]))
   const [clipboardIndex, setClipboardIndex] = useState(null)
+  const [clipboardPaste, setClipboardPaste] = useState('before')
 
   const [drawXY, setDrawXY] = useState(null)
   const [drawing, setDrawing] = useState(false)
@@ -214,90 +219,6 @@ export default function Editor() {
   const canvas5 = useRef(null)
   const thumbnail = useRef(null)
 
-  // initialize editor
-  async function initialize(initialIndex = 0) {
-    setLoading(true)
-    const projects = []
-    // read all project directories
-    const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
-    // loop over all projects
-    for (const dir of dirs) {
-      // each project is represented by a project.json file
-      const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
-      const data = await readFileAsync(projectPath)
-      const project = JSON.parse(data)
-      // find dir that matches projectFolder app state aka the open project in editor
-      if (dir === projectFolder) {
-        // calcuate ratios for image w:h and h:w
-        const imageRatio = Math.floor((project.width / project.height) * 100) / 100
-        const inverseRatio = Math.floor((project.height / project.width) * 100) / 100
-        // set larger dimension to 100px and calculate other dimension based on ratio
-        var tWidth, tHeight
-        if (imageRatio >= 1) {
-          tWidth = 100
-          tHeight = 100 * inverseRatio
-        } else {
-          tWidth = 100 * imageRatio
-          tHeight = 100
-        }
-        // height of windows web content
-        const initialContainerHeight = container.current.clientHeight
-        // calculate main editor height
-        // full screen height - toolbar height - thumbnail image height - thumb bottom height - bottom bar height
-        const initialMainHeight = initialContainerHeight - 120 - tHeight - 40 - 20
-        // calculate drawer height
-        // main height - drawer header height - drawer buttons height
-        const initialDrawerHeight = initialMainHeight - 40 - 50
-        // ratio of main height to project image height
-        const heightRatio = Math.floor((initialMainHeight / project.height) * 100) / 100
-        // if ratio less than 1 image is taller than editor and height ratio is intial scale between 0 - 1
-        // if ratio greater than 1 image is shorter than editor and set scale to 1 aka actual size
-        const initialScale = heightRatio < 1 ? heightRatio : 1
-        // use immutable list to manage selected frames true=selected false=unselected
-        // initialIndex default is 0 but other value can be used as function parameter
-        const initialSelected = List(Array(project.frames.length).fill(false)).set(
-          initialIndex,
-          true
-        )
-        // add time of all frames to determine total duration of GIF
-        const totalDur = project.frames.reduce((acc, val) => {
-          acc += val.time ? val.time : 0
-          return acc
-        }, 0)
-        // divide total by number of frames to get average duration
-        const averageDur = Math.round((totalDur / project.frames.length) * 10) / 10
-        // set state
-        setSelected(initialSelected)
-        setScale(initialScale)
-        imageIndex === null && setMessageTemp(`Zoom set to ${Math.round(initialScale * 100)}%`)
-        setZoomToFit(initialScale)
-        setImages(project.frames)
-        setImageIndex(initialIndex)
-        setGifData({
-          relative: project.relative,
-          date: project.date,
-          width: project.width,
-          height: project.height,
-          frameRate: project.frameRate
-        })
-        setTotalDuration(totalDur)
-        setAverageDuration(averageDur)
-        setContainerWidth(container.current.clientWidth)
-        setContainerHeight(initialContainerHeight)
-        setMainHeight(initialMainHeight)
-        setDrawerHeight(initialDrawerHeight)
-        setThumbWidth(tWidth)
-        setThumbHeight(tHeight)
-        // store all other projects as recent projects
-      } else {
-        projects.push(project)
-      }
-    }
-    setRecentProjects(projects)
-    setLoading(false)
-    setShowDrawer(false)
-  }
-
   // ensure window is maximized
   useEffect(() => {
     remote.getCurrentWindow().maximize()
@@ -307,6 +228,7 @@ export default function Editor() {
   // call initialize projectFolder changes
   useEffect(() => {
     initialize()
+    initClipboard()
   }, [projectFolder])
 
   // manage main canvas
@@ -505,27 +427,12 @@ export default function Editor() {
     return () => clearTimeout(pid)
   }, [playing, imageIndex])
 
-  // register keyboard listeners
   useEffect(() => {
-    function onDelete() {
-      if (!showDrawer && remote.getCurrentWindow().isFocused()) {
-        onFrameDeleteClick('selection')
-      }
-    }
-
-    function onSelectAll() {
-      if (remote.getCurrentWindow().isFocused()) {
-        setSelected(selected.map(el => true))
-      }
-    }
-
-    remote.globalShortcut.register('Ctrl+Delete', onDelete)
-    remote.globalShortcut.register('Ctrl+A', onSelectAll)
+    window.addEventListener('keydown', onKeyDown)
     return () => {
-      remote.globalShortcut.unregister('Ctrl+Delete', onDelete)
-      remote.globalShortcut.unregister('Ctrl+A', onSelectAll)
+      window.removeEventListener('keydown', onKeyDown)
     }
-  }, [selected, showDrawer])
+  }, [loading, imageIndex, selected, showDrawer])
 
   // load watermark image file to set its initial size
   useEffect(() => {
@@ -554,6 +461,133 @@ export default function Editor() {
       image.src = watermarkPath
     }
   }, [watermarkPath, gifData])
+
+  // initialize editor
+  async function initialize(initialIndex = 0) {
+    setLoading(true)
+    const projects = []
+    // read all project directories
+    const dirs = await readdirAsync(RECORDINGS_DIRECTORY)
+    // loop over all projects
+    for (const dir of dirs) {
+      // each project is represented by a project.json file
+      const projectPath = path.join(RECORDINGS_DIRECTORY, dir, 'project.json')
+      const data = await readFileAsync(projectPath)
+      const project = JSON.parse(data)
+      // find dir that matches projectFolder app state aka the open project in editor
+      if (dir === projectFolder) {
+        // calcuate ratios for image w:h and h:w
+        const imageRatio = Math.floor((project.width / project.height) * 100) / 100
+        const inverseRatio = Math.floor((project.height / project.width) * 100) / 100
+        // set larger dimension to 100px and calculate other dimension based on ratio
+        var tWidth, tHeight
+        if (imageRatio >= 1) {
+          tWidth = 100
+          tHeight = 100 * inverseRatio
+        } else {
+          tWidth = 100 * imageRatio
+          tHeight = 100
+        }
+        // height of windows web content
+        const initialContainerHeight = container.current.clientHeight
+        // calculate main editor height
+        // full screen height - toolbar height - thumbnail image height - thumb bottom height - bottom bar height
+        const initialMainHeight = initialContainerHeight - 120 - tHeight - 40 - 20
+        // calculate drawer height
+        // main height - drawer header height - drawer buttons height
+        const initialDrawerHeight = initialMainHeight - 40 - 50
+        // ratio of main height to project image height
+        const heightRatio = Math.floor((initialMainHeight / project.height) * 100) / 100
+        // if ratio less than 1 image is taller than editor and height ratio is intial scale between 0 - 1
+        // if ratio greater than 1 image is shorter than editor and set scale to 1 aka actual size
+        const initialScale = heightRatio < 1 ? heightRatio : 1
+        // use immutable list to manage selected frames true=selected false=unselected
+        // initialIndex default is 0 but other value can be used as function parameter
+        const initialSelected = List(Array(project.frames.length).fill(false)).set(
+          initialIndex,
+          true
+        )
+        // add time of all frames to determine total duration of GIF
+        const totalDur = project.frames.reduce((acc, val) => {
+          acc += val.time ? val.time : 0
+          return acc
+        }, 0)
+        // divide total by number of frames to get average duration
+        const averageDur = Math.round((totalDur / project.frames.length) * 10) / 10
+
+        setSelected(initialSelected)
+        setScale(initialScale)
+        imageIndex === null && setMessageTemp(`Zoom set to ${Math.round(initialScale * 100)}%`)
+        setZoomToFit(initialScale)
+        setImages(project.frames)
+        setImageIndex(initialIndex)
+        setGifData({
+          relative: project.relative,
+          date: project.date,
+          width: project.width,
+          height: project.height,
+          frameRate: project.frameRate
+        })
+        setTotalDuration(totalDur)
+        setAverageDuration(averageDur)
+        setContainerWidth(container.current.clientWidth)
+        setContainerHeight(initialContainerHeight)
+        setMainHeight(initialMainHeight)
+        setDrawerHeight(initialDrawerHeight)
+        setThumbWidth(tWidth)
+        setThumbHeight(tHeight)
+        // store all other projects as recent projects
+      } else {
+        projects.push(project)
+      }
+    }
+    setRecentProjects(projects)
+    setLoading(false)
+  }
+
+  // initialize clipboard
+  async function initClipboard() {
+    // each project has its own clipboard
+    if (projectFolder) {
+      const initialClipboardDirectory = path.join(RECORDINGS_DIRECTORY, projectFolder, 'Clipboard')
+      // get all directories within clipboard
+      const clipDirs = await readdirAsync(initialClipboardDirectory)
+      // if directories delete contents and then directory itself
+      if (clipDirs.length) {
+        for (const clipDir of clipDirs) {
+          const clipFolder = path.join(initialClipboardDirectory, clipDir)
+          const clipImgs = await readdirAsync(clipFolder)
+          if (clipImgs.length) {
+            for (const [i, clipImg] of clipImgs.entries()) {
+              const imagePath = path.join(clipFolder, clipImg)
+              unlinkAsync(imagePath).then(() => {
+                if (i === clipImgs.length - 1) {
+                  rmdirAsync(clipFolder)
+                }
+              })
+            }
+          }
+        }
+      }
+      setClipboardDirectory(initialClipboardDirectory)
+    }
+  }
+
+  // assign keyboard shortcuts
+  // could also use remote.globalshortcut to override system
+  function onKeyDown({ keyCode, ctrlKey }) {
+    if (keyCode === 65 && ctrlKey) {
+      onSelectClick(0)
+    } else if (keyCode === 46 && ctrlKey && !showDrawer) {
+      onFrameDeleteClick('selection')
+    } else if (keyCode === 88 && ctrlKey) {
+      onCutClick()
+    } else if (keyCode === 67 && ctrlKey) {
+      onCopyClick()
+    } else if (keyCode === 86 && ctrlKey) {
+      onPasteClick()
+    }
+  }
 
   // trick cache
   function updateHashModifier() {
@@ -678,6 +712,127 @@ export default function Editor() {
       setImageIndex(x)
       setSelected(selected.map((el, i) => i === x))
     }
+  }
+
+  // cut selected frames from project to clipboard
+  async function onCutClick() {
+    if (!selected.includes(true) || loading) {
+      return
+    }
+
+    const items = []
+
+    async function update() {
+      return new Promise(async resolve => {
+        const keepImages = images.filter((el, i) => !selected.get(i))
+        const cutImages = images.filter((el, i) => selected.get(i))
+
+        const dstFolder = path.join(clipboardDirectory, clipboardNextSub.toString())
+        await mkdirAsync(dstFolder)
+
+        for (const [i, img] of cutImages.entries()) {
+          const srcPath = img.path
+          const dstPath = path.join(dstFolder, path.basename(img.path))
+          await copyFileAsync(srcPath, dstPath)
+          items.push({
+            ...img,
+            path: dstPath
+          })
+        }
+
+        const clipItem = { time: format(new Date(), 'hh:mm:ss'), items }
+        setClipboardItems(clipboardItems.push(clipItem))
+        setClipboardIndex(clipboardItems.size)
+        setClipboardNextSub(clipboardNextSub + 1)
+
+        const newProject = { ...gifData, frames: keepImages }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        await writeFileAsync(projectPath, JSON.stringify(newProject))
+        resolve()
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    initialize(imageIndex)
+    setMessageTemp(`${items.length} frame(s) cut`)
+    onOpenDrawer('clipboard')
+  }
+
+  // copy selected frames to clipboard
+  async function onCopyClick() {
+    // if nothing selected return
+    if (!selected.includes(true) || loading) {
+      return
+    }
+    // create new clipboard sub directory
+    // destination folder based on current project folder and next sub-directory
+    const dstFolder = path.join(clipboardDirectory, clipboardNextSub.toString())
+    await mkdirAsync(dstFolder)
+    const items = []
+
+    const copyImages = images.filter((el, i) => selected.get(i))
+
+    for (const [i, img] of copyImages.entries()) {
+      const srcPath = img.path
+      const dstPath = path.join(dstFolder, path.basename(img.path))
+      await copyFileAsync(srcPath, dstPath)
+      items.push({
+        ...img,
+        path: dstPath
+      })
+    }
+    // create new clip item
+    const clipItem = { time: format(new Date(), 'hh:mm:ss'), items }
+    // update state
+    setClipboardItems(clipboardItems.push(clipItem))
+    setClipboardIndex(clipboardItems.size)
+    setClipboardNextSub(clipboardNextSub + 1)
+    setMessageTemp(`${items.length} frame(s) copied`)
+    onOpenDrawer('clipboard')
+  }
+
+  // paste selected clipboard item into project before/after imageIndex
+  async function onPasteClick() {
+    // if clipboard is empty return
+    if (!clipboardItems.size || loading) {
+      return
+    }
+    // isolate frame items
+    const clipItems = clipboardItems.get(clipboardIndex).items
+
+    async function update() {
+      return new Promise(async resolve => {
+        const insertionData = []
+        // loop over clipboard items to copy images
+        for (const [i, img] of clipItems.entries()) {
+          const srcPath = img.path
+          // create new png file in project
+          const dstPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, createFileName('CB', i))
+          await copyFileAsync(srcPath, dstPath)
+          // keep track of new data with updated path
+          insertionData.push({ ...img, path: dstPath })
+        }
+        // index to insert clipboard items at
+        const insertionPoint = clipboardPaste === 'before' ? imageIndex : imageIndex + 1
+        const newImages = images.slice()
+        // splice in new data
+        newImages.splice(insertionPoint, 0, ...insertionData)
+        const newProject = { ...gifData, frames: newImages }
+        // update project json file
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        await writeFileAsync(projectPath, JSON.stringify(newProject))
+        resolve()
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(imageIndex)
+    setMessageTemp(`${clipItems.length} frame(s) pasted`)
   }
 
   // delete selected frames from project
@@ -816,6 +971,7 @@ export default function Editor() {
   // open a recent project
   function onRecentAccept(folder) {
     dispatch({ type: SET_PROJECT_FOLDER, payload: folder })
+    setShowDrawer(false)
   }
 
   // close recent project drawer
@@ -1136,6 +1292,7 @@ export default function Editor() {
     }
     setFlipMode('')
     setShowDrawer(false)
+    setMessageTemp(`Frames flipped/rotated`)
   }
 
   // close flip drawer
@@ -2022,7 +2179,7 @@ export default function Editor() {
         }
       })
     }
-    setShowDrawer(false)
+
     setLoading(true)
     await draw()
     await new Promise(resolve => {
@@ -2033,6 +2190,7 @@ export default function Editor() {
     })
     setLoading(false)
     setScale(zoomToFit)
+    setShowDrawer(false)
     setMessageTemp(`Overlay applied`)
   }
 
@@ -2618,6 +2776,9 @@ export default function Editor() {
         onNewBoardClick={onNewBoardClick}
         onSaveClick={onSaveClick}
         onDiscardProjectClick={onDiscardProjectClick}
+        onCutClick={onCutClick}
+        onCopyClick={onCopyClick}
+        onPasteClick={onPasteClick}
         onPlaybackClick={onPlaybackClick}
         onFrameDeleteClick={onFrameDeleteClick}
         onReverseClick={onReverseClick}
@@ -2756,8 +2917,13 @@ export default function Editor() {
         ) : drawerMode === 'clipboard' ? (
           <Clipboard
             drawerHeight={drawerHeight}
+            clipboardDirectory={clipboardDirectory}
             clipboardItems={clipboardItems}
             clipboardIndex={clipboardIndex}
+            clipboardPaste={clipboardPaste}
+            setClipboardItems={setClipboardItems}
+            setClipboardIndex={setClipboardIndex}
+            setClipboardPaste={setClipboardPaste}
             onCancel={() => setShowDrawer(false)}
           />
         ) : drawerMode === 'resize' ? (

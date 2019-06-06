@@ -29,7 +29,6 @@ export default function BottomBar({
   const [showMessage, setShowMessage] = useState(false)
 
   const interval = useRef(null)
-  const timeout = useRef(null)
 
   // when loading is set to true show progress bar
   useEffect(() => {
@@ -52,17 +51,16 @@ export default function BottomBar({
 
   // when progress is set to 100% show bar for 2 more seconds
   useEffect(() => {
+    var id
     if (progress === 100) {
       clearInterval(interval.current)
-      timeout.current = setTimeout(() => {
+      id = setTimeout(() => {
         setProgress(0)
         setShowProgress(false)
       }, 2000)
     }
 
-    return () => {
-      clearTimeout(timeout.current)
-    }
+    return () => {}
   }, [progress])
 
   // show message for 5 seconds

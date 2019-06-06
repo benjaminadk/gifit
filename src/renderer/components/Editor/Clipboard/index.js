@@ -1,35 +1,56 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { shell } from 'electron'
+import path from 'path'
 import Svg from '../../Svg'
-import { Header, Main, Section, Property, Label, Footer, Button } from '../Drawer/styles'
-import styled from 'styled-components'
-import { lighten } from 'polished'
+import PopupMenu from '../../Shared/PopupMenu'
+import { List, Item, Radios } from './styles'
+import { Header, Main, Section } from '../Drawer/styles'
+import config from 'common/config'
 
-export const List = styled.div`
-  overflow-y: auto;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  border: ${p => p.theme.border};
-  margin: 5px;
-  padding: 1px;
-`
+const {
+  editor: { drawerWidth }
+} = config
 
-export const Item = styled.div`
-  display: grid;
-  grid-template-columns: 40px 60px 60px 1fr;
-  align-items: center;
-  background: ${p => (p.selected ? lighten(0.35, p.theme.primary) : 'transparent')};
-  border: 1px solid ${p => (p.selected ? p.theme.primary : 'transparent')};
-  svg {
-    width: 20px;
-    height: 20px;
+export default function Clipboard({
+  drawerHeight,
+  clipboardDirectory,
+  clipboardItems,
+  clipboardIndex,
+  clipboardPaste,
+  setClipboardItems,
+  setClipboardIndex,
+  setClipboardPaste,
+  onCancel
+}) {
+  const [position, setPosition] = useState([])
+  const [menuIndex, setMenuIndex] = useState(null)
+
+  function onContextMenu(e, i) {
+    var x, y
+    const { layerX } = e.nativeEvent
+    x = layerX > drawerWidth - 125 ? layerX - 125 : layerX
+    y = i * 30 + 75
+    setPosition([x, y])
+    setMenuIndex(i)
   }
-  .time {
-    color: ${p => p.theme.grey[5]};
-  }
-`
 
-export default function Clipboard({ drawerHeight, clipboardItems, clipboardIndex, onCancel }) {
+  function onExploreFolder() {
+    setPosition([])
+    shell.showItemInFolder(path.join(clipboardDirectory, menuIndex))
+  }
+
+  function onRemove() {
+    setPosition([])
+    setClipboardItems(clipboardItems.delete(menuIndex))
+    setClipboardIndex(menuIndex === clipboardItems.size - 1 ? menuIndex - 1 : menuIndex)
+  }
+
+  const menuItems = [
+    { icon: <Svg name='paste' />, label: 'Clipboard Entry', click: () => {} },
+    { icon: <Svg name='folder' />, label: 'Explore Folder', click: onExploreFolder },
+    { icon: <Svg name='close' />, label: 'Remove', click: onRemove }
+  ]
+
   return (
     <>
       <Header>
@@ -50,11 +71,18 @@ export default function Clipboard({ drawerHeight, clipboardItems, clipboardIndex
           <div>
             <List>
               {clipboardItems.map((el, i) => (
-                <Item key={i} selected={i === clipboardIndex}>
-                  <Svg name='image' />
-                  <div>1 Image</div>
-                  <div>07:20:46</div>
-                  <Svg name='check' />
+                <Item
+                  key={i}
+                  selected={i === clipboardIndex}
+                  onClick={() => setClipboardIndex(i)}
+                  onContextMenu={e => onContextMenu(e, i)}
+                >
+                  <Svg name={el.items.length === 1 ? 'image' : 'copy'} />
+                  <div>
+                    {el.items.length} Image{el.items.length === 1 ? '' : 's'}
+                  </div>
+                  <div className='time'>{el.time}</div>
+                  <Svg name='check' className='check' />
                 </Item>
               ))}
             </List>
@@ -66,11 +94,24 @@ export default function Clipboard({ drawerHeight, clipboardItems, clipboardIndex
           <div className='text'>Paste Behavior</div>
           <div className='divider' />
         </div>
-        <div>
-          <div>Before selected frame</div>
-          <div>After selected frame</div>
-        </div>
+        <Radios>
+          <div className='option' onClick={() => setClipboardPaste('before')}>
+            <Svg name={clipboardPaste === 'before' ? 'radio-true' : 'radio-false'} />
+            <div>Before selected frame</div>
+          </div>
+          <div className='option' onClick={() => setClipboardPaste('after')}>
+            <Svg name={clipboardPaste === 'after' ? 'radio-true' : 'radio-false'} />
+            <div>After selected frame</div>
+          </div>
+        </Radios>
       </Section>
+      <PopupMenu
+        width={125}
+        rows={3}
+        position={position}
+        menuItems={menuItems}
+        onClose={() => setPosition([])}
+      />
     </>
   )
 }
