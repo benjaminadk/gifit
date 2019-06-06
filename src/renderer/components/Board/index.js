@@ -166,7 +166,6 @@ export default function Board() {
       date: new Date().getTime(),
       width: canvasWidth,
       height: canvasHeight,
-      frameRate,
       frames: data
     }
     await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))

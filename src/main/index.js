@@ -66,4 +66,16 @@ ioHook.on('mouseup', e => {
   }
 })
 
+ioHook.on('keydown', e => {
+  if (recording && recorderId) {
+    BrowserWindow.fromId(recorderId).webContents.send('key-watch', e)
+  }
+})
+
+ioHook.on('keyup', e => {
+  if (recording && recorderId) {
+    BrowserWindow.fromId(recorderId).webContents.send('key-watch', false)
+  }
+})
+
 ioHook.start()

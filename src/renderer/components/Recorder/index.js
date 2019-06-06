@@ -47,6 +47,7 @@ export default function Recorder() {
   const [xCursors, setXCursors] = useState(List([]))
   const [yCursors, setYCursors] = useState(List([]))
   const [cursors, setCursors] = useState(List([]))
+  const [keys, setKeys] = useState(List([]))
 
   const [controlsX, setControlsX] = useState(screenWidth / 2)
   const [controlsY, setControlsY] = useState(screenHeight / 2)
@@ -71,6 +72,7 @@ export default function Recorder() {
   const tray = useRef(null)
   const t1 = useRef(null)
   const isClicked = useRef(null)
+  const keyboard = useRef(null)
 
   const zoomCanvas1 = useRef(null)
   const zoomCanvas2 = useRef(null)
@@ -158,13 +160,19 @@ export default function Recorder() {
       ipcRenderer.on('mouse-watch', (e, bool) => {
         isClicked.current = bool
       })
+      ipcRenderer.on('key-watch', (e, data) => {
+        keyboard.current = data
+      })
     } else if (mode === 6) {
       ipcRenderer.send('record', { isRecording: false, id: null })
+      ipcRenderer.removeAllListeners('mouse-watch')
+      ipcRenderer.removeAllListeners('key-watch')
     }
 
     return () => {
-      ipcRenderer.removeAllListeners('mouse-watch')
       ipcRenderer.send('record', { isRecording: false, id: null })
+      ipcRenderer.removeAllListeners('mouse-watch')
+      ipcRenderer.removeAllListeners('key-watch')
     }
   }, [mode])
 
@@ -252,6 +260,7 @@ export default function Recorder() {
     setXCursors(cur => cur.push(x))
     setYCursors(cur => cur.push(y))
     setCursors(cur => cur.push(isClicked.current))
+    setKeys(cur => cur.push(keyboard.current))
     var frame
     // draw full screen image
     ctx1.current.clearRect(0, 0, screenWidth, screenHeight)
@@ -277,6 +286,17 @@ export default function Recorder() {
     }
     // add frame to frames state
     setFrames(cur => cur.push(frame))
+  }
+
+  function onProcessKeyboard(e) {
+    const obj = { code: e.keycode }
+    const arr = []
+    arr.push(e.ctrlKey ? 1 : 0)
+    arr.push(e.altKey ? 1 : 0)
+    arr.push(e.shiftKey ? 1 : 0)
+    arr.push(e.metaKey ? 1 : 0)
+    obj.mod = arr
+    return obj
   }
 
   // stop recording and process frames into project
@@ -306,7 +326,8 @@ export default function Recorder() {
         time: times.get(i),
         cursorX: xCursors.get(i),
         cursorY: yCursors.get(i),
-        clicked: cursors.get(i)
+        clicked: cursors.get(i),
+        keys: keys.get(i) ? onProcessKeyboard(keys.get(i)) : false
       })
       const base64Data = frame.replace(IMAGE_REGEX, '')
       await writeFileAsync(filepath, base64Data, {
@@ -319,7 +340,6 @@ export default function Recorder() {
       date: new Date().getTime(),
       width: captureType === 'crop' ? selectWidth : screenWidth,
       height: captureType === 'crop' ? selectHeight : screenHeight,
-      frameRate,
       frames: data
     }
     await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))

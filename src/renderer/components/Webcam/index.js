@@ -174,7 +174,6 @@ export default function Webcam() {
       date: new Date().getTime(),
       width,
       height: height - 40,
-      frameRate,
       frames: data
     }
     await writeFileAsync(path.join(folderPath, 'project.json'), JSON.stringify(project))
