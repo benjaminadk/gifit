@@ -671,6 +671,9 @@ export default function Editor() {
         // clear the image canvas layer
         const ctx1 = canvas1.current.getContext('2d')
         ctx1.clearRect(0, 0, gifData.width, gifData.height)
+        // remove clipboard directory
+        await initClipboard()
+        await rmdirAsync(clipboardDirectory)
         // read all files from project directory
         const projectDir = path.join(RECORDINGS_DIRECTORY, gifData.relative)
         const files = await readdirAsync(projectDir)
