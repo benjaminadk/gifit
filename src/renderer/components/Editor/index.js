@@ -525,8 +525,7 @@ export default function Editor() {
           relative: project.relative,
           date: project.date,
           width: project.width,
-          height: project.height,
-          frameRate: project.frameRate
+          height: project.height
         })
         setTotalDuration(totalDur)
         setAverageDuration(averageDur)
@@ -570,6 +569,9 @@ export default function Editor() {
         }
       }
       setClipboardDirectory(initialClipboardDirectory)
+      setClipboardItems(List([]))
+      setClipboardIndex(null)
+      setClipboardNextSub(0)
     }
   }
 
@@ -1029,27 +1031,6 @@ export default function Editor() {
         }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
-          const imageRatio = Math.floor((newWidth / newHeight) * 100) / 100
-          const inverseRatio = Math.floor((newHeight / newWidth) * 100) / 100
-          var tWidth, tHeight
-          if (imageRatio >= 1) {
-            tWidth = 100
-            tHeight = 100 * inverseRatio
-          } else {
-            tWidth = 100 * imageRatio
-            tHeight = 100
-          }
-          const initialMainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
-          const initialDrawerHeight = initialMainHeight - 40 - 50
-          const heightRatio = Math.floor((initialMainHeight / newHeight) * 100) / 100
-          const initialScale = heightRatio < 1 ? heightRatio : 1
-          setGifData(newGifData)
-          setScale(initialScale)
-          setZoomToFit(initialScale)
-          setThumbWidth(tWidth)
-          setThumbHeight(tHeight)
-          setMainHeight(initialMainHeight)
-          setDrawerHeight(initialDrawerHeight)
           resolve()
         })
       })
@@ -1066,6 +1047,9 @@ export default function Editor() {
     })
     setLoading(false)
     setShowDrawer(false)
+    setMessageTemp('Frames resized')
+    initialize(imageIndex)
+    initClipboard()
   }
 
   // close the resize drawer
@@ -1121,27 +1105,6 @@ export default function Editor() {
         }
         const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
         writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
-          const imageRatio = Math.floor((cropWidth / cropHeight) * 100) / 100
-          const inverseRatio = Math.floor((cropHeight / cropWidth) * 100) / 100
-          var tWidth, tHeight
-          if (imageRatio >= 1) {
-            tWidth = 100
-            tHeight = 100 * inverseRatio
-          } else {
-            tWidth = 100 * imageRatio
-            tHeight = 100
-          }
-          const initialMainHeight = container.current.clientHeight - 120 - tHeight - 40 - 20
-          const initialDrawerHeight = initialMainHeight - 40 - 50
-          const heightRatio = Math.floor((initialMainHeight / cropHeight) * 100) / 100
-          const initialScale = heightRatio < 1 ? heightRatio : 1
-          setGifData(newGifData)
-          setScale(initialScale)
-          setZoomToFit(initialScale)
-          setThumbWidth(tWidth)
-          setThumbHeight(tHeight)
-          setMainHeight(initialMainHeight)
-          setDrawerHeight(initialDrawerHeight)
           resolve()
         })
       })
@@ -1158,6 +1121,9 @@ export default function Editor() {
     })
     setLoading(false)
     setShowDrawer(false)
+    setMessageTemp('Frames cropped')
+    initialize(imageIndex)
+    initClipboard()
   }
 
   // close crop drawer
