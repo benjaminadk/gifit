@@ -288,11 +288,15 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>Size and Rotation</SectionText>
             </Section>
-            <Section width={150}>
-              <GenericGrid columns={2}>
+            <Section width={225}>
+              <GenericGrid columns={3}>
                 <Action onClick={() => onOpenDrawer('title')}>
                   <Svg name='title-frame' />
                   <div className='text'>Title Frame</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('keyboard')}>
+                  <Svg name='keyboard' />
+                  <div className='text'>Key Strokes</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('text')}>
                   <Svg name='text' />

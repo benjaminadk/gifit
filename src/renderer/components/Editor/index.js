@@ -34,6 +34,7 @@ import Resize from './Resize'
 import Crop from './Crop'
 import Flip from './Flip'
 import TitleFrame from './TitleFrame'
+import Keyboard from './Keyboard'
 import Text from './Text'
 import FreeDrawing from './FreeDrawing'
 import Shape from './Shape'
@@ -160,6 +161,16 @@ export default function Editor() {
   const [titleVertical, setTitleVertical] = useState('Center')
   const [titleHorizontal, setTitleHorizontal] = useState('Center')
   const [titleBackground, setTitleBackground] = useState('#FFFF00')
+
+  const [keyboardExtend, setKeyboardExtend] = useState(true)
+  const [keyboardExtendTime, setKeyboardExtendTime] = useState(500)
+  const [keyboardColor, setKeyboardColor] = useState('#FFFFFF')
+  const [keyboardSize, setKeyboardSize] = useState(40)
+  const [keyboardFont, setKeyboardFont] = useState('Segoe UI')
+  const [keyboardStyle, setKeyboardStyle] = useState('Normal')
+  const [keyboardBackground, setKeyboardBackground] = useState('#000000')
+  const [keyboardHorizontal, setKeyboardHorizontal] = useState('Center')
+  const [keyboardVertical, setKeyboardVertical] = useState('Bottom')
 
   const [textText, setTextText] = useState('Free Text')
   const [textColor, setTextColor] = useState('#000000')
@@ -930,7 +941,9 @@ export default function Editor() {
         return
       }
       // apply scale and other side effects
-      if (['border', 'shape', 'watermark', 'drawing', 'obfuscate', 'text'].includes(mode)) {
+      if (
+        ['border', 'shape', 'watermark', 'drawing', 'obfuscate', 'text', 'keyboard'].includes(mode)
+      ) {
         setScale(1)
       } else if (['title', 'fade', 'slide'].includes(mode)) {
         setScale(zoomToFit)
@@ -1730,6 +1743,12 @@ export default function Editor() {
   function onTitleCancel() {
     setShowDrawer(false)
     setTitleText('Title Frame')
+  }
+
+  function onKeyboardAccept() {}
+
+  function onKeyboardCancel() {
+    setShowDrawer(false)
   }
 
   // draw text block on selected frames
@@ -2986,6 +3005,31 @@ export default function Editor() {
             setTitleBackground={setTitleBackground}
             onAccept={onTitleAccept}
             onCancel={onTitleCancel}
+          />
+        ) : drawerMode === 'keyboard' ? (
+          <Keyboard
+            drawerHeight={drawerHeight}
+            fontOptions={fontOptions}
+            keyboardExtend={keyboardExtend}
+            keyboardExtendTime={keyboardExtendTime}
+            keyboardFont={keyboardFont}
+            keyboardSize={keyboardSize}
+            keyboardColor={keyboardColor}
+            keyboardStyle={keyboardStyle}
+            keyboardBackground={keyboardBackground}
+            keyboardHorizontal={keyboardHorizontal}
+            keyboardVertical={keyboardVertical}
+            setKeyboardExtend={setKeyboardExtend}
+            setKeyboardExtendTime={setKeyboardExtendTime}
+            setKeyboardFont={setKeyboardFont}
+            setKeyboardSize={setKeyboardSize}
+            setKeyboardColor={setKeyboardColor}
+            setKeyboardStyle={setKeyboardStyle}
+            setKeyboardBackground={setKeyboardBackground}
+            setKeyboardHorizontal={setKeyboardHorizontal}
+            setKeyboardVertical={setKeyboardVertical}
+            onAccept={onKeyboardAccept}
+            onCancel={onKeyboardCancel}
           />
         ) : drawerMode === 'text' ? (
           <Text
