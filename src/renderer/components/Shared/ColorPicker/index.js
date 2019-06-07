@@ -95,7 +95,7 @@ export default function ColorPicker({ show, initialColor, onChange, onClose }) {
   }
 
   return (
-    <Modal modal={modal} show={show} onClose={onClose}>
+    <Modal modal={modal} show={show}>
       <Container>
         <TitleBar>
           <div className='left'>

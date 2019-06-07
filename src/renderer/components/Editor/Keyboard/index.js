@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import KeyboardModal from './KeyboardModal'
 import Svg from '../../Svg'
 import NumberInput from '../../Shared/NumberInput'
 import Select from '../../Shared/Select'
@@ -36,6 +37,7 @@ export default function Keyboard({
   onAccept,
   onCancel
 }) {
+  const [show, setShow] = useState(false)
   return (
     <>
       <Header>
@@ -55,7 +57,7 @@ export default function Keyboard({
           </div>
           <div>
             <KeyStrokes>
-              <div className='button'>
+              <div className='button' onClick={() => setShow(true)}>
                 <Svg name='pen' />
                 <div className='text'>Edit your key strokes</div>
               </div>
@@ -169,6 +171,7 @@ export default function Keyboard({
           <div className='text'>Cancel</div>
         </Button>
       </Footer>
+      <KeyboardModal show={show} onClose={() => setShow(false)} />
     </>
   )
 }

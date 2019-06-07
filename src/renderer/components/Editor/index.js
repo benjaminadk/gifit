@@ -19,6 +19,7 @@ import drawFree from '../../lib/drawFree'
 import drawErase from '../../lib/drawErase'
 import drawBrush from '../../lib/drawBrush'
 import drawEraser from '../../lib/drawEraser'
+import drawText from './Keyboard/drawText'
 import createGIFFfmpeg from './createGIFFfmpeg'
 import createGIFEncoder from './createGIFEncoder'
 import getTextXY from './getTextXY'
@@ -363,6 +364,20 @@ export default function Editor() {
           progressPrecision
         )
       }
+    } else if (drawerMode === 'keyboard') {
+      const ctx2 = canvas2.current.getContext('2d')
+      ctx2.clearRect(0, 0, canvas2.current.width, canvas2.current.height)
+      drawText(
+        canvas2.current,
+        'Ctrl + C',
+        keyboardSize,
+        keyboardColor,
+        keyboardFont,
+        keyboardStyle,
+        keyboardBackground,
+        keyboardHorizontal,
+        keyboardVertical
+      )
     } else {
       // clear canvas 2 if no overlay drawers are open
       const ctx2 = canvas2.current.getContext('2d')
@@ -387,7 +402,14 @@ export default function Editor() {
     progressSize,
     progressStyle,
     progressColor,
-    progressPrecision
+    progressPrecision,
+    keyboardFont,
+    keyboardSize,
+    keyboardColor,
+    keyboardStyle,
+    keyboardBackground,
+    keyboardHorizontal,
+    keyboardVertical
   ])
 
   // resize main window and drawer when toolbar is opened/closed
