@@ -243,15 +243,10 @@ export default function Editor() {
     initClipboard()
   }, [projectFolder])
 
-  // manage main canvas
   useEffect(() => {
-    // only run if project is open in editor
     if (images.length && scale && gifData) {
-      // set w:h to project size and adjust for scale
       wrapper.current.style.width = gifData.width * scale + 'px'
       wrapper.current.style.height = gifData.height * scale + 'px'
-      canvas1.current.width = gifData.width * scale
-      canvas1.current.height = gifData.height * scale
       canvas2.current.width = gifData.width * scale
       canvas2.current.height = gifData.height * scale
       canvas3.current.width = gifData.width * scale
@@ -260,6 +255,16 @@ export default function Editor() {
       canvas4.current.height = gifData.height * scale
       canvas5.current.width = gifData.width * scale
       canvas5.current.height = gifData.height * scale
+    }
+  }, [images, gifData, scale])
+
+  // manage main canvas
+  useEffect(() => {
+    // only run if project is open in editor
+    if (images.length && scale && gifData) {
+      // set w:h to project size and adjust for scale
+      canvas1.current.width = gifData.width * scale
+      canvas1.current.height = gifData.height * scale
       const ctx1 = canvas1.current.getContext('2d')
       // title frame replaces image when in title drawer is open
       if (drawerMode === 'title') {
@@ -386,6 +391,7 @@ export default function Editor() {
   }, [
     showDrawer,
     drawerMode,
+    imageIndex,
     totalDuration,
     borderLeft,
     borderRight,
@@ -1835,18 +1841,18 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
-    onResetText()
+    onTextReset()
     setMessageTemp('Overlay applied')
   }
 
   // close text drawer
   function onTextCancel() {
     setShowDrawer(false)
-    onResetText()
+    onTextReset()
   }
 
   // reset all text state variables
-  function onResetText() {
+  function onTextReset() {
     setTextText('Free Text')
     setTextFont('Segoe UI')
     setTextSize(20)
@@ -2005,9 +2011,22 @@ export default function Editor() {
           ctx1.beginPath()
 
           if (shape.shape === 'rectangle') {
-            ctx1.rect(shape.x, shape.y, shape.width, shape.height)
+            ctx1.rect(
+              shape.x + shape.strokeWidth / 2,
+              shape.y + shape.strokeWidth / 2,
+              shape.width,
+              shape.height
+            )
           } else if (shape.shape === 'ellipsis') {
-            ctx1.ellipse(shape.x, shape.y, shape.width / 2, shape.height / 2, 0, 0, Math.PI * 2)
+            ctx1.ellipse(
+              shape.x + shape.width / 2 + shape.strokeWidth / 2,
+              shape.y + shape.height / 2 + shape.strokeWidth / 2,
+              shape.width / 2,
+              shape.height / 2,
+              0,
+              0,
+              Math.PI * 2
+            )
           }
 
           ctx1.strokeStyle = shape.strokeColor
@@ -2058,12 +2077,24 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
+    onShapeReset()
     setMessageTemp(`Overlay applied`)
   }
 
+  // close shape drawer
   function onShapeCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
+    onShapeReset()
+  }
+
+  function onShapeReset() {
+    setShapeArray([])
+    setShapeMode('insert')
+    setShapeType('rectangle')
+    setShapeStrokeWidth(10)
+    setShapeStrokeColor('#000000')
+    setShapeFillColor('#FFFFFF00')
   }
 
   // add configured border to selected frames
@@ -2418,7 +2449,7 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
-    onResetObfuscate()
+    onObfuscateReset()
     setMessageTemp(`Overlay applied`)
   }
 
@@ -2426,11 +2457,11 @@ export default function Editor() {
   function onObfuscateCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
-    onResetObfuscate()
+    onObfuscateReset()
   }
 
   // reset obfuscate overlay square dimensions
-  function onResetObfuscate() {
+  function onObfuscateReset() {
     setObfuscateWidth(0)
     setObfuscateHeight(0)
     setObfuscateX(0)
@@ -2523,7 +2554,7 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setScale(zoomToFit)
-    onResetWatermark()
+    onWatermarkReset()
     setMessageTemp(`Overlay applied`)
   }
 
@@ -2531,11 +2562,11 @@ export default function Editor() {
   function onWatermarkCancel() {
     setShowDrawer(false)
     setScale(zoomToFit)
-    onResetWatermark()
+    onWatermarkReset()
   }
 
   // reset watermark state to defaults
-  function onResetWatermark() {
+  function onWatermarkReset() {
     setWatermarkPath('')
     setWatermarkWidth(0)
     setWatermarkHeight(0)
