@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
-import { Check } from 'styled-icons/material/Check'
 import { DesktopWindows } from 'styled-icons/material/DesktopWindows'
 import { FolderOpen } from 'styled-icons/icomoon/FolderOpen'
 import { writeFile } from 'fs'
@@ -180,8 +179,8 @@ export default function Options() {
       </div>
       <div className='bottom'>
         <Button width={115} onClick={onClose}>
-          <Check />
-          <div className='text'>Close</div>
+          <Svg name='check' />
+          <div className='text'>Ok</div>
         </Button>
       </div>
     </Container>

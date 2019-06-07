@@ -1767,7 +1767,9 @@ export default function Editor() {
     setTitleText('Title Frame')
   }
 
-  function onKeyboardAccept() {}
+  function onKeyboardAccept() {
+    setShowDrawer(false)
+  }
 
   function onKeyboardCancel() {
     setShowDrawer(false)
