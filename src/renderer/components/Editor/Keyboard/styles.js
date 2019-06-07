@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { lighten } from 'polished'
+import { lighten, darken } from 'polished'
 
 export const KeyStrokes = styled.div`
   width: 100%;
@@ -84,8 +84,63 @@ export const TitleBar = styled.div`
   }
 `
 
-export const Main = styled.div`
-  padding: 5px;
+export const Table = styled.div`
+  height: 415px;
+  border: ${p => p.theme.border};
+  margin: 5px;
+  .header {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    font-size: 1.2rem;
+    border-bottom: ${p => p.theme.border};
+    .left {
+      height: 20px;
+      display: grid;
+      align-items: center;
+      background: ${p => darken(0.2, p.theme.primary)};
+      color: #fff;
+      border-right: ${p => p.theme.border};
+      padding-left: 2px;
+    }
+    .right {
+      height: 20px;
+      display: grid;
+      align-items: center;
+      background: ${p => darken(0.2, p.theme.primary)};
+      color: #fff;
+      padding-left: 2px;
+    }
+  }
+  .content {
+    height: 390px;
+    overflow-y: auto;
+  }
+`
+
+export const Row = styled.div`
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  font-size: 1.2rem;
+  border-bottom: ${p => p.theme.border};
+  background: ${p => (p.selected ? p.theme.grey[8] : 'transparent')};
+  color: ${p => (p.selected ? '#FFF' : '#000')};
+  &:nth-child(odd) {
+    background: ${p => (p.selected ? p.theme.grey[8] : lighten(0.4, p.theme.primary))};
+  }
+  .left {
+    height: 25px;
+    display: grid;
+    align-items: center;
+    border-right: ${p => p.theme.border};
+    padding-left: 2px;
+  }
+  .right {
+    height: 25px;
+    display: grid;
+    align-items: center;
+    padding-left: 2px;
+  }
 `
 
 export const Footer = styled.div`

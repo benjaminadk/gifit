@@ -15,6 +15,7 @@ const {
 
 export default function Keyboard({
   drawerHeight,
+  images,
   fontOptions,
   keyboardExtend,
   keyboardExtendTime,
@@ -50,7 +51,7 @@ export default function Keyboard({
         </div>
       </Header>
       <Main height={drawerHeight}>
-        <Section height={200}>
+        <Section height={150}>
           <div className='title'>
             <div className='text'>Keys</div>
             <div className='divider' />
@@ -171,7 +172,7 @@ export default function Keyboard({
           <div className='text'>Cancel</div>
         </Button>
       </Footer>
-      <KeyboardModal show={show} onClose={() => setShow(false)} />
+      <KeyboardModal show={show} images={images} onClose={() => setShow(false)} />
     </>
   )
 }

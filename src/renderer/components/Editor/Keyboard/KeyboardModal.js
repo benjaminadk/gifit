@@ -1,9 +1,9 @@
 import React from 'react'
 import Modal from '../../Shared/Modal'
 import Svg from '../../Svg'
-import { Container, TitleBar, Main, Footer, Button } from './styles'
+import { Container, TitleBar, Table, Row, Footer, Button } from './styles'
 
-export default function KeyboardModal({ show, onClose }) {
+export default function KeyboardModal({ show, images, onClose }) {
   return (
     <Modal show={show}>
       <Container>
@@ -18,7 +18,25 @@ export default function KeyboardModal({ show, onClose }) {
             <Svg name='window-close' />
           </div>
         </TitleBar>
-        <Main />
+        <div>
+          <Table>
+            <div className='header'>
+              <div className='left'>Frame number</div>
+              <div className='right'>Detected key strokes</div>
+            </div>
+            <div className='content'>
+              {images.map(
+                (el, i) =>
+                  console.log(el.keys) || (
+                    <Row key={i}>
+                      <div className='left'>{i + 1}</div>
+                      <div className='right'>{el.keys ? String.fromCharCode(el.keys.raw) : ''}</div>
+                    </Row>
+                  )
+              )}
+            </div>
+          </Table>
+        </div>
         <Footer>
           <div />
           <Button width={100}>

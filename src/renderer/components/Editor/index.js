@@ -3031,6 +3031,7 @@ export default function Editor() {
         ) : drawerMode === 'keyboard' ? (
           <Keyboard
             drawerHeight={drawerHeight}
+            images={images}
             fontOptions={fontOptions}
             keyboardExtend={keyboardExtend}
             keyboardExtendTime={keyboardExtendTime}

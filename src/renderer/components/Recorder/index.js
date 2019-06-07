@@ -289,7 +289,7 @@ export default function Recorder() {
   }
 
   function onProcessKeyboard(e) {
-    const obj = { code: e.keycode }
+    const obj = { code: e.keycode, raw: e.rawcode }
     const arr = []
     arr.push(e.ctrlKey ? 1 : 0)
     arr.push(e.altKey ? 1 : 0)
