@@ -1,8 +1,13 @@
 import React from 'react'
+import { remote } from 'electron'
+import path from 'path'
 import Svg from '../../Svg'
 import Choice from '../../Shared/Choice'
 import Checkbox from '../../Shared/Checkbox'
+import Select from '../../Shared/Select'
 import NumberInput from '../../Shared/NumberInput'
+import RangeInput from '../../Shared/RangeInput'
+import { Encoders, Encoder, RepeatCount, PathInput } from './styles'
 import {
   Header,
   Main,
@@ -14,58 +19,70 @@ import {
   Button,
   PostLabel
 } from '../Drawer/styles'
-import styled from 'styled-components'
-import { lighten } from 'polished'
-
-export const Encoders = styled.div`
-  display: flex;
-  align-items: center;
-  margin-left: 10px;
-  .divider {
-    width: 1px;
-    height: 14px;
-    background: ${p => p.theme.grey[4]};
-    margin-left: 1px;
-    margin-right: 1px;
-  }
-`
-
-export const Encoder = styled.div`
-  font-size: 1.2rem;
-  padding: 4px 4px;
-  background: ${p => (p.selected ? lighten(0.35, p.theme.primary) : 'transparent')};
-  &:hover {
-    background: ${p =>
-      p.selected ? lighten(0.35, p.theme.primary) : lighten(0.4, p.theme.primary)};
-  }
-`
-
-export const RepeatCount = styled.div`
-  display: flex;
-  align-items: center;
-  margin-left: 25px;
-  margin-bottom: 10px;
-`
 
 export default function SaveAs({
   drawerHeight,
   saveMode,
   gifEncoder,
+  gifFolderPath,
+  gifFilename,
+  gifOverwrite,
   gifLooped,
   gifForever,
   gifLoops,
   gifOptimize,
   gifQuality,
+  gifColors,
   setSaveMode,
+  setGifFolderPath,
+  setGifFilename,
+  setGifOverwrite,
   setGifEncoder,
   setGifLooped,
   setGifForever,
   setGifLoops,
   setGifOptimize,
   setGifQuality,
+  setGifColors,
   onAccept,
   onCancel
 }) {
+  function onGifQualityChange(values) {
+    setGifQuality(values[0])
+  }
+
+  function onInputChange({ target: { name, value } }) {
+    if (name === 'gifFolderPath') {
+      setGifFolderPath(value)
+    } else if (name === 'gifFilename') {
+      setGifFilename(value)
+    }
+  }
+
+  function onGifFolderClick() {
+    const win = remote.getCurrentWindow()
+    const opts = {
+      title: 'Save As',
+      defaultPath: remote.app.getPath('desktop'),
+      buttonLabel: 'Save',
+      filters: [
+        {
+          name: 'GIF Animation',
+          extensions: ['gif']
+        }
+      ]
+    }
+    const callback = filepath => {
+      if (filepath) {
+        const folder = path.dirname(filepath)
+        const file = path.basename(filepath)
+        setGifFolderPath(folder)
+        setGifFilename(file)
+      }
+    }
+    remote.dialog.showSaveDialog(win, opts, callback)
+  }
+
   return (
     <>
       <Header>
@@ -140,13 +157,24 @@ export default function SaveAs({
                 </Encoders>
               </div>
             </Section>
-            <Section height={160}>
-              <div className='title'>
-                <div className='text'>Gif options</div>
-                <div className='divider' />
-              </div>
-              {gifEncoder === '2.0' ? (
+            {gifEncoder === '2.0' ? (
+              <Section height={170}>
+                <div className='title'>
+                  <div className='text'>Gif options</div>
+                  <div className='divider' />
+                </div>
                 <div>
+                  <Property>
+                    <Label width={50}>Colors:</Label>
+                    <NumberInput
+                      width={70}
+                      value={gifColors}
+                      max={256}
+                      min={32}
+                      fallback={256}
+                      setter={setGifColors}
+                    />
+                  </Property>
                   <Checkbox
                     value={gifLooped}
                     primary='Looped Gif.'
@@ -181,8 +209,23 @@ export default function SaveAs({
                     onClick={() => setGifOptimize(!gifOptimize)}
                   />
                 </div>
-              ) : gifEncoder === '1.0' ? (
+              </Section>
+            ) : gifEncoder === '1.0' ? (
+              <Section height={180}>
+                <div className='title'>
+                  <div className='text'>Gif options</div>
+                  <div className='divider' />
+                </div>
                 <div>
+                  <Property>
+                    <Label width={50}>Quality:</Label>
+                    <RangeInput
+                      domain={[1, 30]}
+                      values={[gifQuality]}
+                      tickCount={30}
+                      onChange={onGifQualityChange}
+                    />
+                  </Property>
                   <Checkbox
                     value={gifLooped}
                     primary='Looped Gif.'
@@ -217,16 +260,73 @@ export default function SaveAs({
                     onClick={() => setGifOptimize(!gifOptimize)}
                   />
                 </div>
-              ) : gifEncoder === 'ffmpeg' ? (
+              </Section>
+            ) : gifEncoder === 'ffmpeg' ? (
+              <Section height={180}>
+                <div className='title'>
+                  <div className='text'>Gif options</div>
+                  <div className='divider' />
+                </div>
                 <div>ffmpeg</div>
-              ) : (
-                <div />
-              )}
-            </Section>
-            <Section height={200}>
+              </Section>
+            ) : (
+              <div />
+            )}
+            <Section height={70}>
               <div className='title'>
                 <div className='text'>Save options</div>
                 <div className='divider' />
+              </div>
+              <div>
+                <Checkbox
+                  value={true}
+                  primary='Save to a folder of your choice.'
+                  style={{ marginLeft: '10px' }}
+                />
+                <Checkbox
+                  value={gifOverwrite}
+                  primary='Overwrite (if already exists).'
+                  style={{ marginLeft: '20px' }}
+                  onClick={() => setGifOverwrite(!gifOverwrite)}
+                />
+              </div>
+            </Section>
+            <Section height={200}>
+              <div className='title'>
+                <div className='text'>File</div>
+                <div className='divider' />
+              </div>
+              <div>
+                <PathInput>
+                  <div className='top'>
+                    <input
+                      type='text'
+                      name='gifFolderPath'
+                      value={gifFolderPath}
+                      onChange={onInputChange}
+                      spellCheck={false}
+                    />
+                    <div className='action' onClick={onGifFolderClick}>
+                      <Svg name='folder' />
+                    </div>
+                  </div>
+                  <div className='bottom'>
+                    <input
+                      type='text'
+                      name='gifFilename'
+                      value={gifFilename}
+                      onChange={onInputChange}
+                      spellCheck={false}
+                    />
+                    <Select width={50} value='.gif' options={['.gif']} onClick={() => {}} />
+                    <div className='action'>
+                      <Svg name='insert' />
+                    </div>
+                    <div className='action'>
+                      <Svg name='insert' />
+                    </div>
+                  </div>
+                </PathInput>
               </div>
             </Section>
           </>

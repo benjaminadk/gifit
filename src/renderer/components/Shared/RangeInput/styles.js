@@ -3,7 +3,7 @@ import styled from 'styled-components'
 export const rootStyle = {
   position: 'relative',
   width: '90%',
-  height: 80
+  height: 40
 }
 
 export const Wrapper = styled.div`
@@ -18,7 +18,7 @@ export const RailStyles = styled.div`
   position: absolute;
   width: 100%;
   height: 4px;
-  margin-top: 35px;
+  margin-top: 15px;
   border: ${p => p.theme.border};
   background: #ffffff;
 `
@@ -31,7 +31,7 @@ export const HandleStyles = styled.div.attrs(p => ({
   position: absolute;
   width: 10px;
   height: 20px;
-  margin-top: 25px;
+  margin-top: 5px;
   margin-left: -5px;
   border: ${p => p.theme.border};
   background: #ffffff;
@@ -44,7 +44,7 @@ export const Tooltip = styled.div.attrs(p => ({
 }))`
   position: absolute;
   margin-left: -10px;
-  margin-top: 0px;
+  margin-top: -20px;
   .tooltip {
     width: 20px;
     height: 20px;
@@ -62,7 +62,7 @@ export const TickStyles = styled.div`
   left: ${p => p.left}%;
   width: 1px;
   height: 3px;
-  margin-top: 45px;
+  margin-top: 25px;
   margin-left: -0.5px;
   background: ${p => p.theme.grey[5]};
 `

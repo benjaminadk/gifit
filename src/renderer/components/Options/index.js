@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
 import { DesktopWindows } from 'styled-icons/material/DesktopWindows'
-import { FolderOpen } from 'styled-icons/icomoon/FolderOpen'
 import { writeFile } from 'fs'
 import { promisify } from 'util'
 import { AppContext } from '../App'

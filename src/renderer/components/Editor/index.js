@@ -3,7 +3,7 @@ import { remote } from 'electron'
 import { format } from 'date-fns'
 import { List } from 'immutable'
 import path from 'path'
-import { readFile, writeFile, readdir, mkdir, rmdir, unlink, copyFile } from 'fs'
+import { readFile, writeFile, readdir, mkdir, rmdir, unlink, copyFile, existsSync } from 'fs'
 import { promisify } from 'util'
 import createRandomString from '../../lib/createRandomString'
 import createTFName from '../../lib/createTFName'
@@ -12,6 +12,7 @@ import initializeOptions from '../Options/initializeOptions'
 import initializeRecorder from '../Recorder/initializeRecorder'
 import initializeWebcam from '../Webcam/initializeWebcam'
 import initializeBoard from '../Board/initializeBoard'
+import initializeEncoder from '../Encoder/initializeEncoder'
 import drawBorder from './Border/drawBorder'
 import drawProgressBar from './Progress/drawProgressBar'
 import drawProgressText from './Progress/drawProgressText'
@@ -106,12 +107,16 @@ export default function Editor() {
   const [thumbHeight, setThumbHeight] = useState(56)
 
   const [saveMode, setSaveMode] = useState('gif')
+  const [gifFolderPath, setGifFolderPath] = useState('')
+  const [gifFilename, setGifFilename] = useState('')
+  const [gifOverwrite, setGifOverwrite] = useState(false)
   const [gifEncoder, setGifEncoder] = useState('1.0')
   const [gifLooped, setGifLooped] = useState(true)
   const [gifForever, setGifForever] = useState(true)
   const [gifLoops, setGifLoops] = useState(2)
   const [gifOptimize, setGifOptimize] = useState(false)
   const [gifQuality, setGifQuality] = useState(20)
+  const [gifColors, setGifColors] = useState(256)
 
   const [clipboardDirectory, setClipboardDirectory] = useState('')
   const [clipboardNextSub, setClipboardNextSub] = useState(0)
@@ -1045,7 +1050,42 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
-  function onSaveAccept() {}
+  function onSaveAccept() {
+    if (saveMode === 'gif') {
+      onSaveGif()
+    }
+  }
+
+  async function onSaveGif() {
+    if (!gifFolderPath || !gifFilename || !existsSync(gifFolderPath)) {
+      return
+    }
+
+    const base = path.basename(gifFilename, '.gif')
+    if (!base) {
+      return
+    }
+
+    const ext = path.extname(gifFilename)
+    if (!ext || ext !== '.gif') {
+      return
+    }
+
+    const filepath = path.join(gifFolderPath, gifFilename)
+    const exists = existsSync(filepath)
+
+    if (exists && !gifOverwrite) {
+      return
+    }
+
+    const encoderData = {
+      gifData,
+      images,
+      filepath
+    }
+
+    initializeEncoder(remote.getCurrentWindow(), dispatch, encoderData)
+  }
 
   function onSaveCancel() {
     setShowDrawer(false)
@@ -2987,19 +3027,27 @@ export default function Editor() {
           <SaveAs
             drawerHeight={drawerHeight}
             saveMode={saveMode}
+            gifFolderPath={gifFolderPath}
+            gifFilename={gifFilename}
+            gifOverwrite={gifOverwrite}
             gifEncoder={gifEncoder}
             gifLooped={gifLooped}
             gifForever={gifForever}
             gifLoops={gifLoops}
             gifOptimize={gifOptimize}
             gifQuality={gifQuality}
+            gifColors={gifColors}
             setSaveMode={setSaveMode}
+            setGifFolderPath={setGifFolderPath}
+            setGifFilename={setGifFilename}
+            setGifOverwrite={setGifOverwrite}
             setGifEncoder={setGifEncoder}
             setGifLooped={setGifLooped}
             setGifForever={setGifForever}
             setGifLoops={setGifLoops}
             setGifOptimize={setGifOptimize}
             setGifQuality={setGifQuality}
+            setGifColors={setGifColors}
             onAccept={onSaveAccept}
             onCancel={onSaveCancel}
           />

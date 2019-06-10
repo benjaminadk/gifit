@@ -9,7 +9,8 @@ const {
     SET_APP_MODE,
     SET_PROJECT_FOLDER,
     SET_OPTIONS,
-    SET_OPTIONS_OPEN
+    SET_OPTIONS_OPEN,
+    SET_ENCODER_OPEN
   }
 } = config
 
@@ -37,6 +38,8 @@ function reducer(state, action) {
       return { ...state, options: action.payload }
     case SET_OPTIONS_OPEN:
       return { ...state, optionsOpen: action.payload }
+    case SET_ENCODER_OPEN:
+      return { ...state, encoderOpen: action.payload }
     default:
       throw new Error()
   }
@@ -48,11 +51,14 @@ const initialState = {
   windowTitle: null,
   options: Map(),
   optionsOpen: false,
+  encoderOpen: false,
   fontOptions: null,
   sources: null,
   videoInputs: null,
-  mode: 1,
-  projectFolder: '2019-06-10@00-53-20'
+  mode: 0,
+  projectFolder: ''
+  // mode: 1,
+  // projectFolder: '2019-06-10@00-53-20'
 }
 
 export { reducer, initialState }

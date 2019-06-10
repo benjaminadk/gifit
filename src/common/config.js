@@ -28,6 +28,11 @@ const editor = {
   precisionOptions: ['Minutes', 'Seconds', 'Milliseconds']
 }
 
+const encoder = {
+  width: 350,
+  height: 400
+}
+
 const picker = {
   squareSize: 300,
   barWidth: 40,
@@ -90,7 +95,8 @@ const appActions = {
   SET_APP_MODE: 'SET_APP_MODE',
   SET_PROJECT_FOLDER: 'SET_PROJECT_FOLDER',
   SET_OPTIONS: 'SET_OPTIONS',
-  SET_OPTIONS_OPEN: 'SET_OPTIONS_OPEN'
+  SET_OPTIONS_OPEN: 'SET_OPTIONS_OPEN',
+  SET_ENCODER_OPEN: 'SET_ENCODER_OPEN'
 }
 
 const ipcActions = {
@@ -101,7 +107,9 @@ const ipcActions = {
   WEBCAM_SCALE: 'WEBCAM_SCALE',
   BOARD_STOP: 'BOARD_STOP',
   BOARD_CLOSE: 'BOARD_CLOSE',
-  OPTIONS_UPDATE: 'OPTIONS_UPDATE'
+  OPTIONS_UPDATE: 'OPTIONS_UPDATE',
+  ENCODER_READY: 'ENCODER_READY',
+  ENCODER_DATA: 'ENCODER_DATA'
 }
 
 const constants = {
@@ -118,6 +126,7 @@ export default {
   recorder,
   board,
   editor,
+  encoder,
   picker,
   defaultOptions,
   theme,
