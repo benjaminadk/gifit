@@ -45,6 +45,7 @@ import Watermark from './Watermark'
 import Progress from './Progress'
 import Obfuscate from './Obfuscate'
 import RecentProjects from './RecentProjects'
+import SaveAs from './SaveAs'
 import ReduceFrames from './ReduceFrames'
 import Duplicate from './Duplicate'
 import Override from './Override'
@@ -103,6 +104,14 @@ export default function Editor() {
   const [drawerHeight, setDrawerHeight] = useState(0)
   const [thumbWidth, setThumbWidth] = useState(100)
   const [thumbHeight, setThumbHeight] = useState(56)
+
+  const [saveMode, setSaveMode] = useState('gif')
+  const [gifEncoder, setGifEncoder] = useState('1.0')
+  const [gifLooped, setGifLooped] = useState(true)
+  const [gifForever, setGifForever] = useState(true)
+  const [gifLoops, setGifLoops] = useState(2)
+  const [gifOptimize, setGifOptimize] = useState(false)
+  const [gifQuality, setGifQuality] = useState(20)
 
   const [clipboardDirectory, setClipboardDirectory] = useState('')
   const [clipboardNextSub, setClipboardNextSub] = useState(0)
@@ -579,6 +588,17 @@ export default function Editor() {
         projects.push(project)
       }
     }
+
+    if (!projectFolder) {
+      const initialContainerHeight = container.current.clientHeight
+      const initialMainHeight = initialContainerHeight - 120 - thumbHeight - 40 - 20
+      const initialDrawerHeight = initialMainHeight - 40 - 50
+      setContainerWidth(container.current.clientWidth)
+      setContainerHeight(initialContainerHeight)
+      setMainHeight(initialMainHeight)
+      setDrawerHeight(initialDrawerHeight)
+    }
+
     setRecentProjects(projects)
     setLoading(false)
   }
@@ -1022,6 +1042,12 @@ export default function Editor() {
 
   // close recent project drawer
   function onRecentCancel() {
+    setShowDrawer(false)
+  }
+
+  function onSaveAccept() {}
+
+  function onSaveCancel() {
     setShowDrawer(false)
   }
 
@@ -2956,6 +2982,26 @@ export default function Editor() {
             recentProjects={recentProjects}
             onAccept={onRecentAccept}
             onCancel={onRecentCancel}
+          />
+        ) : drawerMode === 'save' ? (
+          <SaveAs
+            drawerHeight={drawerHeight}
+            saveMode={saveMode}
+            gifEncoder={gifEncoder}
+            gifLooped={gifLooped}
+            gifForever={gifForever}
+            gifLoops={gifLoops}
+            gifOptimize={gifOptimize}
+            gifQuality={gifQuality}
+            setSaveMode={setSaveMode}
+            setGifEncoder={setGifEncoder}
+            setGifLooped={setGifLooped}
+            setGifForever={setGifForever}
+            setGifLoops={setGifLoops}
+            setGifOptimize={setGifOptimize}
+            setGifQuality={setGifQuality}
+            onAccept={onSaveAccept}
+            onCancel={onSaveCancel}
           />
         ) : drawerMode === 'clipboard' ? (
           <Clipboard

@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "date-fns": "2.0.0-alpha.27",
+    "gif-encoder-2": "1.0.0",
     "immutable": "4.0.0-rc.12",
     "iohook": "0.4.6",
     "lodash.throttle": "4.1.1",

@@ -5,7 +5,7 @@ export const Container = styled.div`
   height: ${p => (p.show ? '120px' : '25px')};
   display: grid;
   grid-template-rows: 25px 1fr;
-  border-top: 2px solid ${p => p.theme.grey[1]};
+  border-top: ${p => (p.show ? `2px solid ${p.theme.grey[1]}` : 'none')};
   border-bottom: ${p => p.theme.border};
   transition: height 0.25s;
 `

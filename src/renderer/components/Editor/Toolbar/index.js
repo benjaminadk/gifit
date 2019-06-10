@@ -110,9 +110,13 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>New</SectionText>
             </Section>
-            <Section width={225}>
-              <GenericGrid columns={3}>
+            <Section width={300}>
+              <GenericGrid columns={4}>
                 <Action onClick={onSaveClick}>
+                  <Svg name='save' />
+                  <div className='text'>Save</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('save')}>
                   <Svg name='save' />
                   <div className='text'>Save As</div>
                 </Action>
