@@ -1,5 +1,5 @@
-import React from 'react'
-import { remote } from 'electron'
+import React, { useRef } from 'react'
+import { remote, shell } from 'electron'
 import path from 'path'
 import Svg from '../../Svg'
 import Choice from '../../Shared/Choice'
@@ -7,7 +7,8 @@ import Checkbox from '../../Shared/Checkbox'
 import Select from '../../Shared/Select'
 import NumberInput from '../../Shared/NumberInput'
 import RangeInput from '../../Shared/RangeInput'
-import { Encoders, Encoder, RepeatCount, PathInput } from './styles'
+import Textarea from '../../Shared/Textarea'
+import { Encoders, Encoder, RepeatCount, PathInput, Warning } from './styles'
 import {
   Header,
   Main,
@@ -19,6 +20,11 @@ import {
   Button,
   PostLabel
 } from '../Drawer/styles'
+import config from 'common/config'
+
+const {
+  editor: { drawerWidth }
+} = config
 
 export default function SaveAs({
   drawerHeight,
@@ -28,6 +34,7 @@ export default function SaveAs({
   gifFolderPath,
   gifFilename,
   gifOverwrite,
+  gifOverwriteError,
   gifLooped,
   gifForever,
   gifLoops,
@@ -48,6 +55,8 @@ export default function SaveAs({
   onAccept,
   onCancel
 }) {
+  const textarea = useRef(null)
+
   function onGifQualityChange(values) {
     setGifQuality(values[0])
   }
@@ -76,12 +85,34 @@ export default function SaveAs({
     const callback = filepath => {
       if (filepath) {
         const folder = path.dirname(filepath)
-        const file = path.basename(filepath)
+        const file = path.basename(filepath).slice(0, -4)
         setGifFolderPath(folder)
         setGifFilename(file)
       }
     }
     remote.dialog.showSaveDialog(win, opts, callback)
+  }
+
+  function onPlusMinusClick(button) {
+    const re = /\((-?\d+)\)(?!.*\(-?\d+\))/g
+    if (!gifFilename) {
+      setGifFilename('Animation')
+      return
+    }
+    if (re.test(gifFilename)) {
+      const filename = gifFilename.replace(re, (match, val) => {
+        const x = button === 'plus' ? Number(val) + 1 : Number(val) - 1
+        return `(${x})`
+      })
+      setGifFilename(filename)
+    } else {
+      setGifFilename(gifFilename + ' (0)')
+    }
+  }
+
+  function onShowOverwriteFile() {
+    const filepath = path.join(gifFolderPath, gifFilename + '.gif')
+    shell.openExternal(filepath)
   }
 
   return (
@@ -263,12 +294,23 @@ export default function SaveAs({
                 </div>
               </Section>
             ) : gifEncoder === 'ffmpeg' ? (
-              <Section height={180}>
+              <Section height={100}>
                 <div className='title'>
                   <div className='text'>Gif options</div>
                   <div className='divider' />
                 </div>
-                <div>ffmpeg</div>
+                <div>
+                  <Property>
+                    <Label width={30}>Extras:</Label>
+                    <Textarea
+                      width={drawerWidth - 70}
+                      textarea={textarea}
+                      readOnly={true}
+                      value='-lavfi palettegen=stats_mode=diff[pal],[0:v][pal]paletteuse=new=1:diff_mode=rectangle'
+                      onChange={() => {}}
+                    />
+                  </Property>
+                </div>
               </Section>
             ) : (
               <div />
@@ -320,14 +362,20 @@ export default function SaveAs({
                       spellCheck={false}
                     />
                     <Select width={50} value='.gif' options={['.gif']} onClick={() => {}} />
-                    <div className='action'>
+                    <div className='action' onClick={() => onPlusMinusClick('plus')}>
                       <Svg name='insert' />
                     </div>
-                    <div className='action'>
-                      <Svg name='insert' />
+                    <div className='action' onClick={() => onPlusMinusClick('minus')}>
+                      <Svg name='minus' />
                     </div>
                   </div>
                 </PathInput>
+                {gifOverwriteError && (
+                  <Warning onClick={onShowOverwriteFile}>
+                    <Svg name='warning' />
+                    <div className='text'>A file with the same name already exists.</div>
+                  </Warning>
+                )}
               </div>
             </Section>
           </>

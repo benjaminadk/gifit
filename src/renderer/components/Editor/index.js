@@ -5,7 +5,6 @@ import { List } from 'immutable'
 import path from 'path'
 import { readFile, writeFile, readdir, mkdir, rmdir, unlink, copyFile, existsSync } from 'fs'
 import { promisify } from 'util'
-import createRandomString from '../../lib/createRandomString'
 import createTFName from '../../lib/createTFName'
 import createFileName from '../../lib/createFileName'
 import initializeOptions from '../Options/initializeOptions'
@@ -77,7 +76,6 @@ export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
   const { options, optionsOpen, encoderOpen, fontOptions, projectFolder } = state
 
-  const gifProcessor = options.get('gifProcessor')
   const ffmpegPath = options.get('ffmpegPath')
 
   const [loading, setLoading] = useState(false)
@@ -113,6 +111,7 @@ export default function Editor() {
   const [gifFolderPath, setGifFolderPath] = useState('')
   const [gifFilename, setGifFilename] = useState('')
   const [gifOverwrite, setGifOverwrite] = useState(false)
+  const [gifOverwriteError, setGifOverwriteError] = useState(false)
   const [gifEncoder, setGifEncoder] = useState('1.0')
   const [gifLooped, setGifLooped] = useState(true)
   const [gifForever, setGifForever] = useState(true)
@@ -517,6 +516,17 @@ export default function Editor() {
       image.src = watermarkPath
     }
   }, [watermarkPath, gifData])
+
+  // warn user if chosen path already contains a file
+  useEffect(() => {
+    if (gifFolderPath && gifFilename && !gifOverwrite) {
+      const filepath = path.join(gifFolderPath, gifFilename + '.gif')
+      const exists = existsSync(filepath)
+      setGifOverwriteError(exists)
+    } else {
+      setGifOverwriteError(false)
+    }
+  }, [gifFolderPath, gifFilename, gifOverwrite])
 
   // initialize editor
   async function initialize(initialIndex = 0) {
@@ -1024,24 +1034,12 @@ export default function Editor() {
 
   // save current project as a GIF file
   async function onSaveGif() {
-    if (!gifFolderPath || !gifFilename || !existsSync(gifFolderPath)) {
+    if (!gifFolderPath || !gifFilename || !existsSync(gifFolderPath) || gifOverwriteError) {
       return
     }
 
-    const base = path.basename(gifFilename, '.gif')
-    if (!base) {
-      return
-    }
-
-    const ext = path.extname(gifFilename)
-    if (!ext || ext !== '.gif') {
-      return
-    }
-
-    const filepath = path.join(gifFolderPath, gifFilename)
-    const exists = existsSync(filepath)
-
-    if (exists && !gifOverwrite) {
+    const filepath = path.join(gifFolderPath, gifFilename + '.gif')
+    if (!gifOverwrite && existsSync(filepath)) {
       return
     }
 
@@ -1063,11 +1061,11 @@ export default function Editor() {
       encoderWin.webContents.send(ENCODER_DATA, payload)
     } else {
       const win = initializeEncoder(remote.getCurrentWindow(), dispatch, payload)
-
       setEncoderWin(win)
     }
   }
 
+  // close save drawer
   function onSaveCancel() {
     setShowDrawer(false)
   }
@@ -3011,6 +3009,7 @@ export default function Editor() {
             gifFolderPath={gifFolderPath}
             gifFilename={gifFilename}
             gifOverwrite={gifOverwrite}
+            gifOverwriteError={gifOverwriteError}
             gifEncoder={gifEncoder}
             gifLooped={gifLooped}
             gifForever={gifForever}

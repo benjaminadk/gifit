@@ -589,7 +589,10 @@ export default function Svg({ name, ...rest }) {
       case 'insert':
         return (
           <>
-            <path d='M21 3.357h8V21h17.643v8H29v17.643h-8V29H3.357v-8H21z' fill='#98bdb0' />
+            <path
+              d='M20.21 3.357h9.58v16.458h16.853v10.37H29.79v16.458h-9.58V30.185H3.357v-10.37H20.21z'
+              fill='#98bdb0'
+            />
           </>
         )
       case 'inverse':
@@ -670,6 +673,12 @@ export default function Svg({ name, ...rest }) {
             <circle cx='25.776' cy='33.188' r='4.858' fill='#fff' />
           </>
         )
+      case 'minus':
+        return (
+          <>
+            <path fill='#d44d4d' d='M3.397 19.826h43.286v10.427H3.397z' />
+          </>
+        )
       case 'move-left':
         return (
           <>
@@ -706,9 +715,9 @@ export default function Svg({ name, ...rest }) {
       case 'object':
         return (
           <>
-            <path fill='#fff' stroke='#333' d='M.5.5h49v49H.5z' />
+            <path fill='#fff' stroke='#333' strokeWidth='2' d='M.5.5h49v49H.5z' />
             <circle cx='13.704' cy='12.755' r='9.848' fill='#c14242' />
-            <path fill='#fff1a1' d='M1.027 27.251h47.946v21.722H1.027z' />
+            <path fill='#fff1a1' d='M1.58 26.777h46.919v21.722H1.58z' />
             <path d='M26.9062 17.0956l15.185 26.878h-30.371l15.186-26.878z' fill='#48be52' />
             <path fill='#407eb5' d='M29.937 3.239h15.956v15.956H29.937z' />
           </>
@@ -1017,6 +1026,16 @@ export default function Svg({ name, ...rest }) {
               d='M25.916 14.294v2.89h-6.43v17.73h-3.55v-17.73h-6.37v-2.89h16.35zm14.591 9.02v2.86h-8.3v8.74h-3.58v-20.62h13.09v2.89h-9.51v6.13h8.3z'
               fill='#333'
               whitespace='pre'
+            />
+          </>
+        )
+      case 'warning':
+        return (
+          <>
+            <path d='M24.9216 3.7382l22.9996 40.0002-46-.0004L24.9216 3.7382z' fill='#eac575' />
+            <path
+              d='M26.921 12.633l-.26 19.39h-3.1l-.24-19.39h3.6zm-3.73 25.29c0-.553.17-1.02.51-1.4.34-.373.843-.56 1.51-.56s1.173.187 1.52.56c.347.38.52.847.52 1.4 0 .56-.173 1.023-.52 1.39-.347.36-.853.54-1.52.54s-1.17-.18-1.51-.54c-.34-.367-.51-.83-.51-1.39z'
+              fill='#333'
             />
           </>
         )

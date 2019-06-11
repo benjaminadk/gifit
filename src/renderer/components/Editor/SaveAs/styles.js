@@ -82,3 +82,25 @@ export const PathInput = styled.div`
     }
   }
 `
+
+export const Warning = styled.div`
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  margin-top: 5px;
+  svg {
+    justify-self: center;
+    width: 20px;
+    height: 20px;
+  }
+  .text {
+    font-size: 1.1rem;
+    font-style: italic;
+    text-decoration: underline;
+    color: blue;
+    cursor: pointer;
+    &:hover {
+      color: red;
+    }
+  }
+`
