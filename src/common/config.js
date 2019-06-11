@@ -82,7 +82,7 @@ const grey = [
 
 const theme = {
   primary: '#407FBF',
-  secondary: 'hsla(192, 89%, 53%, 1)',
+  secondary: '#06AC25',
   black: '#333333',
   grey,
   border: '1px solid #B0B0B0'

@@ -22,6 +22,7 @@ import {
 
 export default function SaveAs({
   drawerHeight,
+  ffmpegPath,
   saveMode,
   gifEncoder,
   gifFolderPath,
@@ -150,7 +151,7 @@ export default function SaveAs({
                   <div className='divider' />
                   <Encoder
                     selected={gifEncoder === 'ffmpeg'}
-                    onClick={() => setGifEncoder('ffmpeg')}
+                    onClick={() => !!ffmpegPath && setGifEncoder('ffmpeg')}
                   >
                     FFmpeg
                   </Encoder>

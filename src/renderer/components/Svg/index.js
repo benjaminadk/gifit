@@ -119,6 +119,16 @@ export default function Svg({ name, ...rest }) {
             />
           </>
         )
+      case 'check-green':
+        return (
+          <>
+            <circle cx='25' cy='25' r='24' fill='#06ac25' />
+            <path
+              d='M5.313 30.0347l3.0175-4.819 13.912 8.7092L37.8828 9.2197l4.8042 3.0422L24.002 41.7761l-4.8052-3.0413.0036-.0057z'
+              fill='#fff'
+            />
+          </>
+        )
       case 'check-outline':
         return (
           <>
@@ -691,6 +701,15 @@ export default function Svg({ name, ...rest }) {
             <path fill='#fff' d='M33.4 16.7h16.7v16.7H33.4z' />
             <path fill='gray' d='M33.4 33.4h16.7v16.7H33.4z' />
             <path fill='none' stroke='gray' strokeWidth='2' d='M1 1h48.079v48.158H1z' />
+          </>
+        )
+      case 'object':
+        return (
+          <>
+            <path fill='#fff' stroke='#333' d='M.5.5h49v49H.5z' />
+            <circle cx='12.4' cy='12.874' r='11.388' fill='#c14242' />
+            <path d='M26.8696 13.9356l19.3348 34.224-38.671-.0001 19.3362-34.224z' fill='#48be52' />
+            <path fill='#407eb5' d='M32.228 3.713h15.956v15.956H32.228z' />
           </>
         )
       case 'paste':

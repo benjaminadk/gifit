@@ -24,9 +24,12 @@ export default (parent, dispatch, encoderData) => {
     width,
     height,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      webSecurity: !inDev
     }
   })
+
+  encoderWindow.setMenu(null)
 
   encoderWindow.loadURL(getURL(inDev))
 

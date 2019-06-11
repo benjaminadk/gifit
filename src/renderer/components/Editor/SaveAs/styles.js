@@ -58,6 +58,7 @@ export const PathInput = styled.div`
     width: 95%;
     display: grid;
     grid-template-columns: 1fr 30px;
+    grid-gap: 2px;
   }
   .bottom {
     justify-self: center;

@@ -78,6 +78,9 @@ export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
   const { options, optionsOpen, fontOptions, projectFolder } = state
 
+  const gifProcessor = options.get('gifProcessor')
+  const ffmpegPath = options.get('ffmpegPath')
+
   const [loading, setLoading] = useState(false)
   const [messageTemp, setMessageTemp] = useState('')
   const [messagePerm, setMessagePerm] = useState('')
@@ -699,10 +702,9 @@ export default function Editor() {
     const callback = async filepath => {
       if (filepath) {
         setLoading(true)
-        const gifProcessor = options.get('gifProcessor')
+
         // user can chose javascript encoder or ffmpeg to create GIF
         if (gifProcessor === 'ffmpeg') {
-          const ffmpegPath = options.get('ffmpegPath')
           const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
           // fast
           await createGIFFfmpeg(ffmpegPath, images, cwd, filepath)
@@ -1078,13 +1080,19 @@ export default function Editor() {
       return
     }
 
-    const encoderData = {
+    initializeEncoder(remote.getCurrentWindow(), dispatch, {
       gifData,
       images,
-      filepath
-    }
-
-    initializeEncoder(remote.getCurrentWindow(), dispatch, encoderData)
+      filepath,
+      gifEncoder,
+      gifOptimize,
+      gifQuality,
+      gifColors,
+      gifLooped,
+      gifForever,
+      gifLoops,
+      ffmpegPath
+    })
   }
 
   function onSaveCancel() {
@@ -3026,6 +3034,7 @@ export default function Editor() {
         ) : drawerMode === 'save' ? (
           <SaveAs
             drawerHeight={drawerHeight}
+            ffmpegPath={ffmpegPath}
             saveMode={saveMode}
             gifFolderPath={gifFolderPath}
             gifFilename={gifFilename}
