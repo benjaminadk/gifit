@@ -95,7 +95,7 @@ export const Item = styled.div`
   width: 100%;
   height: 35px;
   display: grid;
-  grid-template-columns: 40px 50px 1fr 30px 30px;
+  grid-template-columns: 40px 60px 1fr 30px 30px;
   align-items: center;
   border: 1px solid transparent;
   &:hover {

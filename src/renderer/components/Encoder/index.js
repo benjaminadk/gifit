@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { shell, ipcRenderer } from 'electron'
+import { remote, shell, ipcRenderer } from 'electron'
 import { List } from 'immutable'
 import path from 'path'
 import encodeOctree from './encodeOctree'
+import encodeNeuQuant from './encodeNeuQuant'
 import encodeFFmpeg from './encodeFFmpeg'
 import Svg from '../Svg'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
@@ -22,6 +23,8 @@ export default function Encoder() {
 
   useEffect(() => {
     async function onEncoderData(e, encoderData) {
+      remote.getCurrentWindow().focus()
+
       const {
         gifData,
         images,
@@ -41,10 +44,10 @@ export default function Encoder() {
       if (gifEncoder === '2.0') {
         await encodeOctree(images, filepath, gifData, gifOptimize, repeat, gifColors, setOutput)
       } else if (gifEncoder === '1.0') {
+        await encodeNeuQuant(images, filepath, gifData, gifOptimize, repeat, gifQuality, setOutput)
       } else if (gifEncoder === 'ffmpeg') {
         const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-
-        await encodeFFmpeg(images, filepath, cwd, ff)
+        await encodeFFmpeg(images, filepath, cwd, ffmpegPath, setOutput)
       }
     }
 
@@ -86,7 +89,7 @@ export default function Encoder() {
                 <div className='action'>
                   <Svg name='check-green' />
                 </div>
-                <div className='size'>1234 KB</div>
+                <div className='size'>{el.get('size')}</div>
                 <div className='completed'>Completed</div>
                 <div className='action' onClick={() => onImageClick(el.get('filepath'))}>
                   <Svg name='object' />
@@ -102,7 +105,7 @@ export default function Encoder() {
                 <Svg name='object' />
                 <div className='percent'>{el.get('progress')}%</div>
                 <div className='right'>
-                  <div>Encoding Gif from images...</div>
+                  <div>Encoding images to GIF...</div>
                   <div className='bar'>
                     <BarWrapper>
                       <Bar progress={el.get('progress')} />

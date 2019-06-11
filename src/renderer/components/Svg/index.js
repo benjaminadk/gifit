@@ -707,9 +707,10 @@ export default function Svg({ name, ...rest }) {
         return (
           <>
             <path fill='#fff' stroke='#333' d='M.5.5h49v49H.5z' />
-            <circle cx='12.4' cy='12.874' r='11.388' fill='#c14242' />
-            <path d='M26.8696 13.9356l19.3348 34.224-38.671-.0001 19.3362-34.224z' fill='#48be52' />
-            <path fill='#407eb5' d='M32.228 3.713h15.956v15.956H32.228z' />
+            <circle cx='13.704' cy='12.755' r='9.848' fill='#c14242' />
+            <path fill='#fff1a1' d='M1.027 27.251h47.946v21.722H1.027z' />
+            <path d='M26.9062 17.0956l15.185 26.878h-30.371l15.186-26.878z' fill='#48be52' />
+            <path fill='#407eb5' d='M29.937 3.239h15.956v15.956H29.937z' />
           </>
         )
       case 'paste':

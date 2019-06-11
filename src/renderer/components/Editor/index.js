@@ -21,8 +21,6 @@ import drawErase from '../../lib/drawErase'
 import drawBrush from '../../lib/drawBrush'
 import drawEraser from '../../lib/drawEraser'
 import drawText from './Keyboard/drawText'
-import createGIFFfmpeg from './createGIFFfmpeg'
-import createGIFEncoder from './createGIFEncoder'
 import getTextXY from './getTextXY'
 import { AppContext } from '../App'
 import CropOverlay from './Crop/CropOverlay'
@@ -62,6 +60,7 @@ import config from 'common/config'
 
 const {
   appActions: { SET_APP_MODE, SET_PROJECT_FOLDER, SET_OPTIONS_OPEN },
+  ipcActions: { ENCODER_DATA },
   constants: { IMAGE_TYPE }
 } = config
 
@@ -76,7 +75,7 @@ const copyFileAsync = promisify(copyFile)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
-  const { options, optionsOpen, fontOptions, projectFolder } = state
+  const { options, optionsOpen, encoderOpen, fontOptions, projectFolder } = state
 
   const gifProcessor = options.get('gifProcessor')
   const ffmpegPath = options.get('ffmpegPath')
@@ -109,6 +108,7 @@ export default function Editor() {
   const [thumbWidth, setThumbWidth] = useState(100)
   const [thumbHeight, setThumbHeight] = useState(56)
 
+  const [encoderWin, setEncoderWin] = useState(null)
   const [saveMode, setSaveMode] = useState('gif')
   const [gifFolderPath, setGifFolderPath] = useState('')
   const [gifFilename, setGifFilename] = useState('')
@@ -118,7 +118,7 @@ export default function Editor() {
   const [gifForever, setGifForever] = useState(true)
   const [gifLoops, setGifLoops] = useState(2)
   const [gifOptimize, setGifOptimize] = useState(false)
-  const [gifQuality, setGifQuality] = useState(20)
+  const [gifQuality, setGifQuality] = useState(10)
   const [gifColors, setGifColors] = useState(256)
 
   const [clipboardDirectory, setClipboardDirectory] = useState('')
@@ -681,43 +681,6 @@ export default function Editor() {
     dispatch({ type: SET_APP_MODE, payload: 0 })
   }
 
-  // save project as a GIF
-  function onSaveClick() {
-    if (!gifData || loading) {
-      return
-    }
-    const win = remote.getCurrentWindow()
-    // default to downloads directory with random filename.gif
-    const opts = {
-      title: 'Save',
-      defaultPath: path.join(remote.app.getPath('downloads'), `${createRandomString()}.gif`),
-      buttonLabel: 'Save',
-      filters: [
-        {
-          name: 'GIF File',
-          extensions: ['gif']
-        }
-      ]
-    }
-    const callback = async filepath => {
-      if (filepath) {
-        setLoading(true)
-
-        // user can chose javascript encoder or ffmpeg to create GIF
-        if (gifProcessor === 'ffmpeg') {
-          const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-          // fast
-          await createGIFFfmpeg(ffmpegPath, images, cwd, filepath)
-        } else if (gifProcessor === 'gifEncoder') {
-          // slow
-          await createGIFEncoder(images, gifData, filepath)
-        }
-        setLoading(false)
-      }
-    }
-    remote.dialog.showSaveDialog(win, opts, callback)
-  }
-
   // remove a project and delete all associated files
   function onDiscardProjectClick() {
     if (!gifData || loading) {
@@ -1052,12 +1015,14 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // call one of many save functions based on user input
   function onSaveAccept() {
     if (saveMode === 'gif') {
       onSaveGif()
     }
   }
 
+  // save current project as a GIF file
   async function onSaveGif() {
     if (!gifFolderPath || !gifFilename || !existsSync(gifFolderPath)) {
       return
@@ -1080,7 +1045,7 @@ export default function Editor() {
       return
     }
 
-    initializeEncoder(remote.getCurrentWindow(), dispatch, {
+    const payload = {
       gifData,
       images,
       filepath,
@@ -1092,7 +1057,15 @@ export default function Editor() {
       gifForever,
       gifLoops,
       ffmpegPath
-    })
+    }
+
+    if (encoderOpen) {
+      encoderWin.webContents.send(ENCODER_DATA, payload)
+    } else {
+      const win = initializeEncoder(remote.getCurrentWindow(), dispatch, payload)
+
+      setEncoderWin(win)
+    }
   }
 
   function onSaveCancel() {
@@ -2891,7 +2864,6 @@ export default function Editor() {
         onNewRecordingClick={onNewRecordingClick}
         onNewWebcamClick={onNewWebcamClick}
         onNewBoardClick={onNewBoardClick}
-        onSaveClick={onSaveClick}
         onDiscardProjectClick={onDiscardProjectClick}
         onCutClick={onCutClick}
         onCopyClick={onCopyClick}

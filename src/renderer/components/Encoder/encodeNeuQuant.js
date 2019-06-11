@@ -9,7 +9,7 @@ export default async (
   { width, height },
   useOptimizer,
   repeat,
-  colors,
+  quality,
   setOutput
 ) => {
   return new Promise(async resolve1 => {
@@ -33,10 +33,10 @@ export default async (
       resolve1()
     })
 
-    const encoder = new GIFEncoder(width, height, 'octree', useOptimizer)
+    const encoder = new GIFEncoder(width, height, 'neuquant', useOptimizer)
     encoder.createReadStream().pipe(ws)
     encoder.setRepeat(repeat)
-    encoder.setPaletteSize(Math.floor(Math.log2(colors)) - 1)
+    encoder.setQuality(quality)
     encoder.start()
 
     const canvas = document.createElement('canvas')

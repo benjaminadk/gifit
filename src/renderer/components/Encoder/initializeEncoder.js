@@ -12,6 +12,7 @@ const {
 
 export default (parent, dispatch, encoderData) => {
   function onEncoderReady(e, data) {
+    dispatch({ type: SET_ENCODER_OPEN, payload: true })
     encoderWindow.webContents.send(ENCODER_DATA, encoderData)
   }
 
@@ -43,4 +44,6 @@ export default (parent, dispatch, encoderData) => {
     encoderWindow = null
     parent.focus()
   })
+
+  return encoderWindow
 }

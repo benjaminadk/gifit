@@ -105,7 +105,7 @@ export default function SaveAs({
             <ChoiceRow>
               <Choice
                 selected={saveMode === 'gif'}
-                icon={<Svg name='image' />}
+                icon={<Svg name='object' />}
                 label='Gif'
                 onClick={() => setSaveMode('gif')}
               />
@@ -292,7 +292,7 @@ export default function SaveAs({
                 />
               </div>
             </Section>
-            <Section height={200}>
+            <Section height={100}>
               <div className='title'>
                 <div className='text'>File</div>
                 <div className='divider' />
