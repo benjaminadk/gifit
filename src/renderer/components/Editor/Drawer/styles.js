@@ -93,6 +93,7 @@ export const ChoiceRow = styled.div`
   grid-template-columns: 1fr 1fr;
   justify-items: center;
   align-items: center;
+  margin-bottom: 2px;
 `
 
 export const Property = styled.div`

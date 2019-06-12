@@ -2,8 +2,20 @@ import React, { useRef, useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
 import { format } from 'date-fns'
 import { List } from 'immutable'
+import archiver from 'archiver'
 import path from 'path'
-import { readFile, writeFile, readdir, mkdir, rmdir, unlink, copyFile, existsSync } from 'fs'
+import {
+  readFile,
+  writeFile,
+  readdir,
+  mkdir,
+  rmdir,
+  unlink,
+  copyFile,
+  existsSync,
+  createReadStream,
+  createWriteStream
+} from 'fs'
 import { promisify } from 'util'
 import createTFName from '../../lib/createTFName'
 import createFileName from '../../lib/createFileName'
@@ -106,8 +118,9 @@ export default function Editor() {
   const [thumbWidth, setThumbWidth] = useState(100)
   const [thumbHeight, setThumbHeight] = useState(56)
 
-  const [encoderWin, setEncoderWin] = useState(null)
   const [saveMode, setSaveMode] = useState('gif')
+
+  const [encoderWin, setEncoderWin] = useState(null)
   const [gifFolderPath, setGifFolderPath] = useState('')
   const [gifFilename, setGifFilename] = useState('')
   const [gifOverwrite, setGifOverwrite] = useState(false)
@@ -119,6 +132,12 @@ export default function Editor() {
   const [gifOptimize, setGifOptimize] = useState(false)
   const [gifQuality, setGifQuality] = useState(10)
   const [gifColors, setGifColors] = useState(256)
+
+  const [imagesFolderPath, setImagesFolderPath] = useState('')
+  const [imagesFilename, setImagesFilename] = useState('')
+  const [imagesZip, setImagesZip] = useState(false)
+  const [imagesOverwrite, setImagesOverwrite] = useState(false)
+  const [imagesOverwriteError, setImagesOverwriteError] = useState(false)
 
   const [clipboardDirectory, setClipboardDirectory] = useState('')
   const [clipboardNextSub, setClipboardNextSub] = useState(0)
@@ -1029,20 +1048,23 @@ export default function Editor() {
   function onSaveAccept() {
     if (saveMode === 'gif') {
       onSaveGif()
+    } else if (saveMode === 'images') {
+      onSaveImages()
     }
   }
 
   // save current project as a GIF file
   async function onSaveGif() {
+    // check for folder, file, folder existence and overwrite status
     if (!gifFolderPath || !gifFilename || !existsSync(gifFolderPath) || gifOverwriteError) {
       return
     }
-
+    // check filepath for overwrite status again prevents double saving
     const filepath = path.join(gifFolderPath, gifFilename + '.gif')
     if (!gifOverwrite && existsSync(filepath)) {
       return
     }
-
+    // gif options
     const payload = {
       gifData,
       images,
@@ -1056,13 +1078,52 @@ export default function Editor() {
       gifLoops,
       ffmpegPath
     }
-
+    // if encoderWindow is open send payload to its webContents
     if (encoderOpen) {
       encoderWin.webContents.send(ENCODER_DATA, payload)
+      // if no encoderWindow create a new window with payload and save reference to window
     } else {
       const win = initializeEncoder(remote.getCurrentWindow(), dispatch, payload)
       setEncoderWin(win)
     }
+  }
+
+  async function onSaveImages() {
+    if (!imagesFolderPath || !imagesFilename || imagesOverwriteError) {
+      return
+    }
+
+    async function saveZip() {
+      return new Promise(async resolve => {
+        const zipPath = path.join(imagesFolderPath, imagesFilename + '.zip')
+        const output = createWriteStream(zipPath)
+        const zip = archiver('zip', { zlib: { level: 9 } })
+
+        output.on('close', () => {
+          resolve()
+        })
+
+        zip.pipe(output)
+
+        for (const [i, bool] of selected.entries()) {
+          if (bool) {
+            const file = images[i].path
+            const name = `${imagesFilename}-${i}.png`
+            zip.append(createReadStream(file), { name })
+          }
+        }
+
+        zip.finalize()
+      })
+    }
+
+    setLoading(true)
+    if (imagesZip) {
+      await saveZip()
+    }
+    setLoading(false)
+    setShowDrawer(false)
+    setMessageTemp('Images saved')
   }
 
   // close save drawer
@@ -3017,6 +3078,11 @@ export default function Editor() {
             gifOptimize={gifOptimize}
             gifQuality={gifQuality}
             gifColors={gifColors}
+            imagesFolderPath={imagesFolderPath}
+            imagesFilename={imagesFilename}
+            imagesZip={imagesZip}
+            imagesOverwrite={imagesOverwrite}
+            imagesOverwriteError={imagesOverwriteError}
             setSaveMode={setSaveMode}
             setGifFolderPath={setGifFolderPath}
             setGifFilename={setGifFilename}
@@ -3028,6 +3094,10 @@ export default function Editor() {
             setGifOptimize={setGifOptimize}
             setGifQuality={setGifQuality}
             setGifColors={setGifColors}
+            setImagesFolderPath={setImagesFolderPath}
+            setImagesFilename={setImagesFilename}
+            setImagesZip={setImagesZip}
+            setImagesOverwrite={setImagesOverwrite}
             onAccept={onSaveAccept}
             onCancel={onSaveCancel}
           />

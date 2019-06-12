@@ -23,6 +23,7 @@
     "release": "electron-builder -p always"
   },
   "dependencies": {
+    "archiver": "3.0.0",
     "date-fns": "2.0.0-alpha.27",
     "gif-encoder-2": "1.0.0",
     "immutable": "4.0.0-rc.12",

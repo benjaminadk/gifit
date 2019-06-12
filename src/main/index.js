@@ -54,28 +54,30 @@ function onRecord(e, { isRecording, id }) {
 
 ipcMain.on('record', onRecord)
 
+// global input listeners
+// mouse-watch is true if mouse button is pushed
 ioHook.on('mousedown', e => {
   if (recording && recorderId) {
     BrowserWindow.fromId(recorderId).webContents.send('mouse-watch', true)
   }
 })
-
+// mouse-watch is false if mouse button is not pushed
 ioHook.on('mouseup', e => {
   if (recording && recorderId) {
     BrowserWindow.fromId(recorderId).webContents.send('mouse-watch', false)
   }
 })
-
+// send entire keydown event to recorder window when key is pressed
 ioHook.on('keydown', e => {
   if (recording && recorderId) {
     BrowserWindow.fromId(recorderId).webContents.send('key-watch', e)
   }
 })
-
+// key-watch is set to false when key is released
 ioHook.on('keyup', e => {
   if (recording && recorderId) {
     BrowserWindow.fromId(recorderId).webContents.send('key-watch', false)
   }
 })
-
+// initialize iohook listeners
 ioHook.start()
