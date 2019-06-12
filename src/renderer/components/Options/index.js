@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { remote } from 'electron'
-import { DesktopWindows } from 'styled-icons/material/DesktopWindows'
 import { writeFile } from 'fs'
 import { promisify } from 'util'
 import { AppContext } from '../App'
@@ -20,16 +19,16 @@ const {
 const writeFileAsync = promisify(writeFile)
 
 const menu = [
-  'Application',
-  'Interface',
-  'Automated Tasks',
-  'Shortcuts',
-  'Languages',
-  'Temporary Files',
-  'Upload Services',
-  'Extras',
-  'Donate',
-  'About'
+  { text: 'Application', icon: 'window' },
+  { text: 'Interface', icon: 'color' },
+  { text: 'Automated Tasks', icon: 'automated' },
+  { text: 'Shortcuts', icon: 'keyboard' },
+  { text: 'Languages', icon: '' },
+  { text: 'Temporary Files', icon: '' },
+  { text: 'Upload Services', icon: '' },
+  { text: 'Extras', icon: 'extras' },
+  { text: 'Donate', icon: '' },
+  { text: 'About', icon: 'info' }
 ]
 
 export default function Options() {
@@ -50,17 +49,7 @@ export default function Options() {
 
   // clicking a checkbox toggles boolean option
   function onCheckboxClick(option) {
-    if (option === 'gifProcessor') {
-      dispatch({
-        type: SET_OPTIONS,
-        payload: options.set(
-          option,
-          options.get('gifProcessor') === 'ffmpeg' ? 'gifEncoder' : 'ffmpeg'
-        )
-      })
-    } else {
-      dispatch({ type: SET_OPTIONS, payload: options.set(option, !options.get(option)) })
-    }
+    dispatch({ type: SET_OPTIONS, payload: options.set(option, !options.get(option)) })
   }
 
   function onCountdownTimeChange(x) {
@@ -102,8 +91,8 @@ export default function Options() {
         <div className='menu'>
           {menu.map((el, i) => (
             <MenuItem key={i} selected={i === menuIndex} onClick={() => setMenuIndex(i)}>
-              <DesktopWindows />
-              <div className='text'>{el}</div>
+              <Svg name={el.icon} />
+              <div className='text'>{el.text}</div>
             </MenuItem>
           ))}
         </div>
@@ -141,37 +130,6 @@ export default function Options() {
                   )}
                 </div>
               </Section>
-              <Section>
-                <div className='title'>
-                  <div className='text'>GIF Processor</div>
-                  <div className='divider' />
-                </div>
-                <div className='content'>
-                  <Checkbox
-                    value={options.get('gifProcessor') === 'ffmpeg'}
-                    primary='Use FFMpeg to process GIF.'
-                    secondary='Faster and smaller output size than default.'
-                    onClick={() => onCheckboxClick('gifProcessor')}
-                  />
-                  {options.get('gifProcessor') === 'ffmpeg' ? (
-                    <PathInput>
-                      <div className='title'>
-                        <div className='text'>FFMpeg Path</div>
-                        <div className='divider' />
-                      </div>
-                      <div className='input'>
-                        <input
-                          type='text'
-                          value={ffmpegPath}
-                          onChange={onFFMpegChange}
-                          onBlur={onFFMpegBlur}
-                        />
-                        <Svg name='folder' onClick={onFFMpegBrowsePath} />
-                      </div>
-                    </PathInput>
-                  ) : null}
-                </div>
-              </Section>
             </Application>
           ) : null}
         </div>
@@ -184,4 +142,22 @@ export default function Options() {
       </div>
     </Container>
   )
+}
+
+{
+  /* <PathInput>
+<div className='title'>
+  <div className='text'>FFMpeg Path</div>
+  <div className='divider' />
+</div>
+<div className='input'>
+  <input
+    type='text'
+    value={ffmpegPath}
+    onChange={onFFMpegChange}
+    onBlur={onFFMpegBlur}
+  />
+  <Svg name='folder' onClick={onFFMpegBrowsePath} />
+</div>
+</PathInput> */
 }

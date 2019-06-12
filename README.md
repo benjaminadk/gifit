@@ -9,8 +9,8 @@ A JavaScript clone of the popular [**ScreenToGif**](https://github.com/NickeMana
 - [**Features**](#features)
   - [**Screen Recorder**](#screen-recorder)
   - [**Webcam Recorder**](#webcam-recorder)
-  - [**Editor**](#editor)
-    - [**GIF Encoding**](#gif-encoding)
+  - [**Board Recorder**](#board-recorder)
+  - [**GIF Encoding**](#gif-encoding)
 
 ## Objective
 
@@ -20,32 +20,35 @@ A JavaScript clone of the popular [**ScreenToGif**](https://github.com/NickeMana
 
 Outline of the main dependencies used in the application.
 
-|       Library       | Version |                         Description                         |
-| :-----------------: | :-----: | :---------------------------------------------------------: |
-|     `electron`      |  5.0.1  | A cross platform framework for building desktop application |
-| `electron-webpack`  |         |                    Improves development                     |
-| `electron-builder`  |         |                                                             |
-|       `react`       |         |                                                             |
-|     `react-dom`     |         |                                                             |
-|     `react-rnd`     |         |                                                             |
-| `styled-components` |         |                                                             |
-|     `immutable`     |         |                                                             |
-|     `date-fns`      |         |                                                             |
+|       Library       |    Version     |                         Description                         |
+| :-----------------: | :------------: | :---------------------------------------------------------: |
+|     `electron`      |     5.0.1      | A cross platform framework for building desktop application |
+| `electron-webpack`  |     2.6.2      |                    Improves development                     |
+| `electron-builder`  |    20.40.2     |                                                             |
+|       `react`       |     16.8.6     |                                                             |
+|     `react-dom`     |     16.8.6     |                                                             |
+|     `react-rnd`     |     9.1.2      |                                                             |
+| `styled-components` |     4.2.0      |                                                             |
+|   `gif-encoder-2`   |     1.0.0      |                  Create GIFs with Node.js                   |
+|     `immutable`     |  4.0.0-rc.12   |                                                             |
+|     `date-fns`      | 2.0.0-alpha.27 |                                                             |
+|      `iohook`       |     0.4.6      |                                                             |
+|     `archiver`      |     3.0.0      |                                                             |
 
 ## Features
 
 ### Screen Recorder
 
-Capture the entire screen, or a selected portion, frame-by-frame at a user set frame rate.
+Capture fullscreen, or selected portion, frame-by-frame at a user set frame rate. This is accomplished using **Electron's** `desktopCapturer` with HTML video and canvas elements.
 
 ### Webcam Recorder
 
 Capture webcam output at a user set size, frame-by-frame at a user set frame rate.
 
-### Editor
+### Board Recorder
 
-#### GIF Encoding
+Capture canvas output as user draws onto white board.
 
-Combine all frames into a single GIF file with each frame persisting for an adjustable amount of time.
+### GIF Encoding
 
-**GifIt** uses `gif-encoder` by default. This gets the job done but is time consuming (~25s per 100 images) and relatively inefficient, outputing large files (~12MB per 100 images). As an alternative, **GifIt** can use `ffmpeg` if it is installed locally on the user's machine. On load, **GifIt** will look in the user's _PATH_ for the `ffmpeg` executable, and if found will use it to encode GIFs. This results in a faster (~5s per 100 images) an smaller output (~750KB per 100 images). The user can also browser for and explicitly set a path to the `ffmpeg` executable in options.
+Combine all frames into a single GIF image.
