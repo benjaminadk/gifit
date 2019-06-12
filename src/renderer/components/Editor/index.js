@@ -1088,38 +1088,62 @@ export default function Editor() {
     }
   }
 
+  // save selected images
   async function onSaveImages() {
     if (!imagesFolderPath || !imagesFilename || imagesOverwriteError) {
       return
     }
 
+    // save images as png into zip archive
     async function saveZip() {
       return new Promise(async resolve => {
         const zipPath = path.join(imagesFolderPath, imagesFilename + '.zip')
         const output = createWriteStream(zipPath)
-        const zip = archiver('zip', { zlib: { level: 9 } })
+        const archive = archiver('zip', { zlib: { level: 9 } })
 
         output.on('close', () => {
           resolve()
         })
 
-        zip.pipe(output)
+        archive.pipe(output)
 
         for (const [i, bool] of selected.entries()) {
           if (bool) {
             const file = images[i].path
             const name = `${imagesFilename}-${i}.png`
-            zip.append(createReadStream(file), { name })
+            archive.append(createReadStream(file), { name })
           }
         }
 
-        zip.finalize()
+        archive.finalize()
+      })
+    }
+
+    // save images as individual png
+    async function savePng() {
+      return new Promise(async resolve => {
+        const lastIndex = selected.findLastIndex(el => el)
+        const basePath = path.join(imagesFolderPath, imagesFilename)
+
+        for (const [i, bool] of selected.entries()) {
+          if (bool) {
+            const srcPath = images[i].path
+            const dstPath = `${basePath}-${i}.png`
+            copyFileAsync(srcPath, dstPath).then(() => {
+              if (i === lastIndex) {
+                resolve()
+              }
+            })
+          }
+        }
       })
     }
 
     setLoading(true)
     if (imagesZip) {
       await saveZip()
+    } else {
+      await savePng()
     }
     setLoading(false)
     setShowDrawer(false)
