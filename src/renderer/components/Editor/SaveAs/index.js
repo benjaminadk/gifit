@@ -1,32 +1,10 @@
-import React, { useRef } from 'react'
-import { remote, shell } from 'electron'
-import path from 'path'
+import React from 'react'
 import Svg from '../../Svg'
 import Choice from '../../Shared/Choice'
-import Checkbox from '../../Shared/Checkbox'
-import Select from '../../Shared/Select'
-import NumberInput from '../../Shared/NumberInput'
-import RangeInput from '../../Shared/RangeInput'
-import Textarea from '../../Shared/Textarea'
-import { Encoders, Encoder, RepeatCount, PathInput, Warning } from './styles'
 import Gif from './Gif'
 import Images from './Images'
-import {
-  Header,
-  Main,
-  Section,
-  ChoiceRow,
-  Property,
-  Label,
-  Footer,
-  Button,
-  PostLabel
-} from '../Drawer/styles'
-import config from 'common/config'
-
-const {
-  editor: { drawerWidth }
-} = config
+import Project from './Project'
+import { Header, Main, Section, ChoiceRow, Footer, Button } from '../Drawer/styles'
 
 export default function SaveAs({
   drawerHeight,
@@ -48,6 +26,10 @@ export default function SaveAs({
   imagesZip,
   imagesOverwrite,
   imagesOverwriteError,
+  projectFolderPath,
+  projectFilename,
+  projectOverwrite,
+  projectOverwriteError,
   setSaveMode,
   setGifFolderPath,
   setGifFilename,
@@ -63,6 +45,9 @@ export default function SaveAs({
   setImagesFilename,
   setImagesZip,
   setImagesOverwrite,
+  setProjectFolderPath,
+  setProjectFilename,
+  setProjectOverwrite,
   onAccept,
   onCancel
 }) {
@@ -107,7 +92,7 @@ export default function SaveAs({
               />
               <Choice
                 selected={saveMode === 'project'}
-                icon={<Svg name='image' />}
+                icon={<Svg name='recent' />}
                 label='Project'
                 onClick={() => setSaveMode('project')}
               />
@@ -150,6 +135,16 @@ export default function SaveAs({
             setImagesFilename={setImagesFilename}
             setImagesZip={setImagesZip}
             setImagesOverwrite={setImagesOverwrite}
+          />
+        ) : saveMode === 'project' ? (
+          <Project
+            projectFolderPath={projectFolderPath}
+            projectFilename={projectFilename}
+            projectOverwrite={projectOverwrite}
+            projectOverwriteError={projectOverwriteError}
+            setProjectFolderPath={setProjectFolderPath}
+            setProjectFilename={setProjectFilename}
+            setProjectOverwrite={setProjectOverwrite}
           />
         ) : null}
       </Main>

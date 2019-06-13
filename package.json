@@ -37,7 +37,8 @@
     "source-map-support": "0.5.12",
     "styled-components": "4.2.0",
     "styled-icons": "7.11.0",
-    "system-font-families": "0.4.1"
+    "system-font-families": "0.4.1",
+    "yauzl": "2.10.0"
   },
   "devDependencies": {
     "@babel/preset-react": "7.0.0",

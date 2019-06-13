@@ -54,6 +54,7 @@ export default function Toolbar({
   onNewRecordingClick,
   onNewWebcamClick,
   onNewBoardClick,
+  onLoadClick,
   onDiscardProjectClick,
   onCutClick,
   onCopyClick,
@@ -109,11 +110,15 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>New</SectionText>
             </Section>
-            <Section width={225}>
-              <GenericGrid columns={3}>
+            <Section width={300}>
+              <GenericGrid columns={4}>
                 <Action onClick={() => onOpenDrawer('save')}>
                   <Svg name='save' />
                   <div className='text'>Save As</div>
+                </Action>
+                <Action onClick={onLoadClick}>
+                  <Svg name='folder' />
+                  <div className='text'>Load</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('recent')}>
                   <Svg name='recent' />

@@ -3,6 +3,7 @@ import { remote } from 'electron'
 import { format } from 'date-fns'
 import { List } from 'immutable'
 import archiver from 'archiver'
+import yauzl from 'yauzl'
 import path from 'path'
 import {
   readFile,
@@ -14,7 +15,8 @@ import {
   copyFile,
   existsSync,
   createReadStream,
-  createWriteStream
+  createWriteStream,
+  rename
 } from 'fs'
 import { promisify } from 'util'
 import createTFName from '../../lib/createTFName'
@@ -83,6 +85,7 @@ const mkdirAsync = promisify(mkdir)
 const rmdirAsync = promisify(rmdir)
 const unlinkAsync = promisify(unlink)
 const copyFileAsync = promisify(copyFile)
+const renameAsync = promisify(rename)
 
 export default function Editor() {
   const { state, dispatch } = useContext(AppContext)
@@ -138,6 +141,11 @@ export default function Editor() {
   const [imagesZip, setImagesZip] = useState(false)
   const [imagesOverwrite, setImagesOverwrite] = useState(false)
   const [imagesOverwriteError, setImagesOverwriteError] = useState(false)
+
+  const [projectFolderPath, setProjectFolderPath] = useState('')
+  const [projectFilename, setProjectFilename] = useState('')
+  const [projectOverwrite, setProjectOverwrite] = useState(false)
+  const [projectOverwriteError, setProjectOverwriteError] = useState(false)
 
   const [clipboardDirectory, setClipboardDirectory] = useState('')
   const [clipboardNextSub, setClipboardNextSub] = useState(0)
@@ -547,6 +555,16 @@ export default function Editor() {
     }
   }, [gifFolderPath, gifFilename, gifOverwrite])
 
+  useEffect(() => {
+    if (projectFolderPath && projectFilename && !projectOverwrite) {
+      const filepath = path.join(projectFolderPath, projectFilename + '.zip')
+      const exists = existsSync(filepath)
+      setProjectOverwriteError(exists)
+    } else {
+      setProjectOverwriteError(false)
+    }
+  }, [projectFolderPath, projectFilename, projectOverwrite])
+
   // initialize editor
   async function initialize(initialIndex = 0) {
     setLoading(true)
@@ -645,25 +663,31 @@ export default function Editor() {
     // each project has its own clipboard
     if (projectFolder) {
       const initialClipboardDirectory = path.join(RECORDINGS_DIRECTORY, projectFolder, 'Clipboard')
-      // get all directories within clipboard
-      const clipDirs = await readdirAsync(initialClipboardDirectory)
-      // if directories delete contents and then directory itself
-      if (clipDirs.length) {
-        for (const clipDir of clipDirs) {
-          const clipFolder = path.join(initialClipboardDirectory, clipDir)
-          const clipImgs = await readdirAsync(clipFolder)
-          if (clipImgs.length) {
-            for (const [i, clipImg] of clipImgs.entries()) {
-              const imagePath = path.join(clipFolder, clipImg)
-              unlinkAsync(imagePath).then(() => {
-                if (i === clipImgs.length - 1) {
-                  rmdirAsync(clipFolder)
-                }
-              })
+
+      if (!existsSync(initialClipboardDirectory)) {
+        await mkdirAsync(initialClipboardDirectory)
+      } else {
+        // get all directories within clipboard
+        const clipDirs = await readdirAsync(initialClipboardDirectory)
+        // if directories delete contents and then directory itself
+        if (clipDirs.length) {
+          for (const clipDir of clipDirs) {
+            const clipFolder = path.join(initialClipboardDirectory, clipDir)
+            const clipImgs = await readdirAsync(clipFolder)
+            if (clipImgs.length) {
+              for (const [i, clipImg] of clipImgs.entries()) {
+                const imagePath = path.join(clipFolder, clipImg)
+                unlinkAsync(imagePath).then(() => {
+                  if (i === clipImgs.length - 1) {
+                    rmdirAsync(clipFolder)
+                  }
+                })
+              }
             }
           }
         }
       }
+
       setClipboardDirectory(initialClipboardDirectory)
       setClipboardItems(List([]))
       setClipboardIndex(null)
@@ -746,11 +770,59 @@ export default function Editor() {
           setGifData(null)
           setScale(null)
           setZoomToFit(null)
-          initialize(null)
+          dispatch({ type: SET_PROJECT_FOLDER, payload: '' })
         })
       }
     }
     remote.dialog.showMessageBox(win, opts, callback)
+  }
+
+  function onLoadClick() {
+    const win = remote.getCurrentWindow()
+    const opts = {
+      title: 'Load',
+      defaultPath: remote.app.getPath('desktop'),
+      buttonLabel: 'Open',
+      filters: [
+        {
+          name: 'Zip',
+          extensions: ['zip']
+        }
+      ],
+      properties: ['openFile']
+    }
+    const callback = async filepath => {
+      if (filepath) {
+        const dirPath = path.join(RECORDINGS_DIRECTORY, 'temp')
+        await mkdirAsync(dirPath)
+
+        yauzl.open(filepath[0], { lazyEntries: true }, (err, zipFile) => {
+          if (err) throw err
+          zipFile.readEntry()
+          zipFile.on('entry', entry => {
+            zipFile.openReadStream(entry, (err, readStream) => {
+              if (err) throw err
+              readStream.on('end', () => {
+                zipFile.readEntry()
+              })
+              const ws = createWriteStream(path.join(dirPath, entry.fileName))
+              readStream.pipe(ws)
+            })
+          })
+
+          zipFile.on('end', async () => {
+            const data = await readFileAsync(path.join(dirPath, 'project.json'))
+            const project = JSON.parse(data)
+            const folderName = project.relative
+            const newDirPath = path.join(RECORDINGS_DIRECTORY, folderName)
+            await renameAsync(dirPath, newDirPath)
+            dispatch({ type: SET_PROJECT_FOLDER, payload: folderName })
+          })
+        })
+      }
+    }
+
+    remote.dialog.showOpenDialog(win, opts, callback)
   }
 
   // playback interface
@@ -1050,6 +1122,8 @@ export default function Editor() {
       onSaveGif()
     } else if (saveMode === 'images') {
       onSaveImages()
+    } else if (saveMode === 'project') {
+      onSaveProject()
     }
   }
 
@@ -1148,6 +1222,43 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setMessageTemp('Images saved')
+  }
+
+  // save project as a zip file
+  async function onSaveProject() {
+    if (!projectFolderPath || !projectFilename || projectOverwriteError) {
+      return
+    }
+
+    async function save() {
+      return new Promise(async resolve => {
+        const zipPath = path.join(projectFolderPath, projectFilename + '.zip')
+        const output = createWriteStream(zipPath)
+        const archive = archiver('zip', { zlib: { level: 9 } })
+
+        output.on('close', () => {
+          resolve()
+        })
+
+        archive.pipe(output)
+
+        for (const image of images) {
+          const name = path.basename(image.path)
+          archive.append(createReadStream(image.path), { name })
+        }
+
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        archive.append(createReadStream(projectPath), { name: 'project.json' })
+
+        archive.finalize()
+      })
+    }
+
+    setLoading(true)
+    await save()
+    setLoading(false)
+    setShowDrawer(false)
+    setMessageTemp('Project saved')
   }
 
   // close save drawer
@@ -2603,7 +2714,7 @@ export default function Editor() {
     const win = remote.getCurrentWindow()
     const opts = {
       title: 'Select an Image',
-      defaultPath: remote.app.getPath('pictures'),
+      defaultPath: remote.app.getPath('desktop'),
       buttonLabel: 'Open',
       filters: [
         {
@@ -2947,6 +3058,7 @@ export default function Editor() {
         onNewRecordingClick={onNewRecordingClick}
         onNewWebcamClick={onNewWebcamClick}
         onNewBoardClick={onNewBoardClick}
+        onLoadClick={onLoadClick}
         onDiscardProjectClick={onDiscardProjectClick}
         onCutClick={onCutClick}
         onCopyClick={onCopyClick}
@@ -3107,6 +3219,10 @@ export default function Editor() {
             imagesZip={imagesZip}
             imagesOverwrite={imagesOverwrite}
             imagesOverwriteError={imagesOverwriteError}
+            projectFolderPath={projectFolderPath}
+            projectFilename={projectFilename}
+            projectOverwrite={projectOverwrite}
+            projectOverwriteError={projectOverwriteError}
             setSaveMode={setSaveMode}
             setGifFolderPath={setGifFolderPath}
             setGifFilename={setGifFilename}
@@ -3122,6 +3238,9 @@ export default function Editor() {
             setImagesFilename={setImagesFilename}
             setImagesZip={setImagesZip}
             setImagesOverwrite={setImagesOverwrite}
+            setProjectFolderPath={setProjectFolderPath}
+            setProjectFilename={setProjectFilename}
+            setProjectOverwrite={setProjectOverwrite}
             onAccept={onSaveAccept}
             onCancel={onSaveCancel}
           />
