@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { remote } from 'electron'
 import { format } from 'date-fns'
 import { ChevronDown } from 'styled-icons/boxicons-regular/ChevronDown'
 import NumberInput from '../../Shared/NumberInput'
@@ -110,8 +111,8 @@ export default function Toolbar({
               </GenericGrid>
               <SectionText>New</SectionText>
             </Section>
-            <Section width={300}>
-              <GenericGrid columns={4}>
+            <Section width={375}>
+              <GenericGrid columns={5}>
                 <Action onClick={() => onOpenDrawer('save')}>
                   <Svg name='save' />
                   <div className='text'>Save As</div>
@@ -119,6 +120,10 @@ export default function Toolbar({
                 <Action onClick={onLoadClick}>
                   <Svg name='folder' />
                   <div className='text'>Load</div>
+                </Action>
+                <Action onClick={() => remote.getCurrentWindow().reload()}>
+                  <Svg name='refresh' />
+                  <div className='text'>Reload</div>
                 </Action>
                 <Action onClick={() => onOpenDrawer('recent')}>
                   <Svg name='recent' />

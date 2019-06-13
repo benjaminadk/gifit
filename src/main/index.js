@@ -27,7 +27,7 @@ function createMainWindow() {
     }
   })
 
-  // mainWindow.setMenu(null)
+  mainWindow.setMenu(null)
 
   mainWindow.loadURL(getURL(inDev))
 
