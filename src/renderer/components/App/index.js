@@ -1,4 +1,5 @@
 import React, { useEffect, useReducer, createContext } from 'react'
+import { remote } from 'electron'
 import { reducer, initialState } from './state'
 import dispatchAsync from './dispatchAsync'
 import initialize from './initialize'
@@ -33,12 +34,18 @@ export default function App() {
 
   if (windowID === 1) {
     if (mode === 0) {
+      if (windowTitle !== 'GifIt - Start Up') {
+        remote.getCurrentWindow().setTitle('GifIt - Start Up')
+      }
       return (
         <AppContext.Provider value={{ state, dispatch }}>
           <Landing />
         </AppContext.Provider>
       )
     } else if (mode === 1) {
+      if (windowTitle !== 'GifIt - Editor') {
+        remote.getCurrentWindow().setTitle('GifIt - Editor')
+      }
       return (
         <AppContext.Provider value={{ state, dispatch }}>
           <Editor />

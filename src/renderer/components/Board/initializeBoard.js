@@ -48,7 +48,6 @@ export default (state, dispatch) => {
     ipcRenderer.removeListener(BOARD_STOP, onBoardStop)
     ipcRenderer.removeListener(BOARD_CLOSE, onBoardClose)
     boardWindow = null
-    remote.BrowserWindow.fromId(1).setTitle('Gifit - Start Up')
     remote.BrowserWindow.fromId(1).show()
   })
 

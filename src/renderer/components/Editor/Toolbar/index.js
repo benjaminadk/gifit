@@ -66,6 +66,7 @@ export default function Toolbar({
   onYoyoClick,
   onMoveFrameLeft,
   onMoveFrameRight,
+  onGotoClick,
   onOptionsClick,
   onSelectClick
 }) {
@@ -185,7 +186,7 @@ export default function Toolbar({
               <SectionText>Zoom</SectionText>
             </Section>
             <Section width={300}>
-              <GenericGrid columns={3}>
+              <GenericGrid columns={4}>
                 <Action onClick={() => onSelectClick(0)}>
                   <Svg name='cursor' />
                   <div className='text'>Select All</div>
@@ -197,6 +198,10 @@ export default function Toolbar({
                 <Action onClick={() => onSelectClick(2)}>
                   <Svg name='deselect' />
                   <div className='text'>Deselect</div>
+                </Action>
+                <Action onClick={onGotoClick}>
+                  <Svg name='goto' />
+                  <div className='text'>Goto</div>
                 </Action>
               </GenericGrid>
               <SectionText>Select</SectionText>
@@ -273,6 +278,10 @@ export default function Toolbar({
                 <Action onClick={() => onOpenDrawer('increase')}>
                   <Svg name='clock-increase' />
                   <div className='text'>Increase or Decrease</div>
+                </Action>
+                <Action onClick={() => onOpenDrawer('scale')}>
+                  <Svg name='clock-scale' />
+                  <div className='text'>Scale</div>
                 </Action>
               </GenericGrid>
               <SectionText>Delay (Duration)</SectionText>

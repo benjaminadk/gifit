@@ -277,7 +277,6 @@ export default function Editor() {
   // ensure window is maximized
   useEffect(() => {
     remote.getCurrentWindow().maximize()
-    remote.getCurrentWindow().setTitle('GifIt - Editor')
   }, [])
 
   // call initialize projectFolder changes
@@ -1842,6 +1841,8 @@ export default function Editor() {
     setMessageTemp(`Frame(s) moved to the right`)
   }
 
+  function onGotoClick() {}
+
   // override duration for selected frames to new value
   async function onOverrideAccept() {
     async function update() {
@@ -1927,6 +1928,10 @@ export default function Editor() {
   function onIncreaseCancel() {
     setShowDrawer(false)
   }
+
+  function onScaleAccept() {}
+
+  function onScaleCancel() {}
 
   // create a new title frame image file and update project.json
   async function onTitleAccept() {
@@ -3069,6 +3074,7 @@ export default function Editor() {
         onYoyoClick={onYoyoClick}
         onMoveFrameLeft={onMoveFrameLeft}
         onMoveFrameRight={onMoveFrameRight}
+        onGotoClick={onGotoClick}
         onOptionsClick={onOptionsClick}
         onSelectClick={onSelectClick}
       />

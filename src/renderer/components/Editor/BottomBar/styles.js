@@ -29,7 +29,7 @@ export const Bar = styled.div.attrs(p => ({
   }
 }))`
   height: 100%;
-  background: ${p => p.theme.primary};
+  background: ${p => p.theme.secondary};
 `
 
 export const Message = styled.div`
