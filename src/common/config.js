@@ -51,7 +51,6 @@ const defaultOptions = {
   optionsPath: '',
   ffmpegPath: '',
   tempPath: '',
-  gifProcessor: 'gifEncoder',
   showCursor: true,
   useCountdown: false,
   countdownTime: 3,
@@ -63,6 +62,7 @@ const defaultOptions = {
   checkerSize: 20
 }
 
+// grey tones for style components theme
 const grey = [
   '#FAFAFA',
   '#F0F0F0',
@@ -80,6 +80,7 @@ const grey = [
   '#2E2E2E'
 ]
 
+// styled components theme
 const theme = {
   primary: '#407FBF',
   secondary: '#06AC25',
@@ -88,6 +89,7 @@ const theme = {
   border: '1px solid #B0B0B0'
 }
 
+// actions for react app state reducer (global state)
 const appActions = {
   INITIALIZE: 'INITIALIZE',
   LOADING_START: 'LOADING_START',
@@ -99,6 +101,7 @@ const appActions = {
   SET_ENCODER_OPEN: 'SET_ENCODER_OPEN'
 }
 
+// channels for ipc communication (main <-> renderer process communication)
 const ipcActions = {
   RECORDER_STOP: 'RECORDER_STOP',
   RECORDER_CLOSE: 'RECORDER_CLOSE',
@@ -113,9 +116,13 @@ const ipcActions = {
 }
 
 const constants = {
+  // keeps video element out of view when recording desktop stream
   VIDEO_CSS: 'position: absolute; top: -10000px; left: -10000px;',
+  // image mime type
   IMAGE_TYPE: 'image/png',
+  // remove to format image data url
   IMAGE_REGEX: /^data:image\/(png|gif|jpeg);base64,/,
+  // time in ms to auto stop recorder
   MAX_LENGTH: 60 * 1000
 }
 

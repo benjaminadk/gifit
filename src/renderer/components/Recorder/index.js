@@ -41,6 +41,7 @@ export default function Recorder() {
   const [captureType, setCaptureType] = useState('screen')
   const [count, setCount] = useState(0)
   const [time, setTime] = useState(countdownTime)
+  const [timeLimit, setTimeLimit] = useState(MAX_LENGTH)
 
   const [frames, setFrames] = useState(List([]))
   const [times, setTimes] = useState(List([]))
@@ -68,7 +69,7 @@ export default function Recorder() {
   const ctx2 = useRef(null)
   const video = useRef(null)
   const captureInterval = useRef(null)
-  const timeLimit = useRef(null)
+  const timeout = useRef(null)
   const tray = useRef(null)
   const t1 = useRef(null)
   const isClicked = useRef(null)
@@ -149,6 +150,12 @@ export default function Recorder() {
       remote.globalShortcut.unregister('Esc', () => onRecordStop())
     }
   }, [onRecordStop])
+
+  useEffect(() => {
+    if (timeLimit === 0) {
+      onRecordStop()
+    }
+  }, [timeLimit])
 
   // initialize desktop stream
   async function captureStream() {
@@ -246,6 +253,10 @@ export default function Recorder() {
     t1.current = performance.now()
     // run captureFrame at desired frame rate per second
     captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+    // impose a time limit on recording
+    timeout.current = setInterval(() => {
+      setTimeLimit(cur => cur - 1000)
+    }, 1000)
   }
 
   // function to capture a single frame
@@ -312,6 +323,7 @@ export default function Recorder() {
     // clean up
     ipcRenderer.send('record', { isRecording: false, id: null })
     clearInterval(captureInterval.current)
+    clearInterval(timeout.current)
     tray.current && tray.current.destroy()
     remote.globalShortcut.unregister('Esc', () => onRecordStop())
     // create a new directory for project
@@ -355,6 +367,7 @@ export default function Recorder() {
   function onRecordPause() {
     setMode(6)
     clearInterval(captureInterval.current)
+    clearInterval(timeout.current)
     tray.current.setImage(PAUSED_ICON)
   }
 
@@ -364,6 +377,9 @@ export default function Recorder() {
     t1.current = performance.now()
     captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
     tray.current.setImage(RECORDING_ICON)
+    timeout.current = setInterval(() => {
+      setTimeLimit(cur => cur - 1000)
+    }, 1000)
   }
 
   function onCloseClick() {
