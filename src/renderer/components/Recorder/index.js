@@ -83,63 +83,24 @@ export default function Recorder() {
   const zoomCtx3 = useRef(null)
 
   useEffect(() => {
-    async function initialize() {
-      // capture desktop stream
-      const desktopStream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          mandatory: {
-            chromeMediaSource: 'desktop',
-            chromeMediaSourceId: source.id,
-            minWidth: screenWidth,
-            maxWidth: screenWidth,
-            minHeight: screenHeight,
-            maxHeight: screenHeight
-          }
-        }
-      })
-      // create helper elements
-      zoomCanvas1.current = document.createElement('canvas')
-      zoomCanvas2.current = document.createElement('canvas')
-      zoomCtx1.current = zoomCanvas1.current.getContext('2d')
-      zoomCtx2.current = zoomCanvas2.current.getContext('2d')
-      zoomCanvas1.current.width = screenWidth
-      zoomCanvas1.current.height = screenHeight
-      const zoomVideo = document.createElement('video')
-      zoomVideo.style.cssText = VIDEO_CSS
-      // triggers zoom overlay config
-      zoomVideo.onloadedmetadata = async () => {
-        zoomVideo.play()
-        // pause .5s before taking snapshot
-        await new Promise(resolve => {
-          setTimeout(() => resolve(), 500)
-        })
-        // draw desktop to full screen canvas
-        zoomCtx1.current.drawImage(zoomVideo, 0, 0, screenWidth, screenHeight)
-        // actual zoom overlay magnified 10x
-        zoomCtx3.current = zoomCanvas3.current.getContext('2d')
-        zoomCtx3.current.scale(10, 10)
-        zoomCtx3.current.imageSmoothingEnabled = false
-        // draw green crosshair on zoom canvas
-        const zoomCtx4 = zoomCanvas4.current.getContext('2d')
-        zoomCtx4.strokeStyle = '#00FF0080'
-        zoomCtx4.beginPath()
-        zoomCtx4.moveTo(zoomSize / 2, 0)
-        zoomCtx4.lineTo(zoomSize / 2, zoomSize)
-        zoomCtx4.moveTo(0, zoomSize / 2)
-        zoomCtx4.lineTo(zoomSize, zoomSize / 2)
-        zoomCtx4.stroke()
-        zoomVideo.remove()
-      }
+    // actual zoom overlay magnified 10x
+    zoomCtx3.current = zoomCanvas3.current.getContext('2d')
+    zoomCtx3.current.scale(10, 10)
+    zoomCtx3.current.imageSmoothingEnabled = false
+    // draw green crosshair on zoom canvas
+    const zoomCtx4 = zoomCanvas4.current.getContext('2d')
+    zoomCtx4.strokeStyle = '#00FF0080'
+    zoomCtx4.beginPath()
+    zoomCtx4.moveTo(zoomSize / 2, 0)
+    zoomCtx4.lineTo(zoomSize / 2, zoomSize)
+    zoomCtx4.moveTo(0, zoomSize / 2)
+    zoomCtx4.lineTo(zoomSize, zoomSize / 2)
+    zoomCtx4.stroke()
 
-      zoomVideo.srcObject = desktopStream
-      document.body.appendChild(zoomVideo)
-      setStream(desktopStream)
-    }
-    initialize()
+    captureStream()
 
     return () => {
-      desktopStream.getTracks().forEach(el => el.stop())
+      stream && stream.getTracks().forEach(el => el.stop())
     }
   }, [])
 
@@ -188,6 +149,48 @@ export default function Recorder() {
       remote.globalShortcut.unregister('Esc', () => onRecordStop())
     }
   }, [onRecordStop])
+
+  // initialize desktop stream
+  async function captureStream() {
+    // capture desktop stream
+    const desktopStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        mandatory: {
+          chromeMediaSource: 'desktop',
+          chromeMediaSourceId: source.id,
+          minWidth: screenWidth,
+          maxWidth: screenWidth,
+          minHeight: screenHeight,
+          maxHeight: screenHeight
+        }
+      }
+    })
+    // create helper elements
+    zoomCanvas1.current = document.createElement('canvas')
+    zoomCanvas2.current = document.createElement('canvas')
+    zoomCtx1.current = zoomCanvas1.current.getContext('2d')
+    zoomCtx2.current = zoomCanvas2.current.getContext('2d')
+    zoomCanvas1.current.width = screenWidth
+    zoomCanvas1.current.height = screenHeight
+    const zoomVideo = document.createElement('video')
+    zoomVideo.style.cssText = VIDEO_CSS
+    // triggers zoom overlay config
+    zoomVideo.onloadedmetadata = async () => {
+      zoomVideo.play()
+      // pause .5s before taking snapshot
+      await new Promise(resolve => {
+        setTimeout(() => resolve(), 500)
+      })
+      // draw desktop to full screen canvas
+      zoomCtx1.current.drawImage(zoomVideo, 0, 0, screenWidth, screenHeight)
+      zoomVideo.remove()
+    }
+
+    zoomVideo.srcObject = desktopStream
+    document.body.appendChild(zoomVideo)
+    setStream(desktopStream)
+  }
 
   // start recording frames
   async function onRecordStart() {
@@ -404,6 +407,7 @@ export default function Recorder() {
   }
   // reset selection state
   function onRetryClick() {
+    captureStream()
     setDone(false)
     setDrawing(false)
     setSelectWidth(0)

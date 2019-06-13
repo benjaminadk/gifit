@@ -1931,6 +1931,7 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
+  // scale duration value of select frames by user input percentage
   async function onScaleAccept() {
     async function update() {
       return new Promise(resolve => {

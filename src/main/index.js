@@ -14,6 +14,7 @@ let mainWindow
 var recording = false
 var recorderId = null
 
+// create main electron window
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     title: 'Gifit - Start Up',
