@@ -62,6 +62,7 @@ import ReduceFrames from './ReduceFrames'
 import Duplicate from './Duplicate'
 import Override from './Override'
 import IncreaseDecrease from './IncreaseDecrease'
+import Scale from './Scale'
 import Fade from './Fade'
 import Slide from './Slide'
 import Toolbar from './Toolbar'
@@ -241,6 +242,7 @@ export default function Editor() {
 
   const [overrideMS, setOverrideMS] = useState(100)
   const [incDecValue, setIncDecValue] = useState(0)
+  const [scalePercent, setScalePercent] = useState(100)
 
   const [obfuscatePixels, setObfuscatePixels] = useState(10)
   const [obfuscateAverage, setObfuscateAverage] = useState(true)
@@ -1929,9 +1931,48 @@ export default function Editor() {
     setShowDrawer(false)
   }
 
-  function onScaleAccept() {}
+  async function onScaleAccept() {
+    async function update() {
+      return new Promise(resolve => {
+        const newFrames = []
+        for (const [i, bool] of selected.toArray().entries()) {
+          const newFrame = images[i]
 
-  function onScaleCancel() {}
+          if (bool) {
+            var newTime = Math.round(newFrame.time * (scalePercent * 0.01))
+            if (newTime > 25000) {
+              newTime = 25000
+            } else if (newTime < 10) {
+              newTime = 10
+            }
+            newFrame.time = newTime
+          }
+          newFrames.push(newFrame)
+        }
+
+        const newProject = {
+          ...gifData,
+          frames: newFrames
+        }
+        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
+        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          resolve()
+        })
+      })
+    }
+
+    setLoading(true)
+    await update()
+    setLoading(false)
+    setShowDrawer(false)
+    initialize(imageIndex)
+    setMessageTemp('Duration (delay) altered')
+  }
+
+  // close scale drawer
+  function onScaleCancel() {
+    setShowDrawer(false)
+  }
 
   // create a new title frame image file and update project.json
   async function onTitleAccept() {
@@ -3328,6 +3369,14 @@ export default function Editor() {
             setIncDecValue={setIncDecValue}
             onAccept={onIncreaseAccept}
             onCancel={onIncreaseCancel}
+          />
+        ) : drawerMode === 'scale' ? (
+          <Scale
+            drawerHeight={drawerHeight}
+            scalePercent={scalePercent}
+            setScalePercent={setScalePercent}
+            onAccept={onScaleAccept}
+            onScaleCancel={onScaleCancel}
           />
         ) : drawerMode === 'title' ? (
           <TitleFrame
