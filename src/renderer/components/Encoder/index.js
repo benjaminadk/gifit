@@ -45,7 +45,7 @@ export default function Encoder() {
         await encodeOctree(images, filepath, gifData, gifOptimize, repeat, gifColors, setOutput)
       } else if (gifEncoder === '1.0') {
         await encodeNeuQuant(images, filepath, gifData, gifOptimize, repeat, gifQuality, setOutput)
-      } else if (gifEncoder === 'ffmpeg') {
+      } else if (gifEncoder === 'ffmpeg' && ffmpegPath) {
         const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
         await encodeFFmpeg(images, filepath, cwd, ffmpegPath, setOutput)
       }

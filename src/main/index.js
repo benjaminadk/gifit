@@ -32,7 +32,7 @@ function createMainWindow() {
   })
 
   // hide menu
-  // mainWindow.setMenu(null)
+  mainWindow.setMenu(null)
 
   // load renderer HTML root
   mainWindow.loadURL(getURL(inDev))

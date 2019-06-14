@@ -23,17 +23,17 @@ Outline of the main dependencies used in the application.
 |       Library       |    Version     |                         Description                         |
 | :-----------------: | :------------: | :---------------------------------------------------------: |
 |     `electron`      |     5.0.1      | A cross platform framework for building desktop application |
-| `electron-webpack`  |     2.6.2      |                    Improves development                     |
-| `electron-builder`  |    20.40.2     |                                                             |
-|       `react`       |     16.8.6     |                                                             |
-|     `react-dom`     |     16.8.6     |                                                             |
-|     `react-rnd`     |     9.1.2      |                                                             |
-| `styled-components` |     4.2.0      |                                                             |
+| `electron-webpack`  |     2.6.2      |             Compile Electron apps with webpack              |
+| `electron-builder`  |    20.40.2     |      Package and build Electron apps for distribution       |
+|       `react`       |     16.8.6     |       JavaScript library for building user interfaces       |
+|     `react-dom`     |     16.8.6     |                React entry point to the DOM                 |
+|     `react-rnd`     |     9.1.2      |        A resizable and draggable component for React        |
+| `styled-components` |     4.2.0      |           Visual primitives for the component age           |
 |   `gif-encoder-2`   |     1.0.0      |                  Create GIFs with Node.js                   |
-|     `immutable`     |  4.0.0-rc.12   |                                                             |
-|     `date-fns`      | 2.0.0-alpha.27 |                                                             |
-|      `iohook`       |     0.4.6      |                                                             |
-|     `archiver`      |     3.0.0      |                                                             |
+|     `immutable`     |  4.0.0-rc.12   |    Immutable persistent data collections for JavaScript     |
+|     `date-fns`      | 2.0.0-alpha.27 |                 Tool for manipulating dates                 |
+|      `iohook`       |     0.4.6      |         Node.js native keyboard and mouse listener          |
+|     `archiver`      |     3.0.0      |        A streaming interface for archive generation         |
 
 ## Features
 
@@ -51,4 +51,12 @@ Capture canvas output as user draws onto white board.
 
 ### GIF Encoding
 
-Combine all frames into a single GIF image.
+Combine all frames into a single GIF image. There a numerous options for this, including three seperate encoders. Options include setting frame delay, number of loops, quality and palette size.
+
+| Encoder  | Speed | Filesize |                   Notes                    |
+| :------: | :---: | :------: | :----------------------------------------: |
+| NeuQuant |  2nd  | largest  |             JavaScript encoder             |
+|  Octree  |  3rd  |  middle  |             JavaScript encoder             |
+|  FFmpeg  |  1st  | smallest | Requires FFmpeg downloaded on host machine |
+
+### Editor
