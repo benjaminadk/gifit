@@ -1,19 +1,20 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { remote } from 'electron'
-import { writeFile } from 'fs'
+import { remote, shell } from 'electron'
+import { writeFile, statSync } from 'fs'
 import { promisify } from 'util'
 import { AppContext } from '../App'
-import Checkbox from '../Shared/Checkbox'
 import Button from '../Shared/Button'
-import NumberInput from '../Shared/NumberInput'
 import Svg from '../Svg'
-import { Container, MenuItem, Application, Section, CountdownSize, PathInput } from './styles'
+import Application from './Application'
+import Extras from './Extras'
+import { Container, MenuItem } from './styles'
 import { OPTIONS_PATH } from 'common/filepaths'
 import config from 'common/config'
 
 const {
   ipcActions: { OPTIONS_UPDATE },
-  appActions: { SET_OPTIONS }
+  appActions: { SET_OPTIONS },
+  constants: { FFMPEG_DOWNLOAD }
 } = config
 
 const writeFileAsync = promisify(writeFile)
@@ -36,7 +37,8 @@ export default function Options() {
   const { options } = state
 
   const [menuIndex, setMenuIndex] = useState(0)
-  const [ffmpegPath, setFfmpegPath] = useState(options.get('ffmpegPath'))
+  const [ffmpegPath, setFFmpegPath] = useState(options.get('ffmpegPath'))
+  const [ffmpegPathSize, setFFmpegPathSize] = useState(0)
 
   // any time options changes overwrite options.json
   // also send new options object to parent window to update state
@@ -44,8 +46,18 @@ export default function Options() {
     writeFileAsync(OPTIONS_PATH, JSON.stringify(options)).then(() => {
       remote.BrowserWindow.fromId(1).webContents.send(OPTIONS_UPDATE, options.toObject())
     })
-    setFfmpegPath(options.get('ffmpegPath'))
+    setFFmpegPath(options.get('ffmpegPath'))
   }, [options])
+
+  // check for ffmpegPath if exists get file size
+  useEffect(() => {
+    if (ffmpegPath) {
+      const stats = statSync(ffmpegPath)
+      if (stats) {
+        setFFmpegPathSize(stats.size)
+      }
+    }
+  }, [])
 
   // clicking a checkbox toggles boolean option
   function onCheckboxClick(option) {
@@ -56,15 +68,15 @@ export default function Options() {
     dispatch({ type: SET_OPTIONS, payload: options.set('countdownTime', Number(x)) })
   }
 
-  function onFFMpegChange({ target: { value } }) {
-    setFfmpegPath(value)
+  function onFFmpegChange({ target: { value } }) {
+    setFFmpegPath(value)
   }
 
-  function onFFMpegBlur({ target: { value } }) {
+  function onFFmpegBlur({ target: { value } }) {
     dispatch({ type: SET_OPTIONS, payload: options.set('ffmpegPath', value) })
   }
 
-  function onFFMpegBrowsePath() {
+  function onFFmpegFolderClick() {
     const win = remote.getCurrentWindow()
     const opts = {
       title: 'Select the location of the FFMpeg executable',
@@ -73,12 +85,20 @@ export default function Options() {
       filters: [{ name: 'FFMpeg Executable', extensions: ['exe'] }],
       properties: ['openFile']
     }
-    const callback = filepaths => {
-      if (filepaths) {
-        dispatch({ type: SET_OPTIONS, payload: options.set('ffmpegPath', filepaths[0]) })
+    const callback = filepath => {
+      if (filepath) {
+        dispatch({ type: SET_OPTIONS, payload: options.set('ffmpegPath', filepath[0]) })
       }
     }
     remote.dialog.showOpenDialog(win, opts, callback)
+  }
+
+  function onFFmpegDownloadClick() {
+    if (ffmpegPath) {
+      shell.showItemInFolder(ffmpegPath)
+    } else {
+      shell.openExternal(FFMPEG_DOWNLOAD)
+    }
   }
 
   function onClose() {
@@ -98,39 +118,20 @@ export default function Options() {
         </div>
         <div className='content'>
           {menuIndex === 0 ? (
-            <Application>
-              <Section height={200}>
-                <div className='title'>
-                  <div className='text'>Screen Recorder</div>
-                  <div className='divider' />
-                </div>
-                <div className='content'>
-                  <Checkbox
-                    value={options.get('showCursor')}
-                    primary='Show the mouse cursor in the recording.'
-                    onClick={() => onCheckboxClick('showCursor')}
-                  />
-                  <Checkbox
-                    value={options.get('useCountdown')}
-                    primary='Use pre start countdown.'
-                    onClick={() => onCheckboxClick('useCountdown')}
-                  />
-                  {options.get('useCountdown') && (
-                    <CountdownSize>
-                      <NumberInput
-                        width={60}
-                        value={options.get('countdownTime')}
-                        min={2}
-                        max={15}
-                        fallback={3}
-                        setter={onCountdownTimeChange}
-                      />
-                      <div className='text'>(In seconds, wait before start capture.)</div>
-                    </CountdownSize>
-                  )}
-                </div>
-              </Section>
-            </Application>
+            <Application
+              options={options}
+              onCheckboxClick={onCheckboxClick}
+              onCountdownTimeChange={onCountdownTimeChange}
+            />
+          ) : menuIndex === 7 ? (
+            <Extras
+              ffmpegPath={ffmpegPath}
+              ffmpegPathSize={ffmpegPathSize}
+              onFFmpegChange={onFFmpegChange}
+              onFFmpegBlur={onFFmpegBlur}
+              onFFmpegFolderClick={onFFmpegFolderClick}
+              onFFmpegDownloadClick={onFFmpegDownloadClick}
+            />
           ) : null}
         </div>
       </div>
@@ -142,22 +143,4 @@ export default function Options() {
       </div>
     </Container>
   )
-}
-
-{
-  /* <PathInput>
-<div className='title'>
-  <div className='text'>FFMpeg Path</div>
-  <div className='divider' />
-</div>
-<div className='input'>
-  <input
-    type='text'
-    value={ffmpegPath}
-    onChange={onFFMpegChange}
-    onBlur={onFFMpegBlur}
-  />
-  <Svg name='folder' onClick={onFFMpegBrowsePath} />
-</div>
-</PathInput> */
 }

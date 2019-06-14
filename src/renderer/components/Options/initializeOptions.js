@@ -33,6 +33,8 @@ export default (parent, dispatch) => {
     }
   })
 
+  optionsWindow.setMenu(null)
+
   optionsWindow.loadURL(getURL(inDev))
 
   inDev && optionsWindow.webContents.openDevTools({ mode: 'detach' })

@@ -672,20 +672,26 @@ export default function Editor() {
         const clipDirs = await readdirAsync(initialClipboardDirectory)
         // if directories delete contents and then directory itself
         if (clipDirs.length) {
-          for (const clipDir of clipDirs) {
-            const clipFolder = path.join(initialClipboardDirectory, clipDir)
-            const clipImgs = await readdirAsync(clipFolder)
-            if (clipImgs.length) {
-              for (const [i, clipImg] of clipImgs.entries()) {
-                const imagePath = path.join(clipFolder, clipImg)
-                unlinkAsync(imagePath).then(() => {
-                  if (i === clipImgs.length - 1) {
-                    rmdirAsync(clipFolder)
-                  }
-                })
+          await new Promise(async resolve => {
+            for (const [i, clipDir] of clipDirs.entries()) {
+              const clipFolder = path.join(initialClipboardDirectory, clipDir)
+              const clipImgs = await readdirAsync(clipFolder)
+              if (clipImgs.length) {
+                for (const [j, clipImg] of clipImgs.entries()) {
+                  const imagePath = path.join(clipFolder, clipImg)
+                  unlinkAsync(imagePath).then(() => {
+                    if (j === clipImgs.length - 1) {
+                      rmdirAsync(clipFolder).then(() => {
+                        if (i === clipDirs.length - 1) {
+                          resolve()
+                        }
+                      })
+                    }
+                  })
+                }
               }
             }
-          }
+          })
         }
       }
 
@@ -771,6 +777,7 @@ export default function Editor() {
           setGifData(null)
           setScale(null)
           setZoomToFit(null)
+          setShowDrawer(false)
           dispatch({ type: SET_PROJECT_FOLDER, payload: '' })
         })
       }

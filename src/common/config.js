@@ -4,7 +4,7 @@ const mainWindow = {
 }
 
 const optionsWindow = {
-  width: 800,
+  width: 750,
   height: 500
 }
 
@@ -123,7 +123,9 @@ const constants = {
   // remove to format image data url
   IMAGE_REGEX: /^data:image\/(png|gif|jpeg);base64,/,
   // time in ms to auto stop recorder
-  MAX_LENGTH: 60 * 1000
+  MAX_LENGTH: 60 * 1000,
+  // ffmpeg download link
+  FFMPEG_DOWNLOAD: 'https://ffmpeg.org/releases/ffmpeg-4.1.3.tar.bz2'
 }
 
 export default {

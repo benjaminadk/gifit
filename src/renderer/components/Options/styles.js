@@ -49,8 +49,6 @@ export const MenuItem = styled.div`
   }
 `
 
-export const Application = styled.div``
-
 export const Section = styled.div`
   height: ${p => p.height}px;
   display: grid;
@@ -86,50 +84,61 @@ export const CountdownSize = styled.div`
   }
 `
 
-export const PathInput = styled.div`
+export const Download = styled.div`
+  width: 200px;
+  height: 60px;
   display: grid;
-  grid-template-rows: 20px 1fr;
-  .title {
-    display: flex;
-    .text {
-      font-size: 1.2rem;
-      white-space: nowrap;
-      margin-left: 3px;
-      margin-right: 3px;
+  grid-template-columns: 50px 1fr;
+  align-items: center;
+  cursor: pointer;
+  &:hover {
+    background: ${p => lighten(0.4, p.theme.primary)};
+  }
+  .right {
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    font-size: 1.2rem;
+    .name {
+      height: 100%;
+      display: grid;
+      padding-left: 30px;
     }
-    .divider {
-      width: 100%;
-      height: 1px;
-      background: ${p => p.theme.grey[2]};
-      margin-top: 7px;
+    .status {
     }
   }
-  .input {
-    display: grid;
-    grid-template-columns: 1fr 30px;
-    align-items: center;
-    input {
-      width: 98%;
-      border: 1px solid ${p => p.theme.grey[5]};
-      padding: 2px;
-      margin-left: 10px;
-      font-size: 1.2rem;
-      &:hover {
-        border: 1px solid ${p => lighten(0.2, p.theme.primary)};
-      }
-      &:focus {
-        background: ${p => p.theme.grey[0]};
-        border: 1px solid ${p => lighten(0.1, p.theme.primary)};
-      }
-      &::selection {
-        background: ${p => p.theme.primary};
-        color: #fff;
-      }
+  svg {
+    justify-self: center;
+    width: 25px;
+    height: 25px;
+  }
+`
+
+export const PathInput = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 30px;
+  align-items: center;
+  input {
+    width: 98%;
+    border: 1px solid ${p => p.theme.grey[5]};
+    padding: 2px;
+    margin-left: 10px;
+    font-size: 1.2rem;
+    &:hover {
+      border: 1px solid ${p => lighten(0.2, p.theme.primary)};
     }
-    svg {
-      justify-self: center;
-      width: 25px;
-      height: 25px;
+    &:focus {
+      background: ${p => p.theme.grey[0]};
+      border: 1px solid ${p => lighten(0.1, p.theme.primary)};
     }
+    &::selection {
+      background: ${p => p.theme.primary};
+      color: #fff;
+    }
+  }
+  svg {
+    justify-self: center;
+    width: 25px;
+    height: 25px;
   }
 `

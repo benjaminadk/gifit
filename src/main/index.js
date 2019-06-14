@@ -5,6 +5,9 @@ import installDevTools from './installDevTools'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
+// main electron window
+
+// config variables
 const {
   inDev,
   mainWindow: { width, height }
@@ -28,13 +31,17 @@ function createMainWindow() {
     }
   })
 
-  mainWindow.setMenu(null)
+  // hide menu
+  // mainWindow.setMenu(null)
 
+  // load renderer HTML root
   mainWindow.loadURL(getURL(inDev))
 
+  // install and open dev tools in development
   installDevTools(inDev)
   inDev && mainWindow.webContents.openDevTools({ mode: 'detach' })
 
+  // window close event
   mainWindow.on('close', () => {
     mainWindow = null
     ipcMain.removeListener('record', onRecord)
@@ -48,6 +55,7 @@ app.on('window-all-closed', () => {
   }
 })
 
+// set recording status and recorder window id
 function onRecord(e, { isRecording, id }) {
   recording = isRecording
   recorderId = id
