@@ -102,7 +102,7 @@ export default function Board() {
     canvas5.current.width = w
     canvas5.current.height = h
     const w1 = w + 4
-    const h1 = h + 90
+    const h1 = h + 70
     const x = Math.round(screenWidth / 2 - w1 / 2)
     const y = Math.round(screenHeight / 2 - h1 / 2 + 20)
     remote.getCurrentWindow().setContentBounds({ x, y, width: w1, height: h1 })

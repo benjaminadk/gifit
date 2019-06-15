@@ -40,6 +40,8 @@ export default (state, dispatch) => {
     webPreferences: { nodeIntegration: true }
   })
 
+  boardWindow.setMenu(null)
+
   boardWindow.loadURL(getURL(inDev))
 
   inDev && boardWindow.webContents.openDevTools({ mode: 'detach' })
