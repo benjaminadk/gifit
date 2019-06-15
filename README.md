@@ -37,9 +37,25 @@ Outline of the main dependencies used in the application.
 
 ## Features
 
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/startup.png" />
+</p>
+
 ### Screen Recorder
 
-Capture fullscreen, or selected portion, frame-by-frame at a user set frame rate. This is accomplished using **Electron's** `desktopCapturer` with HTML video and canvas elements.
+Capture fullscreen, or selected portion, frame-by-frame at a user set frame rate. This is accomplished using **Electron's** `desktopCapturer` with HTML video and canvas elements. The user can pause and resume recording. After the recorder is stopped a new project folder is created containing each frame saved as a PNG as well as other information relating to the project saved in a JSON file.
+
+The screen recorder uses **Electron's** transparent `BrowserWindow` which allows the display of a small recorder user interface.
+
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/recorder-2.png" />
+</p>
+
+The `react-rnd` package provides a useful resizable/draggable component that can be used to select a portion of the screen.
+
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/recorder-1.png" />
+</p>
 
 ### Webcam Recorder
 

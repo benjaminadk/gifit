@@ -21,6 +21,7 @@ import {
 import { promisify } from 'util'
 import createTFName from '../../lib/createTFName'
 import createFileName from '../../lib/createFileName'
+import createFolderName from '../../lib/createFolderName'
 import initializeOptions from '../Options/initializeOptions'
 import initializeRecorder from '../Recorder/initializeRecorder'
 import initializeWebcam from '../Webcam/initializeWebcam'
@@ -785,6 +786,7 @@ export default function Editor() {
     remote.dialog.showMessageBox(win, opts, callback)
   }
 
+  // load a saved project or create a new project from single png file
   function onLoadClick() {
     const win = remote.getCurrentWindow()
     const opts = {
@@ -795,38 +797,72 @@ export default function Editor() {
         {
           name: 'Zip',
           extensions: ['zip']
-        }
+        },
+        { name: 'Png', extensions: ['png'] }
       ],
       properties: ['openFile']
     }
     const callback = async filepath => {
       if (filepath) {
-        const dirPath = path.join(RECORDINGS_DIRECTORY, 'temp')
-        await mkdirAsync(dirPath)
+        const ext = path.extname(filepath[0])
 
-        yauzl.open(filepath[0], { lazyEntries: true }, (err, zipFile) => {
-          if (err) throw err
-          zipFile.readEntry()
-          zipFile.on('entry', entry => {
-            zipFile.openReadStream(entry, (err, readStream) => {
-              if (err) throw err
-              readStream.on('end', () => {
-                zipFile.readEntry()
+        if (ext === '.zip') {
+          const dirPath = path.join(RECORDINGS_DIRECTORY, 'temp')
+          await mkdirAsync(dirPath)
+
+          yauzl.open(filepath[0], { lazyEntries: true }, (err, zipFile) => {
+            if (err) throw err
+            zipFile.readEntry()
+            zipFile.on('entry', entry => {
+              zipFile.openReadStream(entry, (err, readStream) => {
+                if (err) throw err
+                readStream.on('end', () => {
+                  zipFile.readEntry()
+                })
+                const ws = createWriteStream(path.join(dirPath, entry.fileName))
+                readStream.pipe(ws)
               })
-              const ws = createWriteStream(path.join(dirPath, entry.fileName))
-              readStream.pipe(ws)
+            })
+
+            zipFile.on('end', async () => {
+              const data = await readFileAsync(path.join(dirPath, 'project.json'))
+              const project = JSON.parse(data)
+              const folder = project.relative
+              const newDirPath = path.join(RECORDINGS_DIRECTORY, folder)
+              await renameAsync(dirPath, newDirPath)
+              dispatch({ type: SET_PROJECT_FOLDER, payload: folder })
             })
           })
+        } else if (ext === '.png') {
+          const folder = createFolderName()
+          const dirPath = path.join(RECORDINGS_DIRECTORY, folder)
+          await mkdirAsync(dirPath)
 
-          zipFile.on('end', async () => {
-            const data = await readFileAsync(path.join(dirPath, 'project.json'))
-            const project = JSON.parse(data)
-            const folderName = project.relative
-            const newDirPath = path.join(RECORDINGS_DIRECTORY, folderName)
-            await renameAsync(dirPath, newDirPath)
-            dispatch({ type: SET_PROJECT_FOLDER, payload: folderName })
+          const imagePath = path.join(dirPath, '0.png')
+          await copyFileAsync(filepath[0], imagePath)
+
+          const [width, height] = await new Promise(resolve => {
+            const image = new Image()
+            image.onload = () => {
+              resolve([image.width, image.height])
+            }
+            image.src = imagePath
           })
-        })
+
+          const newProject = {
+            relative: folder,
+            date: new Date().getTime(),
+            width,
+            height,
+            frames: [
+              { time: 100, path: imagePath, clicked: false, cursorX: 0, cursorY: 0, keys: false }
+            ]
+          }
+
+          const projectPath = path.join(dirPath, 'project.json')
+          await writeFileAsync(projectPath, JSON.stringify(newProject))
+          dispatch({ type: SET_PROJECT_FOLDER, payload: folder })
+        }
       }
     }
 
@@ -1005,7 +1041,7 @@ export default function Editor() {
       message: `Are you sure you want to delete?`,
       detail: `Action will delete ${count} selected frame${count === 1 ? '' : 's'}.`
     }
-    const callback = result => {
+    const callback = async result => {
       if (result === 0) {
         var deleteImages, keepImages
         if (type === 'selection') {
@@ -1033,7 +1069,7 @@ export default function Editor() {
         })
         // delete images
         for (const img of deleteImages) {
-          unlinkAsync(img.path)
+          await unlinkAsync(img.path)
         }
         setMessageTemp(`${deleteImages.length} frame(s) deleted`)
       }
