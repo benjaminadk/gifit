@@ -8,19 +8,19 @@ import { PathInput, Warning } from './styles'
 import { Section } from '../Drawer/styles'
 
 export default function Project({
-  projectFolderPath,
-  projectFilename,
-  projectOverwrite,
-  projectOverwriteError,
-  setProjectFolderPath,
-  setProjectFilename,
-  setProjectOverwrite
+  saveProjectFolderPath,
+  saveProjectFilename,
+  saveProjectOverwrite,
+  saveProjectOverwriteError,
+  setSaveProjectFolderPath,
+  setSaveProjectFilename,
+  setSaveProjectOverwrite
 }) {
   function onInputChange({ target: { name, value } }) {
-    if (name === 'projectFolderPath') {
-      setProjectFolderPath(value)
-    } else if (name === 'projectFilename') {
-      setProjectFilename(value)
+    if (name === 'saveProjectFolderPath') {
+      setSaveProjectFolderPath(value)
+    } else if (name === 'saveProjectFilename') {
+      setSaveProjectFilename(value)
     }
   }
 
@@ -41,8 +41,8 @@ export default function Project({
       if (filepath) {
         const folder = path.dirname(filepath)
         const file = path.basename(filepath).slice(0, -4)
-        setProjectFolderPath(folder)
-        setProjectFilename(file)
+        setSaveProjectFolderPath(folder)
+        setSaveProjectFilename(file)
       }
     }
     remote.dialog.showSaveDialog(win, opts, callback)
@@ -50,23 +50,23 @@ export default function Project({
 
   function onPlusMinusClick(button) {
     const re = /\((-?\d+)\)(?!.*\(-?\d+\))/g
-    if (!projectFilename) {
-      setProjectFilename('Animation')
+    if (!saveProjectFilename) {
+      setSaveProjectFilename('Animation')
       return
     }
-    if (re.test(projectFilename)) {
-      const filename = projectFilename.replace(re, (match, val) => {
+    if (re.test(saveProjectFilename)) {
+      const filename = saveProjectFilename.replace(re, (match, val) => {
         const x = button === 'plus' ? Number(val) + 1 : Number(val) - 1
         return `(${x})`
       })
-      setProjectFilename(filename)
+      setSaveProjectFilename(filename)
     } else {
-      setProjectFilename(projectFilename + ' (0)')
+      setSaveProjectFilename(saveProjectFilename + ' (0)')
     }
   }
 
   function onShowOverwriteFile() {
-    const filepath = path.join(projectFolderPath, projectFilename + '.zip')
+    const filepath = path.join(saveProjectFolderPath, saveProjectFilename + '.zip')
     shell.openExternal(filepath)
   }
 
@@ -84,10 +84,10 @@ export default function Project({
             style={{ marginLeft: '10px' }}
           />
           <Checkbox
-            value={projectOverwrite}
+            value={saveProjectOverwrite}
             primary='Overwrite (if already exists).'
             style={{ marginLeft: '20px' }}
-            onClick={() => setProjectOverwrite(!projectOverwrite)}
+            onClick={() => setSaveProjectOverwrite(!saveProjectOverwrite)}
           />
         </div>
       </Section>
@@ -101,8 +101,8 @@ export default function Project({
             <div className='top'>
               <input
                 type='text'
-                name='projectFolderPath'
-                value={projectFolderPath}
+                name='saveProjectFolderPath'
+                value={saveProjectFolderPath}
                 onChange={onInputChange}
                 spellCheck={false}
               />
@@ -113,8 +113,8 @@ export default function Project({
             <div className='bottom'>
               <input
                 type='text'
-                name='projectFilename'
-                value={projectFilename}
+                name='saveProjectFilename'
+                value={saveProjectFilename}
                 onChange={onInputChange}
                 spellCheck={false}
               />
@@ -127,7 +127,7 @@ export default function Project({
               </div>
             </div>
           </PathInput>
-          {projectOverwriteError && (
+          {saveProjectOverwriteError && (
             <Warning onClick={onShowOverwriteFile}>
               <Svg name='warning' />
               <div className='text'>A file with the same name already exists.</div>

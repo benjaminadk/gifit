@@ -125,7 +125,8 @@ const constants = {
   // time in ms to auto stop recorder
   MAX_LENGTH: 60 * 1000,
   // ffmpeg download link
-  FFMPEG_DOWNLOAD: 'https://ffmpeg.org/releases/ffmpeg-4.1.3.tar.bz2'
+  FFMPEG_DOWNLOAD: 'https://ffmpeg.org/releases/ffmpeg-4.1.3.tar.bz2',
+  GIPHY_API_KEY: 'vO9otyAldZcr0napmXH8TN92ObXqOvtx'
 }
 
 export default {

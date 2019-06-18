@@ -15,6 +15,7 @@ export default function SaveAs({
   gifFilename,
   gifOverwrite,
   gifOverwriteError,
+  gifUpload,
   gifLooped,
   gifForever,
   gifLoops,
@@ -26,14 +27,15 @@ export default function SaveAs({
   imagesZip,
   imagesOverwrite,
   imagesOverwriteError,
-  projectFolderPath,
-  projectFilename,
-  projectOverwrite,
-  projectOverwriteError,
+  saveProjectFolderPath,
+  saveProjectFilename,
+  saveProjectOverwrite,
+  saveProjectOverwriteError,
   setSaveMode,
   setGifFolderPath,
   setGifFilename,
   setGifOverwrite,
+  setGifUpload,
   setGifEncoder,
   setGifLooped,
   setGifForever,
@@ -45,9 +47,9 @@ export default function SaveAs({
   setImagesFilename,
   setImagesZip,
   setImagesOverwrite,
-  setProjectFolderPath,
-  setProjectFilename,
-  setProjectOverwrite,
+  setSaveProjectFolderPath,
+  setSaveProjectFilename,
+  setSaveProjectOverwrite,
   onAccept,
   onCancel
 }) {
@@ -107,6 +109,7 @@ export default function SaveAs({
             gifFilename={gifFilename}
             gifOverwrite={gifOverwrite}
             gifOverwriteError={gifOverwriteError}
+            gifUpload={gifUpload}
             gifLooped={gifLooped}
             gifForever={gifForever}
             gifLoops={gifLoops}
@@ -117,6 +120,7 @@ export default function SaveAs({
             setGifFolderPath={setGifFolderPath}
             setGifFilename={setGifFilename}
             setGifOverwrite={setGifOverwrite}
+            setGifUpload={setGifUpload}
             setGifLooped={setGifLooped}
             setGifForever={setGifForever}
             setGifLoops={setGifLoops}
@@ -138,13 +142,13 @@ export default function SaveAs({
           />
         ) : saveMode === 'project' ? (
           <Project
-            projectFolderPath={projectFolderPath}
-            projectFilename={projectFilename}
-            projectOverwrite={projectOverwrite}
-            projectOverwriteError={projectOverwriteError}
-            setProjectFolderPath={setProjectFolderPath}
-            setProjectFilename={setProjectFilename}
-            setProjectOverwrite={setProjectOverwrite}
+            saveProjectFolderPath={saveProjectFolderPath}
+            saveProjectFilename={saveProjectFilename}
+            saveProjectOverwrite={saveProjectOverwrite}
+            saveProjectOverwriteError={saveProjectOverwriteError}
+            setSaveProjectFolderPath={setSaveProjectFolderPath}
+            setSaveProjectFilename={setSaveProjectFilename}
+            setSaveProjectOverwrite={setSaveProjectOverwrite}
           />
         ) : null}
       </Main>

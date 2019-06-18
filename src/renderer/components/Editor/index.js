@@ -96,6 +96,8 @@ export default function Editor() {
   const ffmpegPath = options.get('ffmpegPath')
 
   const [loading, setLoading] = useState(false)
+  const [playing, setPlaying] = useState(false)
+
   const [messageTemp, setMessageTemp] = useState('')
   const [messagePerm, setMessagePerm] = useState('')
 
@@ -106,12 +108,12 @@ export default function Editor() {
   const [selected, setSelected] = useState(List())
   const [hashModifier, setHashModifier] = useState('#' + Math.round(performance.now()))
 
+  const [projectFolderPath, setProjectFolderPath] = useState('')
+  const [projectJsonPath, setProjectJsonPath] = useState('')
   const [gifData, setGifData] = useState(null)
   const [totalDuration, setTotalDuration] = useState(null)
   const [averageDuration, setAverageDuration] = useState(null)
-
   const [recentProjects, setRecentProjects] = useState(null)
-  const [playing, setPlaying] = useState(false)
 
   const [containerHeight, setContainerHeight] = useState(0)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -130,6 +132,7 @@ export default function Editor() {
   const [gifFilename, setGifFilename] = useState('')
   const [gifOverwrite, setGifOverwrite] = useState(false)
   const [gifOverwriteError, setGifOverwriteError] = useState(false)
+  const [gifUpload, setGifUpload] = useState(false)
   const [gifEncoder, setGifEncoder] = useState('1.0')
   const [gifLooped, setGifLooped] = useState(true)
   const [gifForever, setGifForever] = useState(true)
@@ -144,10 +147,10 @@ export default function Editor() {
   const [imagesOverwrite, setImagesOverwrite] = useState(false)
   const [imagesOverwriteError, setImagesOverwriteError] = useState(false)
 
-  const [projectFolderPath, setProjectFolderPath] = useState('')
-  const [projectFilename, setProjectFilename] = useState('')
-  const [projectOverwrite, setProjectOverwrite] = useState(false)
-  const [projectOverwriteError, setProjectOverwriteError] = useState(false)
+  const [saveProjectFolderPath, setSaveProjectFolderPath] = useState('')
+  const [saveProjectFilename, setSaveProjectFilename] = useState('')
+  const [saveProjectOverwrite, setSaveProjectOverwrite] = useState(false)
+  const [saveProjectOverwriteError, setSaveProjectOverwriteError] = useState(false)
 
   const [clipboardDirectory, setClipboardDirectory] = useState('')
   const [clipboardNextSub, setClipboardNextSub] = useState(0)
@@ -557,15 +560,16 @@ export default function Editor() {
     }
   }, [gifFolderPath, gifFilename, gifOverwrite])
 
+  // warn user if chosen path already contains a file
   useEffect(() => {
-    if (projectFolderPath && projectFilename && !projectOverwrite) {
-      const filepath = path.join(projectFolderPath, projectFilename + '.zip')
+    if (saveProjectFolderPath && saveProjectFilename && !saveProjectOverwrite) {
+      const filepath = path.join(saveProjectFolderPath, saveProjectFilename + '.zip')
       const exists = existsSync(filepath)
-      setProjectOverwriteError(exists)
+      setSaveProjectOverwriteError(exists)
     } else {
-      setProjectOverwriteError(false)
+      setSaveProjectOverwriteError(false)
     }
-  }, [projectFolderPath, projectFilename, projectOverwrite])
+  }, [saveProjectFolderPath, saveProjectFilename, saveProjectOverwrite])
 
   // initialize editor
   async function initialize(initialIndex = 0) {
@@ -619,7 +623,12 @@ export default function Editor() {
         }, 0)
         // divide total by number of frames to get average duration
         const averageDur = Math.round((totalDur / project.frames.length) * 10) / 10
+        // set project paths to prevent repeating them
+        const folderPath = path.join(RECORDINGS_DIRECTORY, projectFolder)
+        const jsonPath = path.join(folderPath, 'project.json')
 
+        setProjectFolderPath(folderPath)
+        setProjectJsonPath(jsonPath)
         setSelected(initialSelected)
         setScale(initialScale)
         imageIndex === null && setMessageTemp(`Zoom set to ${Math.round(initialScale * 100)}%`)
@@ -763,6 +772,7 @@ export default function Editor() {
         ctx1.clearRect(0, 0, gifData.width, gifData.height)
         // remove clipboard directory
         await initClipboard()
+        await new Promise(resolve => setTimeout(resolve, 500))
         await rmdirAsync(clipboardDirectory)
         // read all files from project directory
         const projectDir = path.join(RECORDINGS_DIRECTORY, gifData.relative)
@@ -779,6 +789,7 @@ export default function Editor() {
           setScale(null)
           setZoomToFit(null)
           setShowDrawer(false)
+          setClipboardDirectory('')
           dispatch({ type: SET_PROJECT_FOLDER, payload: '' })
         })
       }
@@ -925,8 +936,7 @@ export default function Editor() {
         setClipboardNextSub(clipboardNextSub + 1)
 
         const newProject = { ...gifData, frames: keepImages }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        await writeFileAsync(projectPath, JSON.stringify(newProject))
+        await writeFileAsync(projectJsonPath, JSON.stringify(newProject))
         resolve()
       })
     }
@@ -1000,8 +1010,7 @@ export default function Editor() {
         newImages.splice(insertionPoint, 0, ...insertionData)
         const newProject = { ...gifData, frames: newImages }
         // update project json file
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        await writeFileAsync(projectPath, JSON.stringify(newProject))
+        await writeFileAsync(projectJsonPath, JSON.stringify(newProject))
         resolve()
       })
     }
@@ -1059,8 +1068,7 @@ export default function Editor() {
           ...gifData,
           frames: keepImages
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           const totalDur = keepImages.reduce((acc, val) => (acc += val.time), 0)
           const averageDur = Math.round((totalDur / keepImages.length) * 10) / 10
           setImages(keepImages)
@@ -1270,13 +1278,13 @@ export default function Editor() {
 
   // save project as a zip file
   async function onSaveProject() {
-    if (!projectFolderPath || !projectFilename || projectOverwriteError) {
+    if (!saveProjectFolderPath || !saveProjectFilename || saveProjectOverwriteError) {
       return
     }
 
     async function save() {
       return new Promise(async resolve => {
-        const zipPath = path.join(projectFolderPath, projectFilename + '.zip')
+        const zipPath = path.join(saveProjectFolderPath, saveProjectFilename + '.zip')
         const output = createWriteStream(zipPath)
         const archive = archiver('zip', { zlib: { level: 9 } })
 
@@ -1291,8 +1299,7 @@ export default function Editor() {
           archive.append(createReadStream(image.path), { name })
         }
 
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        archive.append(createReadStream(projectPath), { name: 'project.json' })
+        archive.append(createReadStream(projectJsonPath), { name: 'project.json' })
 
         archive.finalize()
       })
@@ -1358,8 +1365,7 @@ export default function Editor() {
           ...newGifData,
           frames: newFrames
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -1432,8 +1438,7 @@ export default function Editor() {
           ...newGifData,
           frames: newFrames
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -1564,8 +1569,7 @@ export default function Editor() {
             height: gifData.width,
             frames: images.slice()
           }
-          const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-          writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+          writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
             resolve()
           })
         }
@@ -1620,8 +1624,7 @@ export default function Editor() {
           ...gifData,
           frames: keepImages
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        await writeFileAsync(projectPath, JSON.stringify(newProject))
+        await writeFileAsync(projectJsonPath, JSON.stringify(newProject))
         // delete images
         for (const [i, img] of deleteImages.entries()) {
           unlinkAsync(img.path).then(() => {
@@ -1723,8 +1726,7 @@ export default function Editor() {
           ...gifData,
           frames: keepImages
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        await writeFileAsync(projectPath, JSON.stringify(newProject))
+        await writeFileAsync(projectJsonPath, JSON.stringify(newProject))
         // delete duplicate images
         for (const [i, img] of deleteImages.entries()) {
           unlinkAsync(img.path).then(() => {
@@ -1756,8 +1758,7 @@ export default function Editor() {
           ...gifData,
           frames: images.slice().reverse()
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -1774,14 +1775,13 @@ export default function Editor() {
   async function onYoyoClick() {
     async function update() {
       return new Promise(async resolve => {
-        const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
         const newFrames = images.slice()
 
         for (const [i, img] of images
           .slice()
           .reverse()
           .entries()) {
-          const dstPath = path.join(projectFolder, createFileName('YY', i))
+          const dstPath = path.join(projectFolderPath, createFileName('YY', i))
           await copyFileAsync(img.path, dstPath)
           const newFrame = {
             ...images.slice().reverse()[i],
@@ -1790,12 +1790,11 @@ export default function Editor() {
           newFrames.push(newFrame)
         }
 
-        const projectPath = path.join(projectFolder, 'project.json')
         const newProject = {
           ...gifData,
           frames: newFrames
         }
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -1828,8 +1827,7 @@ export default function Editor() {
         const newImageIndex = imageIndex === 0 ? images.length - 1 : imageIndex - 1
         const newSelected = selected.map((el, i) => newIndices.includes(i))
         const newProject = { ...gifData, frames: newFrames }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           setImages(newFrames)
           setImageIndex(newImageIndex)
           setSelected(newSelected)
@@ -1870,8 +1868,7 @@ export default function Editor() {
         const newImageIndex = imageIndex === images.length - 1 ? 0 : imageIndex + 1
         const newSelected = selected.map((el, i) => newIndices.includes(i))
         const newProject = { ...gifData, frames: newFrames }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           setImages(newFrames)
           setImageIndex(newImageIndex)
           setSelected(newSelected)
@@ -1906,8 +1903,7 @@ export default function Editor() {
           ...gifData,
           frames: newFrames
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -1954,8 +1950,7 @@ export default function Editor() {
           ...gifData,
           frames: newFrames
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -1998,8 +1993,7 @@ export default function Editor() {
           ...gifData,
           frames: newFrames
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -2083,8 +2077,7 @@ export default function Editor() {
           ...gifData,
           frames: newImages
         }
-        const projectPath = path.join(RECORDINGS_DIRECTORY, gifData.relative, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -2549,7 +2542,7 @@ export default function Editor() {
             }
             c1.toBlob(blob => reader.readAsArrayBuffer(blob), IMAGE_TYPE)
           }
-          image.src = images[i].path
+          image1.src = images[i].path
         }
       })
     }
@@ -2753,6 +2746,7 @@ export default function Editor() {
             c3.height = adjustedHeight
             const ctx3 = c3.getContext('2d')
 
+            // draw pixelated sections one at a time
             var pixelIndex = 0
             for (let y = 0; y < adjustedHeight; y += obfuscatePixels) {
               for (let x = 0; x < adjustedWidth; x += obfuscatePixels) {
@@ -2809,7 +2803,7 @@ export default function Editor() {
       filters: [
         {
           name: 'Image',
-          extensions: ['png', 'jpg', 'jpeg']
+          extensions: ['png', 'jpg', 'jpeg', 'svg']
         }
       ],
       properties: ['openFile']
@@ -2909,16 +2903,17 @@ export default function Editor() {
     setWatermarkRealHeight(0)
   }
 
+  // fade selected frame into next frame or a color by adding transitional frames
   async function onFadeAccept() {
-    const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
     const fadeImages = []
 
     async function draw() {
       return new Promise(async resolve1 => {
+        // user sets fadeLength number of new frames to add
         for (let i = 0; i < fadeLength; i += 1) {
           const reader = new FileReader()
-
-          const filepath = path.join(projectFolder, createFileName('FD', i))
+          // save fade image to array to use in update function
+          const filepath = path.join(projectFolderPath, createFileName('FD', i))
           fadeImages.push({ path: filepath, time: fadeDelay })
 
           reader.onload = () => {
@@ -2930,15 +2925,18 @@ export default function Editor() {
             })
           }
 
+          // layer two images with on top of each other to create transition
           const c1 = document.createElement('canvas')
           c1.width = gifData.width
           c1.height = gifData.height
           const ctx1 = c1.getContext('2d')
           const image1 = new Image()
           const image2 = new Image()
+          // alpha value if fading to a color - color gets more opaque
           const alphaColor = Math.round(((i + 1) / fadeLength) * 100) / 100
+          // alpha value if fading to an image
           const alphaFrame = 1 - alphaColor
-
+          // draw next image first
           await new Promise(resolve2 => {
             image1.onload = () => {
               ctx1.drawImage(image1, 0, 0)
@@ -2946,7 +2944,7 @@ export default function Editor() {
             }
             image1.src = images[imageIndex + 1].path
           })
-
+          // draw current image/color on second
           await new Promise(resolve3 => {
             image2.onload = () => {
               if (fadeOption === 'frame') {
@@ -2968,20 +2966,22 @@ export default function Editor() {
     }
 
     async function update() {
+      // a second delay
       await new Promise(resolve => {
         setTimeout(() => {
           resolve()
         }, 1000)
       })
       return new Promise(resolve => {
+        // splice fade images into original images
         const newImages = images.slice()
         newImages.splice(imageIndex + 1, 0, ...fadeImages)
         const newProject = {
           ...gifData,
           frames: newImages
         }
-        const projectPath = path.join(projectFolder, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+        // save updated project
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -2996,13 +2996,13 @@ export default function Editor() {
     setMessageTemp('Transition inserted')
   }
 
+  // close fade drawer
   function onFadeCancel() {
     setShowDrawer(false)
   }
 
   // apply slide transition
   async function onSlideAccept() {
-    const projectFolder = path.join(RECORDINGS_DIRECTORY, gifData.relative)
     // store new image objects created in draw to be used in update
     const slideImages = []
     // create new frames
@@ -3026,7 +3026,7 @@ export default function Editor() {
         for (let i = 0; i < slideLength; i += 1) {
           const reader = new FileReader()
           // add new frame to slide images array
-          const filepath = path.join(projectFolder, createFileName('SL', i))
+          const filepath = path.join(projectFolderPath, createFileName('SL', i))
           slideImages.push({ path: filepath, time: slideDelay })
 
           reader.onload = () => {
@@ -3058,6 +3058,11 @@ export default function Editor() {
     }
     // update project json file
     async function update() {
+      await new Promise(resolve => {
+        setTimeout(() => {
+          resolve()
+        }, 1000)
+      })
       return new Promise(resolve => {
         // copy existing and splice in new images
         const newImages = images.slice()
@@ -3066,8 +3071,8 @@ export default function Editor() {
           ...gifData,
           frames: newImages
         }
-        const projectPath = path.join(projectFolder, 'project.json')
-        writeFileAsync(projectPath, JSON.stringify(newProject)).then(() => {
+
+        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
           resolve()
         })
       })
@@ -3243,6 +3248,7 @@ export default function Editor() {
           <WatermarkOverlay
             show={drawerMode === 'watermark'}
             watermarkPath={watermarkPath}
+            watermarkRealWidth={watermarkRealWidth}
             watermarkWidth={watermarkWidth}
             watermarkHeight={watermarkHeight}
             watermarkX={watermarkX}
@@ -3252,6 +3258,7 @@ export default function Editor() {
             setWatermarkHeight={setWatermarkHeight}
             setWatermarkX={setWatermarkX}
             setWatermarkY={setWatermarkY}
+            setWatermarkScale={setWatermarkScale}
           />
         </Wrapper>
       </Main>
@@ -3298,6 +3305,7 @@ export default function Editor() {
             gifFilename={gifFilename}
             gifOverwrite={gifOverwrite}
             gifOverwriteError={gifOverwriteError}
+            gifUpload={gifUpload}
             gifEncoder={gifEncoder}
             gifLooped={gifLooped}
             gifForever={gifForever}
@@ -3310,14 +3318,15 @@ export default function Editor() {
             imagesZip={imagesZip}
             imagesOverwrite={imagesOverwrite}
             imagesOverwriteError={imagesOverwriteError}
-            projectFolderPath={projectFolderPath}
-            projectFilename={projectFilename}
-            projectOverwrite={projectOverwrite}
-            projectOverwriteError={projectOverwriteError}
+            saveProjectFolderPath={saveProjectFolderPath}
+            saveProjectFilename={saveProjectFilename}
+            saveProjectOverwrite={saveProjectOverwrite}
+            saveProjectOverwriteError={saveProjectOverwriteError}
             setSaveMode={setSaveMode}
             setGifFolderPath={setGifFolderPath}
             setGifFilename={setGifFilename}
             setGifOverwrite={setGifOverwrite}
+            setGifUpload={setGifUpload}
             setGifEncoder={setGifEncoder}
             setGifLooped={setGifLooped}
             setGifForever={setGifForever}
@@ -3329,9 +3338,9 @@ export default function Editor() {
             setImagesFilename={setImagesFilename}
             setImagesZip={setImagesZip}
             setImagesOverwrite={setImagesOverwrite}
-            setProjectFolderPath={setProjectFolderPath}
-            setProjectFilename={setProjectFilename}
-            setProjectOverwrite={setProjectOverwrite}
+            setSaveProjectFolderPath={setSaveProjectFolderPath}
+            setSaveProjectFilename={setSaveProjectFilename}
+            setSaveProjectOverwrite={setSaveProjectOverwrite}
             onAccept={onSaveAccept}
             onCancel={onSaveCancel}
           />

@@ -22,6 +22,7 @@ export default function Gif({
   gifFilename,
   gifOverwrite,
   gifOverwriteError,
+  gifUpload,
   gifLooped,
   gifForever,
   gifLoops,
@@ -31,6 +32,7 @@ export default function Gif({
   setGifFolderPath,
   setGifFilename,
   setGifOverwrite,
+  setGifUpload,
   setGifEncoder,
   setGifLooped,
   setGifForever,
@@ -251,7 +253,7 @@ export default function Gif({
       ) : (
         <div />
       )}
-      <Section height={70}>
+      <Section height={100}>
         <div className='title'>
           <div className='text'>Save options</div>
           <div className='divider' />
@@ -267,6 +269,12 @@ export default function Gif({
             primary='Overwrite (if already exists).'
             style={{ marginLeft: '20px' }}
             onClick={() => setGifOverwrite(!gifOverwrite)}
+          />
+          <Checkbox
+            value={gifUpload}
+            primary='Upload the file.'
+            style={{ marginLeft: '10px' }}
+            onClick={() => setGifUpload(!gifUpload)}
           />
         </div>
       </Section>

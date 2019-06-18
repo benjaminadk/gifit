@@ -12,6 +12,7 @@ export const WatermarkImage = styled.img.attrs(p => ({
 export default function WatermarkOverlay({
   show,
   watermarkPath,
+  watermarkRealWidth,
   watermarkWidth,
   watermarkHeight,
   watermarkX,
@@ -20,7 +21,8 @@ export default function WatermarkOverlay({
   setWatermarkWidth,
   setWatermarkHeight,
   setWatermarkX,
-  setWatermarkY
+  setWatermarkY,
+  setWatermarkScale
 }) {
   if (show && watermarkPath && watermarkWidth && watermarkHeight) {
     return (
@@ -29,11 +31,14 @@ export default function WatermarkOverlay({
         bounds='parent'
         size={{ width: watermarkWidth, height: watermarkHeight }}
         position={{ x: watermarkX, y: watermarkY }}
+        lockAspectRatio={true}
         onDrag={(e, d) => {
           setWatermarkX(d.x)
           setWatermarkY(d.y)
         }}
         onResize={(e, direction, ref, delta, position) => {
+          const scale = Math.round((ref.offsetWidth / watermarkRealWidth) * 100) / 100
+          setWatermarkScale(scale)
           setWatermarkWidth(ref.offsetWidth)
           setWatermarkHeight(ref.offsetHeight)
           setWatermarkX(position.x)
