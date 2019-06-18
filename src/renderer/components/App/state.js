@@ -55,7 +55,7 @@ const initialState = {
   fontOptions: null,
   sources: null,
   videoInputs: null,
-  mode: 1,
+  mode: 0,
   projectFolder: ''
 }
 
