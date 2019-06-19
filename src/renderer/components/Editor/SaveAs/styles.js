@@ -65,7 +65,7 @@ export const PathInput = styled.div`
     width: 95%;
     display: grid;
     justify-items: center;
-    grid-template-columns: 1fr 60px 30px 30px;
+    grid-template-columns: 1fr 70px 30px 30px;
   }
   .action {
     width: 100%;

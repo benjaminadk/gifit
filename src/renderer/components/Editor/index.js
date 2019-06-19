@@ -36,6 +36,7 @@ import drawBrush from '../../lib/drawBrush'
 import drawEraser from '../../lib/drawEraser'
 import drawText from './Keyboard/drawText'
 import getTextXY from './getTextXY'
+import encodeVideo from './SaveAs/encodeVideo'
 import { AppContext } from '../App'
 import CropOverlay from './Crop/CropOverlay'
 import WatermarkOverlay from './Watermark/WatermarkOverlay'
@@ -147,6 +148,13 @@ export default function Editor() {
   const [imagesZip, setImagesZip] = useState(false)
   const [imagesOverwrite, setImagesOverwrite] = useState(false)
   const [imagesOverwriteError, setImagesOverwriteError] = useState(false)
+
+  const [videoEncoder, setVideoEncoder] = useState('system')
+  const [videoFolderPath, setVideoFolderPath] = useState('')
+  const [videoExtension, setVideoExtension] = useState('.webm')
+  const [videoFilename, setVideoFilename] = useState('')
+  const [videoOverwrite, setVideoOverwrite] = useState(false)
+  const [videoOverwriteError, setVideoOverwriteError] = useState(false)
 
   const [saveProjectFolderPath, setSaveProjectFolderPath] = useState('')
   const [saveProjectFilename, setSaveProjectFilename] = useState('')
@@ -552,7 +560,7 @@ export default function Editor() {
     }
   }, [watermarkPath, gifData])
 
-  // warn user if chosen path already contains a file
+  // warn user if chosen path already contains a file (save gif)
   useEffect(() => {
     if (gifFolderPath && gifFilename && !gifOverwrite) {
       const filepath = path.join(gifFolderPath, gifFilename + '.gif')
@@ -563,7 +571,7 @@ export default function Editor() {
     }
   }, [gifFolderPath, gifFilename, gifOverwrite])
 
-  // warn user if chosen path already contains a file
+  // warn user if chosen path already contains a file (save project)
   useEffect(() => {
     if (saveProjectFolderPath && saveProjectFilename && !saveProjectOverwrite) {
       const filepath = path.join(saveProjectFolderPath, saveProjectFilename + '.zip')
@@ -573,6 +581,19 @@ export default function Editor() {
       setSaveProjectOverwriteError(false)
     }
   }, [saveProjectFolderPath, saveProjectFilename, saveProjectOverwrite])
+
+  // warn user if chose path already contains a file (save video)
+  useEffect(() => {
+    if (videoFolderPath && videoFilename && !videoOverwrite) {
+      const ext = videoEncoder === 'system' ? '.webm' : videoExtension
+      const filename = videoFilename + ext
+      const filepath = path.join(videoFolderPath, filename)
+      const exists = existsSync(filepath)
+      setVideoOverwriteError(exists)
+    } else {
+      setVideoOverwriteError(false)
+    }
+  }, [videoFolderPath, videoFilename, videoExtension, videoEncoder, videoOverwrite])
 
   // initialize editor
   async function initialize(initialIndex = 0) {
@@ -1203,6 +1224,8 @@ export default function Editor() {
       onSaveGif()
     } else if (saveMode === 'images') {
       onSaveImages()
+    } else if (saveMode === 'video') {
+      onSaveVideo()
     } else if (saveMode === 'project') {
       onSaveProject()
     }
@@ -1303,6 +1326,73 @@ export default function Editor() {
     setLoading(false)
     setShowDrawer(false)
     setMessageTemp('Images saved')
+  }
+
+  // save project as video file
+  async function onSaveVideo() {
+    if (!videoFolderPath || !videoFilename || videoOverwriteError) {
+      return
+    }
+
+    async function saveSystem() {
+      return new Promise(async resolve1 => {
+        const c1 = document.createElement('canvas')
+        c1.width = gifData.width
+        c1.height = gifData.height
+        const ctx1 = c1.getContext('2d')
+
+        const chunks = []
+        const canvasStream = c1.captureStream()
+        const recorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' })
+
+        recorder.ondataavailable = e => {
+          chunks.push(e.data)
+        }
+
+        recorder.onstop = () => {
+          const filepath = path.join(videoFolderPath, videoFilename + '.webm')
+          const blob = new Blob(chunks, { type: 'video/webm' })
+          const reader = new FileReader()
+          reader.onload = () => {
+            const buffer = Buffer.from(reader.result)
+            writeFileAsync(filepath, buffer).then(() => resolve1())
+          }
+          reader.readAsArrayBuffer(blob)
+        }
+
+        recorder.start()
+
+        for (const [i, img] of images.entries()) {
+          await new Promise(resolve2 => {
+            const image1 = new Image()
+            image1.onload = () => {
+              ctx1.drawImage(image1, 0, 0)
+              setTimeout(resolve2, img.time)
+            }
+            image1.src = img.path
+          })
+        }
+
+        recorder.stop()
+      })
+    }
+
+    async function saveFFmpeg() {
+      const cwd = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+      const dstPath = path.join(videoFolderPath, videoFilename + videoExtension)
+      const encoder = videoExtension === '.webm' ? 'libvpx-vp9' : 'libx264'
+      await encodeVideo(images, gifData.width, gifData.height, ffmpegPath, encoder, cwd, dstPath)
+    }
+
+    setLoading(true)
+    if (videoEncoder === 'system') {
+      await saveSystem()
+    } else if (videoEncoder === 'ffmpeg') {
+      await saveFFmpeg()
+    }
+    setLoading(false)
+    setShowDrawer(false)
+    setMessageTemp('Video saved')
   }
 
   // save project as a zip file
@@ -3351,6 +3441,12 @@ export default function Editor() {
             imagesZip={imagesZip}
             imagesOverwrite={imagesOverwrite}
             imagesOverwriteError={imagesOverwriteError}
+            videoEncoder={videoEncoder}
+            videoFolderPath={videoFolderPath}
+            videoFilename={videoFilename}
+            videoExtension={videoExtension}
+            videoOverwrite={videoOverwrite}
+            videoOverwriteError={videoOverwriteError}
             saveProjectFolderPath={saveProjectFolderPath}
             saveProjectFilename={saveProjectFilename}
             saveProjectOverwrite={saveProjectOverwrite}
@@ -3371,6 +3467,11 @@ export default function Editor() {
             setImagesFilename={setImagesFilename}
             setImagesZip={setImagesZip}
             setImagesOverwrite={setImagesOverwrite}
+            setVideoEncoder={setVideoEncoder}
+            setVideoFolderPath={setVideoFolderPath}
+            setVideoFilename={setVideoFilename}
+            setVideoExtension={setVideoExtension}
+            setVideoOverwrite={setVideoOverwrite}
             setSaveProjectFolderPath={setSaveProjectFolderPath}
             setSaveProjectFilename={setSaveProjectFilename}
             setSaveProjectOverwrite={setSaveProjectOverwrite}

@@ -42,7 +42,7 @@ export default async (images, dstPath, cwd, ffmpegPath, setOutput) => {
       // execute path to ffmpeg
       // use palettegen/paletteuse to improve quality
       // maintain actual size
-      const child = execFile(
+      execFile(
         ffmpegPath,
         [
           '-f',
@@ -70,10 +70,6 @@ export default async (images, dstPath, cwd, ffmpegPath, setOutput) => {
           }
         }
       )
-
-      child.on('message', (m, s) => {
-        console.log(m, s)
-      })
     })
   })
 }

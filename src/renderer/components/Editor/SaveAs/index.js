@@ -3,6 +3,7 @@ import Svg from '../../Svg'
 import Choice from '../../Shared/Choice'
 import Gif from './Gif'
 import Images from './Images'
+import Video from './Video'
 import Project from './Project'
 import { Header, Main, Section, ChoiceRow, Footer, Button } from '../Drawer/styles'
 
@@ -27,6 +28,12 @@ export default function SaveAs({
   imagesZip,
   imagesOverwrite,
   imagesOverwriteError,
+  videoEncoder,
+  videoFolderPath,
+  videoFilename,
+  videoExtension,
+  videoOverwrite,
+  videoOverwriteError,
   saveProjectFolderPath,
   saveProjectFilename,
   saveProjectOverwrite,
@@ -47,6 +54,11 @@ export default function SaveAs({
   setImagesFilename,
   setImagesZip,
   setImagesOverwrite,
+  setVideoEncoder,
+  setVideoFolderPath,
+  setVideoFilename,
+  setVideoExtension,
+  setVideoOverwrite,
   setSaveProjectFolderPath,
   setSaveProjectFilename,
   setSaveProjectOverwrite,
@@ -80,7 +92,7 @@ export default function SaveAs({
               />
               <Choice
                 selected={saveMode === 'video'}
-                icon={<Svg name='image' />}
+                icon={<Svg name='video' />}
                 label='Video'
                 onClick={() => setSaveMode('video')}
               />
@@ -139,6 +151,21 @@ export default function SaveAs({
             setImagesFilename={setImagesFilename}
             setImagesZip={setImagesZip}
             setImagesOverwrite={setImagesOverwrite}
+          />
+        ) : saveMode === 'video' ? (
+          <Video
+            ffmpegPath={ffmpegPath}
+            videoEncoder={videoEncoder}
+            videoFolderPath={videoFolderPath}
+            videoFilename={videoFilename}
+            videoExtension={videoExtension}
+            videoOverwrite={videoOverwrite}
+            videoOverwriteError={videoOverwriteError}
+            setVideoEncoder={setVideoEncoder}
+            setVideoFolderPath={setVideoFolderPath}
+            setVideoFilename={setVideoFilename}
+            setVideoExtension={setVideoExtension}
+            setVideoOverwrite={setVideoOverwrite}
           />
         ) : saveMode === 'project' ? (
           <Project
