@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { remote, shell } from 'electron'
+import { shell } from 'electron'
 import PopupMenu from '../../Shared/PopupMenu'
 import Svg from '../../Svg'
 import { Container, Thumbnail } from './styles'
@@ -14,7 +14,8 @@ export default function Thumbnails({
   images,
   imageIndex,
   hashModifier,
-  onClick
+  onClick,
+  onThumbnailExportImage
 }) {
   const [position, setPosition] = useState([])
 
@@ -46,6 +47,11 @@ export default function Thumbnails({
     shell.showItemInFolder(images[imageIndex].path)
   }
 
+  function onExportImage() {
+    setPosition([])
+    onThumbnailExportImage()
+  }
+
   const menuItems = [
     {
       icon: <Svg name='image' />,
@@ -57,7 +63,7 @@ export default function Thumbnails({
       label: 'Explore Folder',
       click: onExploreFolder
     },
-    { icon: <Svg name='save' />, label: 'Export Image', click: () => {} }
+    { icon: <Svg name='save' />, label: 'Export Image', click: onExportImage }
   ]
 
   return (

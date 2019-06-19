@@ -66,9 +66,9 @@ export default function Toolbar({
   onYoyoClick,
   onMoveFrameLeft,
   onMoveFrameRight,
-  onGotoClick,
   onOptionsClick,
-  onSelectClick
+  onSelectClick,
+  setShowGoto
 }) {
   const [menuIndex, setMenuIndex] = useState(0)
 
@@ -199,7 +199,7 @@ export default function Toolbar({
                   <Svg name='deselect' />
                   <div className='text'>Deselect</div>
                 </Action>
-                <Action onClick={onGotoClick}>
+                <Action onClick={() => setShowGoto(true)}>
                   <Svg name='goto' />
                   <div className='text'>Goto</div>
                 </Action>

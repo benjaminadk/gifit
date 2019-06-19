@@ -21,6 +21,7 @@ A JavaScript clone of the popular [**ScreenToGif**](https://github.com/NickeMana
     - [**Zoom Controls**](#zoom-controls)
     - [**Free Drawing**](#free-drawing)
     - [**Progress**](#progress)
+    - [**Watermark**](#watermark)
   - [**Icons**](#icons)
 
 ## Objective
@@ -156,13 +157,25 @@ When a project is loaded the editor adjusts the scale setting so that the entire
 
 Freehand drawing can be applied to frames. Options include square or rounded pen tips, a wide range of pen sizes and color selections, and a highlighter effect.
 
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/editor-7.png" />
+</p>
+
 #### Progress
 
 The editor features two types of progress bars with a variety of options. The first type of progress bar is variable width with the bar growing as the GIF progresses. The width of the bar reflects the percentage of the total GIF time that has passed. The second type of progress bar is fixed width. The bar displays a comparison of elapsed time vs total time. Options include choosing the size, color and location of the progress bar.
 
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/editor-5.png" />
+</p>
+
 #### Watermark
 
 Add a smaller image as a watermark over the original frame. Typically, this is some sort of branding but it can be anything. The editor allows the user to chose any image file from their local machine and drag and/or resize it to any part of the screen. The user can also select the opacity of the image. This feature can be applied to one or more frames at a time.
+
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/editor-6.png" />
+</p>
 
 ### Icons
 

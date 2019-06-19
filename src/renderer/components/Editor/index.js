@@ -69,6 +69,7 @@ import Slide from './Slide'
 import Toolbar from './Toolbar'
 import Thumbnails from './Thumbnails'
 import BottomBar from './BottomBar'
+import Goto from './Goto'
 import { Container, Main, Wrapper, Canvas1, Canvas2, Canvas3, Canvas4, Canvas5 } from './styles'
 import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
@@ -269,6 +270,8 @@ export default function Editor() {
 
   const [slideLength, setSlideLength] = useState(1)
   const [slideDelay, setSlideDelay] = useState(100)
+
+  const [showGoto, setShowGoto] = useState(false)
 
   const container = useRef(null)
   const main = useRef(null)
@@ -1185,8 +1188,8 @@ export default function Editor() {
 
   // open a recent project
   function onRecentAccept(folder) {
-    dispatch({ type: SET_PROJECT_FOLDER, payload: folder })
     setShowDrawer(false)
+    dispatch({ type: SET_PROJECT_FOLDER, payload: folder })
   }
 
   // close recent project drawer
@@ -1908,8 +1911,6 @@ export default function Editor() {
     setLoading(false)
     setMessageTemp(`Frame(s) moved to the right`)
   }
-
-  function onGotoClick() {}
 
   // override duration for selected frames to new value
   async function onOverrideAccept() {
@@ -3162,6 +3163,11 @@ export default function Editor() {
     }
   }
 
+  function onThumbnailExportImage() {
+    onOpenDrawer('save')
+    setSaveMode('images')
+  }
+
   return (
     <Container ref={container}>
       <Toolbar
@@ -3190,9 +3196,9 @@ export default function Editor() {
         onYoyoClick={onYoyoClick}
         onMoveFrameLeft={onMoveFrameLeft}
         onMoveFrameRight={onMoveFrameRight}
-        onGotoClick={onGotoClick}
         onOptionsClick={onOptionsClick}
         onSelectClick={onSelectClick}
+        setShowGoto={setShowGoto}
       />
       <Main
         ref={main}
@@ -3299,6 +3305,7 @@ export default function Editor() {
         imageIndex={imageIndex}
         hashModifier={hashModifier}
         onClick={onThumbnailClick}
+        onThumbnailExportImage={onThumbnailExportImage}
       />
       <BottomBar
         showDrawer={showDrawer}
@@ -3684,6 +3691,12 @@ export default function Editor() {
           />
         ) : null}
       </Drawer>
+      <Goto
+        show={showGoto}
+        max={images.length}
+        onThumbnailClick={onThumbnailClick}
+        setShowGoto={setShowGoto}
+      />
     </Container>
   )
 }

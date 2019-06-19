@@ -88,7 +88,8 @@ const theme = {
   secondary: '#06AC25',
   black: '#333333',
   grey,
-  border: '1px solid #B0B0B0'
+  border: '1px solid #B0B0B0',
+  modalShadow: '2px 2px 10px rgba(0, 0, 0, 0.5), -2px -2px 10px rgba(0, 0, 0, 0.5)'
 }
 
 // actions for react app state reducer (global state)

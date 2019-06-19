@@ -14,7 +14,7 @@ export const Container = styled.div`
   border: 1px solid #4d4d4d;
   border-top: 0;
   background: #ffffff;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5), -2px -2px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: ${p => p.theme.modalShadow};
 `
 
 export const TitleBar = styled.div`
