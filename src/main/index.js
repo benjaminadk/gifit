@@ -13,6 +13,8 @@ const {
   mainWindow: { width, height }
 } = config
 
+const gotTheLock = app.requestSingleInstanceLock()
+
 let mainWindow
 var recording = false
 var recorderId = null
@@ -47,13 +49,6 @@ function createMainWindow() {
     ipcMain.removeListener('record', onRecord)
   })
 }
-
-app.on('ready', createMainWindow)
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
 
 // set recording status and recorder window id
 function onRecord(e, { isRecording, id }) {
@@ -90,3 +85,23 @@ ioHook.on('keyup', e => {
 })
 // initialize iohook listeners
 ioHook.start()
+
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore()
+      }
+      mainWindow.focus()
+    }
+  })
+
+  app.on('ready', createMainWindow)
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit()
+    }
+  })
+}

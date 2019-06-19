@@ -57,7 +57,7 @@ Outline of the main dependencies used in the application.
 ## Features
 
 <p align="center">
-  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/startup.png" />
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/startup-1.png" />
 </p>
 
 ### Screen Recorder
@@ -83,7 +83,7 @@ When recording starts **Electron's** `Tray` API is used to add a red camera icon
 Capture webcam output at a user set size, frame-by-frame at a user set frame rate. This works very similarly to the Screen Recorder except it uses a video input device, aka webcam, of the user's choosing. A notable feature is the ability to scale the size of the video with a HTML range input.
 
 <p align="center">
-  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/recorder-3.png" />
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/recorder-5.png" />
 </p>
 
 ### Board Recorder
@@ -159,6 +159,10 @@ Freehand drawing can be applied to frames. Options include square or rounded pen
 #### Progress
 
 The editor features two types of progress bars with a variety of options. The first type of progress bar is variable width with the bar growing as the GIF progresses. The width of the bar reflects the percentage of the total GIF time that has passed. The second type of progress bar is fixed width. The bar displays a comparison of elapsed time vs total time. Options include choosing the size, color and location of the progress bar.
+
+#### Watermark
+
+Add a smaller image as a watermark over the original frame. Typically, this is some sort of branding but it can be anything. The editor allows the user to chose any image file from their local machine and drag and/or resize it to any part of the screen. The user can also select the opacity of the image. This feature can be applied to one or more frames at a time.
 
 ### Icons
 
