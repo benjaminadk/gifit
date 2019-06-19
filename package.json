@@ -57,8 +57,7 @@
         "owner": "benjaminadk"
       },
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ]
     },
     "directories": {

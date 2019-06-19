@@ -1,20 +1,35 @@
 # GifIt
 
-A JavaScript clone of the popular [**ScreenToGif**](https://github.com/NickeManarin/ScreenToGif)
+A JavaScript clone of the popular [**ScreenToGif**](https://github.com/NickeManarin/ScreenToGif).
 
 ## Contents
 
 - [**Objective**](#objective)
+- [**Installation**](#installation)
 - [**Tech Stack**](#tech-stack)
 - [**Features**](#features)
   - [**Screen Recorder**](#screen-recorder)
   - [**Webcam Recorder**](#webcam-recorder)
   - [**Board Recorder**](#board-recorder)
   - [**GIF Encoding**](#gif-encoding)
+  - [**Editor**](#editor)
+    - [**Selection**](#selection)
+    - [**Playback**](#playback)
+    - [**Duration**](#duration)
+    - [**Title Frame**](#title-frame)
+  - [**Icons**](#icons)
 
 ## Objective
 
 [**ScreenToGif**](https://github.com/NickeManarin/ScreenToGif) is a popular (7000⭐) _.NET_ application that allows users to record GIFs from their screen, webcam or sketchboard. It is written primarily in _C#_. **ScreenToGif** is an exceptional application and I highly recommend you go and download it. This project an attempt to clone the original using JavaScript for education purposes. If you want to make GIFs download [**ScreenToGif**](https://github.com/NickeManarin/ScreenToGif).
+
+## Installation
+
+Currently this application is only available for **Windows**.
+
+Download the latest release.
+
+Please note this application is not intended for distrubution. As mentioned above, download [**ScreenToGif**](https://github.com/NickeManarin/ScreenToGif).
 
 ## Tech Stack
 
@@ -51,7 +66,7 @@ The screen recorder uses **Electron's** transparent `BrowserWindow` which allows
   <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/recorder-2.png" />
 </p>
 
-The `react-rnd` package provides a useful resizable/draggable component that can be used to select a portion of the screen. The dark tinted background is created with 4 separate `div` elements that resize along with the box
+The `react-rnd` package provides a useful resizable/draggable component that can be used to select a portion of the screen. The dark tinted background is created with 4 separate `div` elements that resize along with the box.
 
 <p align="center">
   <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/recorder-1.png" />
@@ -79,11 +94,13 @@ Capture canvas output as user draws onto white board. The board is an HTML canva
 
 Combine all frames into a single GIF image. There a numerous options for this, including three seperate encoders. Options include setting frame delay, number of loops, quality and palette size. I forked an existing GIF encoding package and added the Octree algorithm as well as some speed optimizations to create [`gif-encoder-2`](https://github.com/benjaminadk/gif-encoder-2). This library is designed to be used in a Node environment.
 
-| Encoder  | Speed | Filesize |                                                          Notes                                                          |
+As an alternative, [**FFmpeg**](https://ffmpeg.org/) can be used to encode the GIF. This is accomplished by using **Node's** `child_process` module. The user must download **FFmpeg** separately. **GitIt** will automatically look for the **FFmpeg** executable in the user's `PATH` environment variable, but the user can also enter this path manually in options.
+
+| Encoder  | Speed | Filesize |                                                           GIF                                                           |
 | :------: | :---: | :------: | :---------------------------------------------------------------------------------------------------------------------: |
 | NeuQuant |  2nd  | largest  | ![kd-neu](https://raw.githubusercontent.com/benjaminadk/gif-encoder-2/master/examples/output/intermediate-neuquant.gif) |
 |  Octree  |  3rd  |  middle  |  ![kd-oct](https://raw.githubusercontent.com/benjaminadk/gif-encoder-2/master/examples/output/intermediate-octree.gif)  |
-|  FFmpeg  |  1st  | smallest |                                       Requires FFmpeg downloaded on host machine                                        |
+|  FFmpeg  |  1st  | smallest |                    ![kd-ffmpeg](https://gifit-screenshots.s3-us-west-1.amazonaws.com/kd-ffmpeg.gif)                     |
 
 ### Editor
 
@@ -93,7 +110,23 @@ Offers a variety of features that can alter individual frames and manage the pro
   <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/editor-1.png" />
 </p>
 
-The top portion of the Editor is a menu with multiple tab categories. The main portion contains the current frame's image which can be scaled up and down. The bottom portion displays a row of thumbnails. Below the thumbnails is a small status bar that show loading progress, messages and other controls. Various features require user input and these are displayed in a drawer which slides in and out from the right side of the screen.
+The top portion of the Editor is a menu with multiple tab categories. The main portion contains the current frame's image which can be scaled up and down. The bottom portion displays a row of thumbnails. Below the thumbnails is a small status bar that displays loading progress, messages and other controls. Various features require user input and these are displayed in a drawer which slides in and out from the right side of the screen.
+
+#### Selection
+
+While one full-size frame is displayed at a time, multiple frames can be selected using the standard `Control` and `Shift` key modifiers. Many editor features are applied to more than one frame at a time.
+
+#### Playback
+
+Frames can be played back at actual speed to give the user an idea of what the GIF output will look like.
+
+#### Duration
+
+Each frame has a duration property which is set as the frame is captured, based on the initial frame rate. The editor allows setting this property to any value, increasing/decreasing by a set value or scaling up/down by a set percentage.
+
+#### Title Frame
+
+Title frames can be inserted into the frame list at any point and consist of a solid background and text.
 
 ### Icons
 
