@@ -17,6 +17,10 @@ A JavaScript clone of the popular [**ScreenToGif**](https://github.com/NickeMana
     - [**Playback**](#playback)
     - [**Duration**](#duration)
     - [**Title Frame**](#title-frame)
+    - [**Clipboard**](#clipboard)
+    - [**Zoom Controls**](#zoom-controls)
+    - [**Free Drawing**](#free-drawing)
+    - [**Progress**](#progress)
   - [**Icons**](#icons)
 
 ## Objective
@@ -114,15 +118,23 @@ The top portion of the Editor is a menu with multiple tab categories. The main p
 
 #### Selection
 
-While one full-size frame is displayed at a time, multiple frames can be selected using the standard `Control` and `Shift` key modifiers. Many editor features are applied to more than one frame at a time.
+While one full-size frame is displayed at a time in the main editor window, multiple frame thumbnails can be selected using the standard `Control` and `Shift` key modifiers. Many editor features can be applied to all selected frames.
+
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/editor-4.png" />
+</p>
 
 #### Playback
 
 Frames can be played back at actual speed to give the user an idea of what the GIF output will look like.
 
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/playback.gif" />
+</p>
+
 #### Duration
 
-Each frame has a duration property which is set as the frame is captured, based on the initial frame rate. The editor allows setting this property to any value, increasing/decreasing by a set value or scaling up/down by a set percentage.
+Each frame has a duration property which is set as the frame is captured, based on the initial frame rate. The editor allows setting this property to any value, increasing/decreasing by a set value or scaling up/down by a set percentage. The duration of each frame is displayed with its thumbnail.
 
 #### Title Frame
 
@@ -131,6 +143,22 @@ Title frames can be inserted into the frame list at any point and consist of a s
 <p align="center">
   <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/editor-3.png" />
 </p>
+
+#### Clipboard
+
+The Editor has its own internal clipboard. The toolbar buttons or standard keyboard shortcuts of `Control+X`, `Control+C` and `Control+V` can be used to cut, copy and paste selected frames. This allows for easy manipulation of frames.
+
+#### Zoom Controls
+
+When a project is loaded the editor adjusts the scale setting so that the entire frame fits within the main section. The user then has the power to zoom in and out as they wish, with the options to return to the original zoom level at any point.
+
+#### Free Drawing
+
+Freehand drawing can be applied to frames. Options include square or rounded pen tips, a wide range of pen sizes and color selections, and a highlighter effect.
+
+#### Progress
+
+The editor features two types of progress bars with a variety of options. The first type of progress bar is variable width with the bar growing as the GIF progresses. The width of the bar reflects the percentage of the total GIF time that has passed. The second type of progress bar is fixed width. The bar displays a comparison of elapsed time vs total time. Options include choosing the size, color and location of the progress bar.
 
 ### Icons
 
