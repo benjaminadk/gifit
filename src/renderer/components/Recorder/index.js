@@ -10,7 +10,7 @@ import Controls from './Controls'
 import SelectOverlay from './SelectOverlay'
 import Svg from '../Svg'
 import { Container, Confirm, Option, Outline, ZoomOverlay } from './styles'
-import { RECORDINGS_DIRECTORY, RECORDING_ICON, PAUSED_ICON } from 'common/filepaths'
+import { RECORDINGS_DIRECTORY } from 'common/filepaths'
 import config from 'common/config'
 
 const {
@@ -21,6 +21,15 @@ const {
 
 const mkdirAsync = promisify(mkdir)
 const writeFileAsync = promisify(writeFile)
+
+const recordingIcon = path.join(
+  __static,
+  process.platform === 'win32' ? 'video-recording.ico' : 'video-recording.icns'
+)
+const pausedIcon = path.join(
+  __static,
+  process.platform === 'win32' ? 'video-paused.ico' : 'video-paused.icns'
+)
 
 export default function Recorder() {
   const { state, dispatch } = useContext(AppContext)
@@ -230,7 +239,7 @@ export default function Recorder() {
       }, 500)
     })
 
-    tray.current = new remote.Tray(RECORDING_ICON)
+    tray.current = new remote.Tray(recordingIcon)
     remote.getCurrentWindow().setIgnoreMouseEvents(true, { forward: true })
 
     // create full screen canvas
@@ -368,7 +377,7 @@ export default function Recorder() {
     setMode(6)
     clearInterval(captureInterval.current)
     clearInterval(timeout.current)
-    tray.current.setImage(PAUSED_ICON)
+    tray.current.setImage(pausedIcon)
   }
 
   // resume recording from being paused
@@ -376,7 +385,7 @@ export default function Recorder() {
     setMode(captureType === 'crop' ? 4 : 5)
     t1.current = performance.now()
     captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
-    tray.current.setImage(RECORDING_ICON)
+    tray.current.setImage(recordingIcon)
     timeout.current = setInterval(() => {
       setTimeLimit(cur => cur - 1000)
     }, 1000)

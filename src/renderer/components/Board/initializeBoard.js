@@ -1,4 +1,5 @@
 import { remote, ipcRenderer } from 'electron'
+import path from 'path'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
@@ -31,6 +32,7 @@ export default (state, dispatch) => {
 
   boardWindow = new remote.BrowserWindow({
     title: 'GifIt - Board',
+    icon: path.join(__static, process.platform === 'win32' ? 'icon.ico' : 'icon.icns'),
     width: board.width,
     height: board.height,
     useContentSize: true,

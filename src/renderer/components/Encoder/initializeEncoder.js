@@ -1,4 +1,4 @@
-import { remote, ipcRenderer } from 'electron'
+import { remote } from 'electron'
 import path from 'path'
 import getURL from 'common/getURL'
 import config from 'common/config'
@@ -21,9 +21,12 @@ export default (parent, dispatch, encoderData) => {
   encoderWindow = new remote.BrowserWindow({
     parent,
     title: 'GifIt - Encoder',
-    icon: path.join(__static, 'icon.ico'),
+    icon: path.join(__static, process.platform === 'win32' ? 'icon.ico' : 'icon.icns'),
     width,
     height,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
     webPreferences: {
       nodeIntegration: true,
       webSecurity: !inDev

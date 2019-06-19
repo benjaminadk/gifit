@@ -60,6 +60,17 @@
         "nsis"
       ]
     },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "static/icon.icns",
+      "publish": {
+        "provider": "github",
+        "owner": "benjaminadk"
+      },
+      "target": [
+        "dmg"
+      ]
+    },
     "directories": {
       "output": "release"
     }
@@ -70,7 +81,8 @@
       "electron-70"
     ],
     "platforms": [
-      "win32"
+      "win32",
+      "darwin"
     ],
     "arches": [
       "x64",

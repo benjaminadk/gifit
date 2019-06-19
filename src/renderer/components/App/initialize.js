@@ -44,7 +44,7 @@ export default async () => {
       resolve(Map(options))
     } else {
       const where = spawnSync('where', ['ffmpeg'], { encoding: 'utf8' })
-      const ffmpegPath = where.stdout.replace('\r\n', '')
+      const ffmpegPath = where.error ? '' : where.stdout.replace('\r\n', '')
       const options = Map(defaultOptions)
         .set('ffmpegPath', ffmpegPath)
         .set('optionsPath', OPTIONS_PATH)

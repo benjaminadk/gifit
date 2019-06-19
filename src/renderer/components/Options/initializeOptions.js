@@ -21,7 +21,7 @@ export default (parent, dispatch) => {
   optionsWindow = new remote.BrowserWindow({
     parent,
     title: 'GifIt - Options',
-    icon: path.join(__static, 'icon.ico'),
+    icon: path.join(__static, process.platform === 'win32' ? 'icon.ico' : 'icon.icns'),
     width,
     height,
     center: true,

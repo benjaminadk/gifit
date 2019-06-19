@@ -83,7 +83,7 @@ export default function Options() {
       title: 'Select the location of the FFMpeg executable',
       defaultPath: '.',
       buttonLabel: 'Open',
-      filters: [{ name: 'FFMpeg Executable', extensions: ['exe'] }],
+      filters: [{ name: 'FFMpeg Executable', extensions: ['exe', 'dmg'] }],
       properties: ['openFile']
     }
     const callback = filepath => {

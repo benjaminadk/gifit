@@ -1,4 +1,5 @@
 import { remote, ipcRenderer } from 'electron'
+import path from 'path'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
@@ -37,6 +38,7 @@ export default (state, dispatch) => {
 
   recorderWindow = new remote.BrowserWindow({
     title: 'GifIt - Recorder',
+    icon: path.join(__static, process.platform === 'win32' ? 'icon.ico' : 'icon.icns'),
     width,
     height,
     x,

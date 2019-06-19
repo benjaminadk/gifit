@@ -1,4 +1,5 @@
 import { remote } from 'electron'
+import path from 'path'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
@@ -12,6 +13,7 @@ export default (scale, setScale) => {
 
   scaleWindow = new remote.BrowserWindow({
     title: 'Scale',
+    icon: path.join(__static, process.platform === 'win32' ? 'icon.ico' : 'icon.icns'),
     width: 200,
     height: 100,
     alwaysOnTop: true,

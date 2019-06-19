@@ -1,4 +1,5 @@
 import { remote, ipcRenderer } from 'electron'
+import path from 'path'
 import getURL from 'common/getURL'
 import config from 'common/config'
 
@@ -30,9 +31,13 @@ export default (state, dispatch) => {
 
   webcamWindow = new remote.BrowserWindow({
     title: 'GifIt - Webcam',
+    icon: path.join(__static, process.platform === 'win32' ? 'icon.ico' : 'icon.icns'),
     width: 0,
     height: 0,
     useContentSize: true,
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
     show: false,
     webPreferences: { nodeIntegration: true }
   })

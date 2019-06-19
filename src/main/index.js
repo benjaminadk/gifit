@@ -6,7 +6,6 @@ import getURL from 'common/getURL'
 import config from 'common/config'
 
 // main electron window
-
 // config variables
 const {
   inDev,
@@ -23,7 +22,7 @@ var recorderId = null
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     title: 'Gifit - Start Up',
-    icon: path.join(__static, 'icon.ico'),
+    icon: path.join(__static, process.platform === 'win32' ? 'icon.ico' : 'icon.icns'),
     width,
     height,
     center: true,

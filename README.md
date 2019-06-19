@@ -30,8 +30,6 @@ A JavaScript clone of the popular [**ScreenToGif**](https://github.com/NickeMana
 
 ## Installation
 
-Currently this application is only available for **Windows**.
-
 Download the latest release.
 
 Please note this application is not intended for distrubution. As mentioned above, download [**ScreenToGif**](https://github.com/NickeManarin/ScreenToGif).
