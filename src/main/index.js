@@ -61,7 +61,7 @@ ipcMain.on('record', onRecord)
 // mouse-watch is true if mouse button is pushed
 ioHook.on('mousedown', e => {
   if (recording && recorderId) {
-    BrowserWindow.fromId(recorderId).webContents.send('mouse-watch', true)
+    BrowserWindow.fromId(recorderId).webContents.send('mouse-watch', e)
   }
 })
 // mouse-watch is false if mouse button is not pushed

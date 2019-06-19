@@ -48,14 +48,13 @@ export default function Recorder() {
   const [mode, setMode] = useState(0)
   const [stream, setStream] = useState(null)
   const [captureType, setCaptureType] = useState('screen')
-  const [count, setCount] = useState(0)
   const [time, setTime] = useState(countdownTime)
   const [timeLimit, setTimeLimit] = useState(MAX_LENGTH)
 
   const [frames, setFrames] = useState(List([]))
   const [times, setTimes] = useState(List([]))
-  const [xCursors, setXCursors] = useState(List([]))
-  const [yCursors, setYCursors] = useState(List([]))
+  // const [xCursors, setXCursors] = useState(List([]))
+  // const [yCursors, setYCursors] = useState(List([]))
   const [cursors, setCursors] = useState(List([]))
   const [keys, setKeys] = useState(List([]))
 
@@ -81,7 +80,7 @@ export default function Recorder() {
   const timeout = useRef(null)
   const tray = useRef(null)
   const t1 = useRef(null)
-  const isClicked = useRef(null)
+  const mouse = useRef(null)
   const keyboard = useRef(null)
 
   const zoomCanvas1 = useRef(null)
@@ -128,8 +127,8 @@ export default function Recorder() {
   useEffect(() => {
     if ([4, 5].includes(mode)) {
       ipcRenderer.send('record', { isRecording: true, id: remote.getCurrentWindow().id })
-      ipcRenderer.on('mouse-watch', (e, bool) => {
-        isClicked.current = bool
+      ipcRenderer.on('mouse-watch', (e, data) => {
+        mouse.current = data
       })
       ipcRenderer.on('key-watch', (e, data) => {
         keyboard.current = data
@@ -153,10 +152,8 @@ export default function Recorder() {
       tray.current.on('click', onRecordStop)
     }
     remote.globalShortcut.unregisterAll('Esc')
-    remote.globalShortcut.register('Esc', () => onRecordStop())
     return () => {
       remote.globalShortcut.unregisterAll('Esc')
-      remote.globalShortcut.unregister('Esc', () => onRecordStop())
     }
   }, [onRecordStop])
 
@@ -271,26 +268,18 @@ export default function Recorder() {
   // function to capture a single frame
   // setter use function version since fresh values are needed inside of setInterval
   function onCaptureFrame() {
-    // increase total frame count by 1
-    setCount(cur => cur + 1)
     // calculate time elapsed since last frame and update time
     const t2 = performance.now()
-    const diff = Math.round(t2 - t1.current)
+    setTimes(cur => cur.push(Math.round(t2 - t1.current)))
     t1.current = t2
-    setTimes(cur => cur.push(diff))
-    // get and save cursor position
-    const { x, y } = remote.screen.getCursorScreenPoint()
-    setXCursors(cur => cur.push(x))
-    setYCursors(cur => cur.push(y))
-    setCursors(cur => cur.push(isClicked.current))
+    // get cursor and keyboard input
+    setCursors(cur => cur.push(mouse.current))
     setKeys(cur => cur.push(keyboard.current))
     var frame
     // draw full screen image
-    ctx1.current.clearRect(0, 0, screenWidth, screenHeight)
     ctx1.current.drawImage(video.current, 0, 0, screenWidth, screenHeight)
     // if captureType==='crop' redraw selection on second canvas
     if (captureType === 'crop') {
-      ctx2.current.clearRect(0, 0, selectWidth, selectHeight)
       ctx2.current.drawImage(
         canvas1.current,
         selectX,
@@ -334,7 +323,12 @@ export default function Recorder() {
     clearInterval(captureInterval.current)
     clearInterval(timeout.current)
     tray.current && tray.current.destroy()
-    remote.globalShortcut.unregister('Esc', () => onRecordStop())
+    remote.globalShortcut.unregisterAll('Esc')
+
+    await new Promise(resolve => {
+      setTimeout(resolve, 500)
+    })
+
     // create a new directory for project
     const folder = createFolderName()
     const folderPath = path.join(RECORDINGS_DIRECTORY, folder)
@@ -348,9 +342,9 @@ export default function Recorder() {
       data.push({
         path: filepath,
         time: times.get(i),
-        cursorX: xCursors.get(i),
-        cursorY: yCursors.get(i),
-        clicked: cursors.get(i),
+        cursorX: cursors.get(i) ? cursors.get(i)['x'] : false,
+        cursorY: cursors.get(i) ? cursors.get(i)['y'] : false,
+        clicked: cursors.get(i) ? true : false,
         keys: keys.get(i) ? onProcessKeyboard(keys.get(i)) : false
       })
       const base64Data = frame.replace(IMAGE_REGEX, '')
@@ -469,7 +463,7 @@ export default function Recorder() {
       <Controls
         mode={mode}
         time={time}
-        count={count}
+        count={frames.size}
         captureType={captureType}
         controlsX={controlsX}
         controlsY={controlsY}
