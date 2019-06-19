@@ -756,6 +756,36 @@ export default function Editor() {
     if (!gifData || loading) {
       return
     }
+
+    // discard the current project
+    async function update() {
+      // clear the image canvas layer
+      const ctx1 = canvas1.current.getContext('2d')
+      ctx1.clearRect(0, 0, gifData.width, gifData.height)
+      // remove clipboard directory
+      await initClipboard()
+      await new Promise(resolve => setTimeout(resolve, 500))
+      await rmdirAsync(clipboardDirectory)
+      // read all files from project directory
+      const projectDir = path.join(RECORDINGS_DIRECTORY, gifData.relative)
+      const files = await readdirAsync(projectDir)
+      // loop through and delete all files
+      for (const file of files) {
+        await unlinkAsync(path.join(projectDir, file))
+      }
+      // delete empty directory and re-initialize editor
+      rmdirAsync(projectDir).then(() => {
+        setSelected(List())
+        setImages([])
+        setGifData(null)
+        setScale(null)
+        setZoomToFit(null)
+        setShowDrawer(false)
+        setClipboardDirectory('')
+        dispatch({ type: SET_PROJECT_FOLDER, payload: '' })
+      })
+    }
+
     const win = remote.getCurrentWindow()
     const opts = {
       type: 'question',
@@ -767,34 +797,17 @@ export default function Editor() {
     }
     const callback = async result => {
       if (result === 0) {
-        // clear the image canvas layer
-        const ctx1 = canvas1.current.getContext('2d')
-        ctx1.clearRect(0, 0, gifData.width, gifData.height)
-        // remove clipboard directory
-        await initClipboard()
-        await new Promise(resolve => setTimeout(resolve, 500))
-        await rmdirAsync(clipboardDirectory)
-        // read all files from project directory
-        const projectDir = path.join(RECORDINGS_DIRECTORY, gifData.relative)
-        const files = await readdirAsync(projectDir)
-        // loop through and delete all files
-        for (const file of files) {
-          await unlinkAsync(path.join(projectDir, file))
-        }
-        // delete empty directory and re-initialize editor
-        rmdirAsync(projectDir).then(() => {
-          setSelected(List())
-          setImages([])
-          setGifData(null)
-          setScale(null)
-          setZoomToFit(null)
-          setShowDrawer(false)
-          setClipboardDirectory('')
-          dispatch({ type: SET_PROJECT_FOLDER, payload: '' })
-        })
+        update()
       }
     }
-    remote.dialog.showMessageBox(win, opts, callback)
+
+    const ask = options.get('askDiscardProject')
+
+    if (ask) {
+      remote.dialog.showMessageBox(win, opts, callback)
+    } else {
+      update()
+    }
   }
 
   // load a saved project or create a new project from single png file
@@ -1028,6 +1041,39 @@ export default function Editor() {
     if (!gifData || loading) {
       return
     }
+
+    // callback to delete frames
+    async function update() {
+      var deleteImages, keepImages
+      if (type === 'selection') {
+        deleteImages = images.filter((el, i) => selected.get(i))
+        keepImages = images.filter((el, i) => !selected.get(i))
+      } else if (type === 'previous') {
+        deleteImages = images.filter((el, i) => i < imageIndex)
+        keepImages = images.filter((el, i) => i >= imageIndex)
+      } else {
+        deleteImages = images.filter((el, i) => i > imageIndex)
+        keepImages = images.filter((el, i) => i <= imageIndex)
+      }
+      // overwrite project.json with new images
+      const newProject = {
+        ...gifData,
+        frames: keepImages
+      }
+      writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
+        const totalDur = keepImages.reduce((acc, val) => (acc += val.time), 0)
+        const averageDur = Math.round((totalDur / keepImages.length) * 10) / 10
+        setImages(keepImages)
+        setTotalDuration(totalDur)
+        setAverageDuration(averageDur)
+      })
+      // delete images
+      for (const img of deleteImages) {
+        await unlinkAsync(img.path)
+      }
+      setMessageTemp(`${deleteImages.length} frame(s) deleted`)
+    }
+
     // number of frames to delete
     var count
     if (type === 'selection') {
@@ -1052,37 +1098,17 @@ export default function Editor() {
     }
     const callback = async result => {
       if (result === 0) {
-        var deleteImages, keepImages
-        if (type === 'selection') {
-          deleteImages = images.filter((el, i) => selected.get(i))
-          keepImages = images.filter((el, i) => !selected.get(i))
-        } else if (type === 'previous') {
-          deleteImages = images.filter((el, i) => i < imageIndex)
-          keepImages = images.filter((el, i) => i >= imageIndex)
-        } else {
-          deleteImages = images.filter((el, i) => i > imageIndex)
-          keepImages = images.filter((el, i) => i <= imageIndex)
-        }
-        // overwrite project.json with new images
-        const newProject = {
-          ...gifData,
-          frames: keepImages
-        }
-        writeFileAsync(projectJsonPath, JSON.stringify(newProject)).then(() => {
-          const totalDur = keepImages.reduce((acc, val) => (acc += val.time), 0)
-          const averageDur = Math.round((totalDur / keepImages.length) * 10) / 10
-          setImages(keepImages)
-          setTotalDuration(totalDur)
-          setAverageDuration(averageDur)
-        })
-        // delete images
-        for (const img of deleteImages) {
-          await unlinkAsync(img.path)
-        }
-        setMessageTemp(`${deleteImages.length} frame(s) deleted`)
+        update()
       }
     }
-    remote.dialog.showMessageBox(win, opts, callback)
+
+    const ask = options.get('askDeleteFrame')
+
+    if (ask) {
+      remote.dialog.showMessageBox(win, opts, callback)
+    } else {
+      update()
+    }
   }
 
   // toolbar selection controls

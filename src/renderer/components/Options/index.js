@@ -6,6 +6,7 @@ import { AppContext } from '../App'
 import Button from '../Shared/Button'
 import Svg from '../Svg'
 import Application from './Application'
+import Temporary from './Temporary'
 import Extras from './Extras'
 import { Container, MenuItem } from './styles'
 import { OPTIONS_PATH } from 'common/filepaths'
@@ -123,6 +124,8 @@ export default function Options() {
               onCheckboxClick={onCheckboxClick}
               onCountdownTimeChange={onCountdownTimeChange}
             />
+          ) : menuIndex === 5 ? (
+            <Temporary />
           ) : menuIndex === 7 ? (
             <Extras
               ffmpegPath={ffmpegPath}

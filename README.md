@@ -128,6 +128,10 @@ Each frame has a duration property which is set as the frame is captured, based 
 
 Title frames can be inserted into the frame list at any point and consist of a solid background and text.
 
+<p align="center">
+  <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/editor-3.png" />
+</p>
+
 ### Icons
 
-I really liked the icon package that **ScreenToGif** used but I couldn't find anything remotely close to it for JavaScript. I ended up drawing them all by hand with [**Boxy SVG**](https://boxy-svg.com/) and creating a simple `Svg` component with **React** that accepts a `name` prop and returns the actual `svg` markup.
+I really liked the icon package that **ScreenToGif** used but I couldn't find anything remotely close to it for **JavaScript**. I ended up drawing them all by hand with [**Boxy SVG**](https://boxy-svg.com/) and creating a simple `Svg` component with **React** that accepts a `name` prop and returns the actual `svg` markup.

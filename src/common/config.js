@@ -54,12 +54,14 @@ const defaultOptions = {
   showCursor: true,
   useCountdown: false,
   countdownTime: 3,
-  alwaysOnTop: false,
   sourceIndex: 0,
   videoInputIndex: 0,
   frameRate: 10,
   checkerColor: '#F0F0F0',
-  checkerSize: 20
+  checkerSize: 20,
+  askDeleteFrame: true,
+  askDiscardProject: true,
+  askCloseEditor: true
 }
 
 // grey tones for style components theme

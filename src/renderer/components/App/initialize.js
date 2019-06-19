@@ -49,7 +49,6 @@ export default async () => {
         .set('ffmpegPath', ffmpegPath)
         .set('optionsPath', OPTIONS_PATH)
         .set('tempPath', RECORDINGS_DIRECTORY)
-        .set('gifProcessor', ffmpegPath ? 'ffmpeg' : 'gifEncoder')
       await writeFileAsync(OPTIONS_PATH, JSON.stringify(options))
       resolve(options)
     }
