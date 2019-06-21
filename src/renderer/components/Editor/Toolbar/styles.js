@@ -147,8 +147,9 @@ export const Action = styled.div`
   grid-template-rows: 1fr 1fr;
   justify-items: center;
   grid-gap: 5px;
+  opacity: ${p => (p.disabled ? 0.7 : 1)};
   &:hover {
-    background: ${p => lighten(0.42, p.theme.primary)};
+    background: ${p => (p.disabled ? 'transparent' : lighten(0.42, p.theme.primary))};
   }
   svg {
     align-self: flex-end;

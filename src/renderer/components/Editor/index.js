@@ -799,6 +799,7 @@ export default function Editor() {
       }
       // delete empty directory and re-initialize editor
       rmdirAsync(projectDir).then(() => {
+        setImageIndex(null)
         setSelected(List())
         setImages([])
         setGifData(null)
@@ -1158,7 +1159,7 @@ export default function Editor() {
     }
     if (mode === 'recent') {
     } else {
-      if (!gifData) {
+      if (!gifData || imageIndex === null) {
         return
       }
       // apply scale and other side effects
@@ -2690,6 +2691,10 @@ export default function Editor() {
       return new Promise(resolve => {
         const lastIndex = List(images).findLastIndex(el => el.clicked)
 
+        if (lastIndex === -1) {
+          resolve()
+        }
+
         for (const [i, img] of images.entries()) {
           if (img.clicked) {
             const reader = new FileReader()
@@ -2753,6 +2758,10 @@ export default function Editor() {
     async function draw() {
       return new Promise(async resolve1 => {
         const lastIndex = selected.findLastIndex(el => el)
+
+        if (lastIndex === -1) {
+          resolve1()
+        }
 
         for (const [i, bool] of selected.toArray().entries()) {
           if (bool) {

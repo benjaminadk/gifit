@@ -175,6 +175,14 @@ Add a smaller image as a watermark over the original frame. Typically, this is s
   <img src="https://gifit-screenshots.s3-us-west-1.amazonaws.com/editor-6.png" />
 </p>
 
+#### Obfuscate
+
+Creates a pixelated effect that can disquise a selected area. Useful if a face or certain sensitive information needs to be covered up. The obfuscate effect creates a more visual appealing result than covering an area with a solid color for example.
+
+#### Border
+
+Create a border on any or all sides of frames. This is an especially useful feature when frames have the same color background as the area where the GIF will be shared. Adding a border can help make the GIF stand out.
+
 ### Icons
 
 I really liked the icon package that **ScreenToGif** used but I couldn't find anything remotely close to it for **JavaScript**. I ended up drawing them all by hand with [**Boxy SVG**](https://boxy-svg.com/) and creating a simple `Svg` component with **React** that accepts a `name` prop and returns the actual `svg` markup.

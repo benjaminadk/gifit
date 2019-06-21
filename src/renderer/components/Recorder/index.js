@@ -258,7 +258,7 @@ export default function Recorder() {
     // set time and start
     t1.current = performance.now()
     // run captureFrame at desired frame rate per second
-    captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+    captureInterval.current = setInterval(onCaptureFrame, Math.round(1000 / frameRate))
     // impose a time limit on recording
     timeout.current = setInterval(() => {
       setTimeLimit(cur => cur - 1000)
@@ -378,7 +378,7 @@ export default function Recorder() {
   function onRecordResume() {
     setMode(captureType === 'crop' ? 4 : 5)
     t1.current = performance.now()
-    captureInterval.current = setInterval(() => onCaptureFrame(), Math.round(1000 / frameRate))
+    captureInterval.current = setInterval(onCaptureFrame, Math.round(1000 / frameRate))
     tray.current.setImage(recordingIcon)
     timeout.current = setInterval(() => {
       setTimeLimit(cur => cur - 1000)

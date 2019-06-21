@@ -114,7 +114,7 @@ export default function Toolbar({
             </Section>
             <Section width={375}>
               <GenericGrid columns={5}>
-                <Action onClick={() => onOpenDrawer('save')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('save')}>
                   <Svg name='save' />
                   <div className='text'>Save As</div>
                 </Action>
@@ -130,7 +130,7 @@ export default function Toolbar({
                   <Svg name='recent' />
                   <div className='text'>Recent Projects</div>
                 </Action>
-                <Action onClick={onDiscardProjectClick}>
+                <Action disabled={!gifData} onClick={onDiscardProjectClick}>
                   <Svg name='close' />
                   <div className='text'>Discard Project</div>
                 </Action>
@@ -142,15 +142,15 @@ export default function Toolbar({
           <>
             <Section width={225}>
               <GenericGrid columns={3}>
-                <Action onClick={onCutClick}>
+                <Action disabled={!gifData} onClick={onCutClick}>
                   <Svg name='cut' />
                   <div className='text'>Cut</div>
                 </Action>
-                <Action onClick={onCopyClick}>
+                <Action disabled={!gifData} onClick={onCopyClick}>
                   <Svg name='copy' />
                   <div className='text'>Copy</div>
                 </Action>
-                <Action onClick={onPasteClick}>
+                <Action disabled={!gifData} onClick={onPasteClick}>
                   <Svg name='paste' />
                   <div className='text'>Paste</div>
                 </Action>
@@ -162,11 +162,11 @@ export default function Toolbar({
             </Section>
             <Section width={300}>
               <Zoom>
-                <Action onClick={() => setScale(1)}>
+                <Action disabled={!gifData} onClick={() => setScale(1)}>
                   <Svg name='zoom-100' />
                   <div className='text'>100%</div>
                 </Action>
-                <Action onClick={() => setScale(zoomToFit)}>
+                <Action disabled={!gifData} onClick={() => setScale(zoomToFit)}>
                   <Svg name='zoom-fit' />
                   <div className='text'>Fit Image</div>
                 </Action>
@@ -187,19 +187,19 @@ export default function Toolbar({
             </Section>
             <Section width={300}>
               <GenericGrid columns={4}>
-                <Action onClick={() => onSelectClick(0)}>
+                <Action disabled={!gifData} onClick={() => onSelectClick(0)}>
                   <Svg name='cursor' />
                   <div className='text'>Select All</div>
                 </Action>
-                <Action onClick={() => onSelectClick(1)}>
+                <Action disabled={!gifData} onClick={() => onSelectClick(1)}>
                   <Svg name='inverse' />
                   <div className='text'>Inverse</div>
                 </Action>
-                <Action onClick={() => onSelectClick(2)}>
+                <Action disabled={!gifData} onClick={() => onSelectClick(2)}>
                   <Svg name='deselect' />
                   <div className='text'>Deselect</div>
                 </Action>
-                <Action onClick={() => setShowGoto(true)}>
+                <Action disabled={!gifData} onClick={() => setShowGoto(true)}>
                   <Svg name='goto' />
                   <div className='text'>Goto</div>
                 </Action>
@@ -212,7 +212,7 @@ export default function Toolbar({
             <Section width={375}>
               <GenericGrid columns={5}>
                 {playback.map((el, i) => (
-                  <Action key={i} onClick={() => onPlaybackClick(i)}>
+                  <Action key={i} disabled={!gifData} onClick={() => onPlaybackClick(i)}>
                     {i !== 2 ? el.icon : playing ? el.icon2 : el.icon1}
                     <div className='text'>{i !== 2 ? el.text : playing ? el.text2 : el.text1}</div>
                   </Action>
@@ -225,23 +225,23 @@ export default function Toolbar({
           <>
             <Section width={375}>
               <GenericGrid columns={5}>
-                <Action onClick={() => onFrameDeleteClick('selection')}>
+                <Action disabled={!gifData} onClick={() => onFrameDeleteClick('selection')}>
                   <Svg name='delete' />
                   <div className='text'>Delete</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('duplicate')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('duplicate')}>
                   <Svg name='delete' />
                   <div className='text'>Remove Duplicates</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('reduce')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('reduce')}>
                   <Svg name='delete' />
                   <div className='text'>Reduce Frames</div>
                 </Action>
-                <Action onClick={() => onFrameDeleteClick('previous')}>
+                <Action disabled={!gifData} onClick={() => onFrameDeleteClick('previous')}>
                   <Svg name='delete-prev' />
                   <div className='text'>Delete All Previous</div>
                 </Action>
-                <Action onClick={() => onFrameDeleteClick('next')}>
+                <Action disabled={!gifData} onClick={() => onFrameDeleteClick('next')}>
                   <Svg name='delete-next' />
                   <div className='text'>Delete All Next</div>
                 </Action>
@@ -250,19 +250,19 @@ export default function Toolbar({
             </Section>
             <Section width={300}>
               <GenericGrid columns={4}>
-                <Action onClick={onReverseClick}>
+                <Action disabled={!gifData} onClick={onReverseClick}>
                   <Svg name='reverse' />
                   <div className='text'>Reverse</div>
                 </Action>
-                <Action onClick={onYoyoClick}>
+                <Action disabled={!gifData} onClick={onYoyoClick}>
                   <Svg name='yoyo' />
                   <div className='text'>Yoyo</div>
                 </Action>
-                <Action onClick={onMoveFrameLeft}>
+                <Action disabled={!gifData} onClick={onMoveFrameLeft}>
                   <Svg name='move-left' />
                   <div className='text'>Move Left</div>
                 </Action>
-                <Action onClick={onMoveFrameRight}>
+                <Action disabled={!gifData} onClick={onMoveFrameRight}>
                   <Svg name='move-right' />
                   <div className='text'>Move Right</div>
                 </Action>
@@ -271,15 +271,15 @@ export default function Toolbar({
             </Section>
             <Section width={225}>
               <GenericGrid columns={3}>
-                <Action onClick={() => onOpenDrawer('override')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('override')}>
                   <Svg name='clock-override' />
                   <div className='text'>Override</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('increase')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('increase')}>
                   <Svg name='clock-increase' />
                   <div className='text'>Increase or Decrease</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('scale')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('scale')}>
                   <Svg name='clock-scale' />
                   <div className='text'>Scale</div>
                 </Action>
@@ -291,15 +291,15 @@ export default function Toolbar({
           <>
             <Section width={225}>
               <GenericGrid columns={3}>
-                <Action onClick={() => onOpenDrawer('resize')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('resize')}>
                   <Svg name='scale' />
                   <div className='text'>Resize</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('crop')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('crop')}>
                   <Svg name='crop' />
                   <div className='text'>Crop</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('flip')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('flip')}>
                   <Svg name='flip-h' />
                   <div className='text'>Flip/Rotate</div>
                 </Action>
@@ -308,15 +308,15 @@ export default function Toolbar({
             </Section>
             <Section width={225}>
               <GenericGrid columns={3}>
-                <Action onClick={() => onOpenDrawer('title')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('title')}>
                   <Svg name='title-frame' />
                   <div className='text'>Title Frame</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('keyboard')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('keyboard')}>
                   <Svg name='keyboard' />
                   <div className='text'>Key Strokes</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('text')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('text')}>
                   <Svg name='text' />
                   <div className='text'>Free Text</div>
                 </Action>
@@ -325,31 +325,31 @@ export default function Toolbar({
             </Section>
             <Section width={525}>
               <GenericGrid columns={7}>
-                <Action onClick={() => onOpenDrawer('drawing')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('drawing')}>
                   <Svg name='draw' />
                   <div className='text'>Free Drawing</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('shape')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('shape')}>
                   <Svg name='shape' />
                   <div className='text'>Shape</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('progress')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('progress')}>
                   <Svg name='progress' />
                   <div className='text'>Progress</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('clicks')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('clicks')}>
                   <Svg name='cursor' />
                   <div className='text'>Mouse Clicks</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('border')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('border')}>
                   <Svg name='border' />
                   <div className='text'>Border</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('obfuscate')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('obfuscate')}>
                   <Svg name='obfuscate' />
                   <div className='text'>Obfuscate</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('watermark')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('watermark')}>
                   <Svg name='watermark' />
                   <div className='text'>Watermark</div>
                 </Action>
@@ -357,15 +357,15 @@ export default function Toolbar({
               <SectionText>Overlay</SectionText>
             </Section>
           </>
-        ) : menuIndex === 5 && gifData ? (
+        ) : menuIndex === 5 ? (
           <>
             <Section width={150}>
               <GenericGrid columns={2}>
-                <Action onClick={() => onOpenDrawer('fade')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('fade')}>
                   <Svg name='fade' />
                   <div className='text'>Fade</div>
                 </Action>
-                <Action onClick={() => onOpenDrawer('slide')}>
+                <Action disabled={!gifData} onClick={() => onOpenDrawer('slide')}>
                   <Svg name='slide' />
                   <div className='text'>Slide</div>
                 </Action>
