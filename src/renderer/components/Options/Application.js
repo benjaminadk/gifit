@@ -53,12 +53,6 @@ export default function Application({ options, onCheckboxClick, onCountdownTimeC
             primary='Ask me before discarding project.'
             onClick={() => onCheckboxClick('askDiscardProject')}
           />
-          <Checkbox
-            value={options.get('askCloseEditor')}
-            primary='Ask me before closing Editor.'
-            secondary='If there is a project open'
-            onClick={() => onCheckboxClick('askCloseEditor')}
-          />
         </div>
       </Section>
     </div>

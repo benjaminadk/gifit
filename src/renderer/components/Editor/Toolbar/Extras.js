@@ -20,9 +20,9 @@ export default function Extras({ onOptionsClick }) {
 
   const menuItems = [
     { icon: <Svg name='settings' />, label: 'Options', click: onOptionsOpen },
-    { icon: <Svg name='settings' />, label: 'Feedback', click: () => {} },
-    { icon: <Svg name='settings' />, label: 'Troubleshoot', click: () => {} },
-    { icon: <Svg name='settings' />, label: 'Help', click: () => {} }
+    { icon: <Svg name='window' />, label: 'Feedback', click: () => {} },
+    { icon: <Svg name='warning' />, label: 'Troubleshoot', click: () => {} },
+    { icon: <Svg name='info' />, label: 'Help', click: () => {} }
   ]
 
   return (

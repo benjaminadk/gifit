@@ -22,6 +22,8 @@ A JavaScript clone of the popular [**ScreenToGif**](https://github.com/NickeMana
     - [**Free Drawing**](#free-drawing)
     - [**Progress**](#progress)
     - [**Watermark**](#watermark)
+    - [**Obfuscate**](#obfuscate)
+    - [**Border**](#border)
   - [**Icons**](#icons)
 
 ## Objective

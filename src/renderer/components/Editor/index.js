@@ -1097,6 +1097,7 @@ export default function Editor() {
         await unlinkAsync(img.path)
       }
       setMessageTemp(`${deleteImages.length} frame(s) deleted`)
+      setSelected(selected.map((el, i) => i === imageIndex))
     }
 
     // number of frames to delete
